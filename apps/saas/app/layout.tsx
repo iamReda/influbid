@@ -7,6 +7,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 
 import "./globals.css";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
@@ -15,6 +16,32 @@ import type { PropsWithChildren } from "react";
 const sansFont = Inter({
 	subsets: ["latin"],
 	variable: "--font-inter",
+});
+
+const satoshiFont = localFont({
+	src: [
+		{
+			path: "../public/fonts/Satoshi-Light.woff2",
+			weight: "300",
+		},
+		{
+			path: "../public/fonts/Satoshi-Regular.woff2",
+			weight: "400",
+		},
+		{
+			path: "../public/fonts/Satoshi-Medium.woff2",
+			weight: "500",
+		},
+		{
+			path: "../public/fonts/Satoshi-Bold.woff2",
+			weight: "700",
+		},
+		{
+			path: "../public/fonts/Satoshi-Black.woff2",
+			weight: "900",
+		},
+	],
+	variable: "--font-satoshi",
 });
 
 export const metadata: Metadata = {
@@ -34,7 +61,11 @@ export default async function RootLayout({ children }: PropsWithChildren) {
 	const t = await getTranslations();
 
 	return (
-		<html lang={locale} suppressHydrationWarning className={sansFont.variable}>
+		<html
+			lang={locale}
+			suppressHydrationWarning
+			className={cn(sansFont.variable, satoshiFont.variable)}
+		>
 			<body className={cn("font-sans min-h-screen bg-background text-foreground antialiased")}>
 				<NuqsAdapter>
 					<NextIntlClientProvider messages={messages}>

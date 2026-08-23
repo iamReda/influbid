@@ -1,11 +1,14 @@
 @import "tailwindcss";
 @import "@repo/tailwind-config/theme.css";
 @import "@repo/tailwind-config/tailwind-animate.css";
+@import "@repo/tailwind-config/influencerbid-theme.css";
+@plugin "tailwind-scrollbar";
 
 @source "../../../packages/ui/components";
+@source "../modules";
 @source "../node_modules/streamdown/dist/*.js";
 
-@variant dark (&:where(.dark, .dark *));
+@variant dark (&:where(.dark, .dark *, [data-theme=dark], [data-theme=dark] *));
 
 @theme inline {
 	--font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
