@@ -17,6 +17,7 @@
 	},
 	"dependencies": {
 		"@bprogress/next": "^3.2.12",
+		"@headlessui/react": "^2.2.10",
 		"@hookform/resolvers": "catalog:",
 		"@next/third-parties": "catalog:",
 		"@repo/i18n": "workspace:*",
@@ -34,7 +35,8 @@
 		"sharp": "catalog:",
 		"slugify": "catalog:",
 		"usehooks-ts": "catalog:",
-		"zod": "catalog:"
+		"zod": "catalog:",
+		"zustand": "^5.0.15"
 	},
 	"devDependencies": {
 		"@content-collections/cli": "^0.1.9",
@@ -56,6 +58,7 @@
 		"dotenv": "catalog:",
 		"mdx": "catalog:",
 		"postcss": "catalog:",
+		"tailwind-scrollbar": "^4.0.2",
 		"tailwindcss": "catalog:",
 		"typescript": "catalog:",
 		"vitest": "catalog:"

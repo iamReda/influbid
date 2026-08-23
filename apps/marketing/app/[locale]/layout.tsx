@@ -5,12 +5,11 @@ import { cn } from "@repo/ui";
 import { ClientProviders } from "@shared/components/ClientProviders";
 import { ConsentBanner } from "@shared/components/ConsentBanner";
 import { ConsentProvider } from "@shared/components/ConsentProvider";
-import { Footer } from "@shared/components/Footer";
-import { NavBar } from "@shared/components/NavBar";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { DM_Sans, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
@@ -23,6 +22,32 @@ const sansFont = Inter({
 const headingFont = DM_Sans({
 	subsets: ["latin"],
 	variable: "--font-dm-sans",
+});
+
+const satoshiFont = localFont({
+	src: [
+		{
+			path: "../../public/fonts/Satoshi-Light.woff2",
+			weight: "300",
+		},
+		{
+			path: "../../public/fonts/Satoshi-Regular.woff2",
+			weight: "400",
+		},
+		{
+			path: "../../public/fonts/Satoshi-Medium.woff2",
+			weight: "500",
+		},
+		{
+			path: "../../public/fonts/Satoshi-Bold.woff2",
+			weight: "700",
+		},
+		{
+			path: "../../public/fonts/Satoshi-Black.woff2",
+			weight: "900",
+		},
+	],
+	variable: "--font-satoshi",
 });
 
 const locales = Object.keys(i18nConfig.locales) as string[];
@@ -52,7 +77,7 @@ export default async function MarketingLayout({
 		<html
 			lang={locale}
 			suppressHydrationWarning
-			className={cn(sansFont.variable, headingFont.variable)}
+			className={cn(sansFont.variable, headingFont.variable, satoshiFont.variable)}
 		>
 			<body className={cn("font-sans min-h-screen bg-background text-foreground antialiased")}>
 				<ConsentProvider initialConsent={consentCookie?.value === "true"}>
@@ -65,11 +90,7 @@ export default async function MarketingLayout({
 								defaultTheme={config.defaultTheme}
 								themes={Array.from(config.enabledThemes)}
 							>
-								<NavBar />
-
-								<main className="min-h-screen">{children}</main>
-
-								<Footer />
+								{children}
 
 								<ConsentBanner />
 								<AnalyticsScript />

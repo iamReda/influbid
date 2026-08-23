@@ -1,0 +1,382 @@
+"use client";
+
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
+import {
+	influencerCategories,
+	type InfluencerCategory,
+} from "@home/influencerbid/constants/categories";
+import Button from "@repo/ui/components/influencerbid/button";
+import Icon from "@repo/ui/components/influencerbid/icon";
+import { Minus, Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo, type CSSProperties, type FormEvent } from "react";
+
+import { leaderboardInfluencers } from "../leaderboard/influencers";
+import SocialPlatformIcon, { type Platform } from "./social-platform-icon";
+
+const SOCIAL_PLATFORMS: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
+
+const detectPlatform = (value: string): Platform | null => {
+	const url = value.toLowerCase();
+
+	if (url.includes("tiktok.com")) {
+		return "tiktok";
+	}
+
+	if (url.includes("instagram.com")) {
+		return "instagram";
+	}
+
+	if (url.includes("facebook.com") || url.includes("fb.com")) {
+		return "facebook";
+	}
+
+	if (url.includes("twitch.tv")) {
+		return "twitch";
+	}
+
+	return null;
+};
+
+const MIN_BID = 3;
+const BID_STEP = 1;
+const DEFAULT_BID = 100;
+
+type FormErrors = {
+	bid?: string;
+	socialUrl?: string;
+	category?: string;
+};
+
+const clampBid = (value: number) => Math.max(MIN_BID, Math.round(value));
+
+const bidControlClass =
+	"liquid-glass-button flex size-14 shrink-0 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stroke-focus max-md:size-12";
+
+const bidAmountClass =
+	"border-0 bg-transparent p-0 text-[4.25rem] leading-none font-black! tracking-[-0.02em] text-t-blue outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none max-lg:text-hero max-md:text-h1";
+
+const isValidUrl = (value: string) => {
+	try {
+		const url = new URL(value);
+		return url.protocol === "http:" || url.protocol === "https:";
+	} catch {
+		return false;
+	}
+};
+
+const BidForm = ({ className }: { className?: string }) => {
+	const router = useRouter();
+	const [bid, setBid] = useState(DEFAULT_BID);
+	const [bidInput, setBidInput] = useState(String(DEFAULT_BID));
+	const [socialUrl, setSocialUrl] = useState("");
+	const [category, setCategory] = useState<InfluencerCategory | null>(null);
+	const [categoryQuery, setCategoryQuery] = useState("");
+	const [errors, setErrors] = useState<FormErrors>({});
+	const [submitted, setSubmitted] = useState(false);
+	const [platformCycleIndex, setPlatformCycleIndex] = useState(0);
+
+	const filteredCategories = useMemo(() => {
+		const query = categoryQuery.trim().toLowerCase();
+
+		if (!query) {
+			return influencerCategories;
+		}
+
+		return influencerCategories.filter((option) => option.name.toLowerCase().includes(query));
+	}, [categoryQuery]);
+
+	const detectedPlatform = detectPlatform(socialUrl.trim());
+
+	useEffect(() => {
+		if (detectedPlatform) {
+			return;
+		}
+
+		const interval = setInterval(() => {
+			setPlatformCycleIndex((current) => (current + 1) % SOCIAL_PLATFORMS.length);
+		}, 2000);
+
+		return () => clearInterval(interval);
+	}, [detectedPlatform]);
+
+	const activePlatform = detectedPlatform ?? SOCIAL_PLATFORMS[platformCycleIndex];
+	const isPlatformLocked = !!detectedPlatform;
+
+	const claimRank = useMemo(() => {
+		const pool = category
+			? leaderboardInfluencers.filter((influencer) => influencer.categorySlug === category.slug)
+			: leaderboardInfluencers;
+		const higherBids = pool.filter((influencer) => influencer.bid > bid).length;
+
+		return higherBids + 1;
+	}, [bid, category]);
+
+	const decreaseBid = () => {
+		setBid((current) => {
+			const next = clampBid(current - BID_STEP);
+			setBidInput(String(next));
+			return next;
+		});
+		setErrors((current) => ({ ...current, bid: undefined }));
+	};
+
+	const increaseBid = () => {
+		setBid((current) => {
+			const next = clampBid(current + BID_STEP);
+			setBidInput(String(next));
+			return next;
+		});
+		setErrors((current) => ({ ...current, bid: undefined }));
+	};
+
+	const handleBidChange = (value: string) => {
+		setBidInput(value);
+
+		if (value === "") {
+			return;
+		}
+
+		const parsed = Number(value);
+
+		if (Number.isNaN(parsed)) {
+			return;
+		}
+
+		setBid(parsed);
+		setErrors((current) => ({ ...current, bid: undefined }));
+	};
+
+	const handleBidBlur = () => {
+		const parsed = bidInput === "" ? MIN_BID : Number(bidInput);
+		const next = clampBid(Number.isNaN(parsed) ? MIN_BID : parsed);
+		setBid(next);
+		setBidInput(String(next));
+	};
+
+	const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		setSubmitted(true);
+
+		const parsed = bidInput === "" ? MIN_BID : Number(bidInput);
+		const normalizedBid = clampBid(Number.isNaN(parsed) ? MIN_BID : parsed);
+		setBid(normalizedBid);
+		setBidInput(String(normalizedBid));
+
+		const nextErrors: FormErrors = {};
+
+		if (normalizedBid < MIN_BID) {
+			nextErrors.bid = `Minimum bid is $${MIN_BID}.`;
+		}
+
+		if (!socialUrl.trim()) {
+			nextErrors.socialUrl = "Social profile URL is required.";
+		} else if (!isValidUrl(socialUrl.trim())) {
+			nextErrors.socialUrl = "Enter a valid profile URL.";
+		}
+
+		if (!category) {
+			nextErrors.category = "Select a category.";
+		}
+
+		setErrors(nextErrors);
+
+		if (Object.keys(nextErrors).length === 0) {
+			router.push("/complete-your-profile");
+		}
+	};
+
+	return (
+		<form
+			className={`max-w-200 max-md:max-w-[calc(100%-1.5rem)] mx-auto w-full ${
+				className ?? "mb-12 mt-10 max-md:mb-10 max-md:ml-6 max-md:mt-8"
+			}`}
+			onSubmit={handleSubmit}
+			noValidate
+		>
+			<div className="mb-10 flex items-center justify-center">
+				<div className="gap-2 max-md:gap-1.5 inline-flex items-center">
+					<button
+						type="button"
+						className={bidControlClass}
+						onClick={decreaseBid}
+						aria-label="Decrease bid by $1"
+					>
+						<Minus className="size-5 stroke-[2.5]" aria-hidden />
+					</button>
+
+					<div className="min-w-0 gap-0.5 px-1 flex shrink-0 items-center">
+						<span className={`${bidAmountClass} w-auto`} aria-hidden>
+							$
+						</span>
+						<input
+							type="number"
+							className={`${bidAmountClass} w-[var(--bid-ch)] text-center`}
+							style={
+								{
+									"--bid-ch": `${Math.max(bidInput.length, 2)}ch`,
+								} as CSSProperties
+							}
+							value={bidInput}
+							min={MIN_BID}
+							step={BID_STEP}
+							inputMode="numeric"
+							aria-label="Bid amount in dollars"
+							aria-invalid={submitted && !!errors.bid}
+							onChange={(event) => handleBidChange(event.target.value)}
+							onBlur={handleBidBlur}
+						/>
+					</div>
+
+					<button
+						type="button"
+						className={bidControlClass}
+						onClick={increaseBid}
+						aria-label="Increase bid by $1"
+					>
+						<Plus className="size-5 stroke-[2.5]" aria-hidden />
+					</button>
+				</div>
+			</div>
+			{submitted && errors.bid && (
+				<p className="-mt-6 mb-8 text-small text-primary3 text-center">{errors.bid}</p>
+			)}
+
+			<div className="gap-3 max-lg:flex-col flex items-start">
+				<div className="min-w-0 max-lg:w-full flex-1">
+					<div className="relative">
+						<div
+							className={`left-4 size-7 pointer-events-none absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
+								isPlatformLocked
+									? "bg-primary1 text-white"
+									: "bg-white/60 text-t-secondary backdrop-blur-sm dark:bg-white/10 dark:text-white"
+							}`}
+						>
+							<SocialPlatformIcon
+								key={activePlatform}
+								platform={activePlatform}
+								className="size-4 shrink-0"
+							/>
+						</div>
+						<input
+							type="url"
+							className={`liquid-glass-field h-12 px-6.5 pl-13 font-medium text-t-primary placeholder:text-t-secondary max-md:text-[1rem] relative z-0 w-full rounded-3xl text-input ${
+								submitted && errors.socialUrl ? "border-primary3!" : ""
+							}`}
+							value={socialUrl}
+							placeholder="Paste your main social profile link"
+							aria-label="Social profile URL"
+							aria-invalid={submitted && !!errors.socialUrl}
+							onChange={(event) => {
+								setSocialUrl(event.target.value);
+								setErrors((current) => ({
+									...current,
+									socialUrl: undefined,
+								}));
+							}}
+						/>
+					</div>
+					<p className="mt-2 text-small text-t-secondary max-md:text-left">
+						You can add more social networks in the next step.
+					</p>
+					{submitted && errors.socialUrl && (
+						<p className="mt-2 text-small text-primary3">{errors.socialUrl}</p>
+					)}
+				</div>
+
+				<div className="w-54 max-lg:w-full relative shrink-0">
+					<Listbox
+						as="div"
+						className="relative"
+						value={category}
+						onChange={(value) => {
+							setCategory(value);
+							setCategoryQuery("");
+							setErrors((current) => ({
+								...current,
+								category: undefined,
+							}));
+						}}
+					>
+						<ListboxButton
+							className={`liquid-glass-field group h-12 pl-4 pr-2.5 text-button data-hover:text-t-primary data-open:text-t-primary flex w-full items-center justify-between rounded-3xl text-left ${
+								category ? "text-t-primary" : "text-t-secondary"
+							} ${submitted && errors.category ? "border-primary3!" : ""}`}
+							aria-label="Category"
+							aria-invalid={submitted && !!errors.category}
+						>
+							<span className="min-w-0 gap-2 flex items-center truncate">
+								{category ? (
+									<>
+										<category.icon className="size-4 shrink-0 stroke-2" aria-hidden />
+										<span className="truncate">{category.name}</span>
+									</>
+								) : (
+									"Select a category"
+								)}
+							</span>
+							<Icon
+								className="ml-1 fill-t-secondary group-data-hover:fill-t-primary group-data-open:fill-t-primary shrink-0 transition-all group-data-open:rotate-180"
+								name="chevron"
+							/>
+						</ListboxButton>
+						<ListboxOptions
+							className="liquid-glass-field p-2.5 ease-out z-100 w-(--button-width) origin-top rounded-3xl transition duration-200 outline-none [--anchor-gap:0.25rem] data-closed:scale-95 data-closed:opacity-0"
+							anchor={{ to: "bottom start", gap: "0.25rem" }}
+							transition
+							modal={false}
+						>
+							<div className="mb-2 relative">
+								<Search
+									className="left-3 size-4 text-t-tertiary pointer-events-none absolute top-1/2 -translate-y-1/2 stroke-2"
+									aria-hidden
+								/>
+								<input
+									type="search"
+									value={categoryQuery}
+									onChange={(event) => setCategoryQuery(event.target.value)}
+									onClick={(event) => event.stopPropagation()}
+									onKeyDown={(event) => event.stopPropagation()}
+									className="h-10 bg-b-highlight px-3 pl-9 font-medium text-t-primary placeholder:text-t-secondary w-full rounded-full border-0 text-input outline-none"
+									placeholder="Search category.."
+									aria-label="Search category"
+								/>
+							</div>
+							<div className="max-h-60 overflow-auto">
+								{filteredCategories.length > 0 ? (
+									filteredCategories.map((option) => (
+										<ListboxOption
+											key={option.id}
+											className="gap-3 py-2 pl-2.5 pr-6 text-button text-t-secondary after:right-2.5 after:top-3.5 after:size-2 after:bg-t-blue data-focus:bg-b-highlight data-focus:text-t-primary data-selected:text-t-primary relative flex w-full cursor-pointer items-center rounded-full text-left transition-colors after:absolute after:rounded-full after:opacity-0 after:transition-opacity data-selected:after:opacity-100"
+											value={option}
+										>
+											<option.icon className="size-4 shrink-0 stroke-2" aria-hidden />
+											{option.name}
+										</ListboxOption>
+									))
+								) : (
+									<p className="px-2.5 py-2 text-small text-t-tertiary">No category found</p>
+								)}
+							</div>
+						</ListboxOptions>
+					</Listbox>
+					{submitted && errors.category && (
+						<p className="mt-2 text-small text-primary3">{errors.category}</p>
+					)}
+				</div>
+
+				<div className="max-lg:w-full shrink-0">
+					<Button className="h-12 max-lg:w-full whitespace-nowrap" isSecondary type="submit">
+						Claim #{claimRank}
+					</Button>
+				</div>
+			</div>
+			<p className="mt-8 text-body text-t-secondary max-md:mt-6 max-md:text-left">
+				Already listed? Use the same social profile to increase your bid — you&apos;ll only pay the
+				difference.
+			</p>
+		</form>
+	);
+};
+
+export default BidForm;

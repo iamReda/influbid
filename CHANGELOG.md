@@ -6,12 +6,13 @@
 
 #### UI
 
+- **InfluencerBid marketing home**: The approved InfluencerBid `HomePage` now renders at the marketing app root (`http://localhost:3001/`), with InfluencerBid shell chrome and without the legacy marketing NavBar/Footer on that route. Remaining marketing pages keep NavBar/Footer under the `(site)` route group.
 - **InfluencerBid design system foundation**: Satoshi font, design tokens/utilities (`tooling/tailwind/influencerbid-theme.css`), and InfluencerBid UI primitives under `packages/ui/components/influencerbid/` (Button, Field, Icon, Image, Modal, Select, Switch, ThemeButton, UpButton). Dual dark-mode support for `.dark` and `[data-theme=dark]`.
 - **Static Dashboard migration**: Authenticated `/dashboard` route renders the approved InfluencerBid Dashboard (static data) with InfluencerBid shell (Header/Footer/Layout) and Increase Bid section. New SaaS aliases: `@dashboard/*`, `@ranking/*`, `@creators/*`.
 
 #### Dependencies
 
-- **Production**: `@headlessui/react`, `zustand` (saas); `@headlessui/react`, `next`, `next-themes` (@repo/ui). **Development**: `tailwind-scrollbar` (saas, tailwind-config).
+- **Production**: `@headlessui/react`, `zustand` (saas, marketing); `@headlessui/react`, `next`, `next-themes` (@repo/ui). **Development**: `tailwind-scrollbar` (saas, marketing, tailwind-config).
 
 ## 2026-08-18
 
