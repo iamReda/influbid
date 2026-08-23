@@ -239,6 +239,7 @@ Canonical auth examples:
 - Use `next-intl` `useTranslations()` in client components and the server helpers
   from `next-intl/server`. Follow `apps/saas/modules/i18n/request.ts`.
 - Locale configuration and cookie name are in `packages/i18n/config.ts`.
+  The product is English-only (`en`); marketing routing uses `localePrefix: "never"` so public URLs have no `/en/` (or other locale) segment.
 - Document titles use `title.template` in each app root layout:
   `%s – ${config.appName}` (en dash). Set `generateMetadata` `{ title }` on
   every SaaS page. Pages without a title (marketing homepage) show

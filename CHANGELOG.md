@@ -2,6 +2,12 @@
 
 ## 2026-08-24
 
+### Changed
+
+#### i18n
+
+- **English-only**: Supported locales are limited to `en` in `packages/i18n/config.ts`. Marketing routing uses `localePrefix: "never"` so URLs stay unprefixed (`/`, `/blog`, …) with no `/en/` or `/fr/` segments. Locale switchers hide automatically when only one locale is enabled.
+
 ### Added
 
 #### UI
