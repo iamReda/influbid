@@ -196,9 +196,7 @@ const Infos = ({}) => {
 									className="group mt-4 mx-2 p-12 bg-b-subtle max-lg:p-8 max-md:w-[calc(100%-1rem)] relative w-[calc(50%-1rem)] overflow-hidden rounded-4xl"
 								>
 									<div className="mb-12 max-3xl:-mr-12 max-lg:-mr-8 max-md:-mr-8 max-md:mb-10 relative z-2">
-										<div
-											className="w-87 bg-b-box-shadow blur-2xl dark:max-md:hidden group-nth-1:top-4 group-nth-1:-left-4 group-nth-1:-bottom-8 max-lg:group-nth-1:-bottom-10 max-md:top-0.5 group-nth-2:top-0.5 group-nth-2:-left-4 group-nth-2:-bottom-4 max-lg:group-nth-2:-bottom-13.5 max-md:group-nth-2:-bottom-10 absolute rounded-2xl dark:opacity-50"
-										></div>
+										<div className="w-87 bg-b-box-shadow blur-2xl dark:max-md:hidden group-nth-1:top-4 group-nth-1:-left-4 group-nth-1:-bottom-8 max-lg:group-nth-1:-bottom-10 max-md:top-0.5 group-nth-2:top-0.5 group-nth-2:-left-4 group-nth-2:-bottom-4 max-lg:group-nth-2:-bottom-13.5 max-md:group-nth-2:-bottom-10 absolute rounded-2xl dark:opacity-50"></div>
 										<div className="relative z-2">
 											{index === 0 ? (
 												isMounted && (
