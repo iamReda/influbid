@@ -12,7 +12,10 @@
 			"@admin/*": ["./modules/admin/*"],
 			"@ai/*": ["./modules/ai/*"],
 			"@onboarding/*": ["./modules/onboarding/*"],
-			"@shared/*": ["./modules/shared/*"]
+			"@shared/*": ["./modules/shared/*"],
+			"@dashboard/*": ["./modules/dashboard/*"],
+			"@ranking/*": ["./modules/ranking/*"],
+			"@creators/*": ["./modules/creators/*"]
 		}
 	},
 	"include": ["**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs", ".next/types/**/*.ts"],

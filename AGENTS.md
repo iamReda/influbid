@@ -113,6 +113,9 @@ Only app-local aliases are configured in the app `tsconfig.json` files.
 | `@ai/*`            | `./modules/ai/*`            |
 | `@onboarding/*`    | `./modules/onboarding/*`    |
 | `@shared/*`        | `./modules/shared/*`        |
+| `@dashboard/*`     | `./modules/dashboard/*`     |
+| `@ranking/*`       | `./modules/ranking/*`       |
+| `@creators/*`      | `./modules/creators/*`      |
 
 ### `apps/marketing/tsconfig.json`
 

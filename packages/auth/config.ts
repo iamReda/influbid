@@ -23,6 +23,12 @@ export const config = {
 			"ai-demo",
 			"organization-invitation",
 			"chatbot",
+			"dashboard",
+			"rank-higher",
+			"increase-bid",
+			"payment-history",
+			"profile",
+			"manage-plan",
 		],
 	},
 } as const satisfies AuthConfig;
