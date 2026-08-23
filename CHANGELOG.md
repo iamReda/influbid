@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-08-24
+
+### Added
+
+#### UI
+
+- **InfluencerBid design system foundation**: Satoshi font, design tokens/utilities (`tooling/tailwind/influencerbid-theme.css`), and InfluencerBid UI primitives under `packages/ui/components/influencerbid/` (Button, Field, Icon, Image, Modal, Select, Switch, ThemeButton, UpButton). Dual dark-mode support for `.dark` and `[data-theme=dark]`.
+- **Static Dashboard migration**: Authenticated `/dashboard` route renders the approved InfluencerBid Dashboard (static data) with InfluencerBid shell (Header/Footer/Layout) and Increase Bid section. New SaaS aliases: `@dashboard/*`, `@ranking/*`, `@creators/*`.
+
+#### Dependencies
+
+- **Production**: `@headlessui/react`, `zustand` (saas); `@headlessui/react`, `next`, `next-themes` (@repo/ui). **Development**: `tailwind-scrollbar` (saas, tailwind-config).
+
 ## 2026-08-18
 
 ### Changed
