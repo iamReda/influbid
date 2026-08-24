@@ -5,6 +5,6 @@ export const metadata: Metadata = {
 	title: "Dashboard",
 };
 
-export default function DashboardRoutePage() {
+export default function MyDashboardRoutePage() {
 	return <DashboardPage />;
 }

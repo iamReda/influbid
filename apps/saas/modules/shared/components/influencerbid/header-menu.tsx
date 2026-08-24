@@ -22,7 +22,7 @@ const navigation: {
 	{
 		title: "Dashboard",
 		icon: LayoutDashboard,
-		url: "/dashboard",
+		url: "/my-dashboard",
 	},
 	{
 		title: "My Public profile",
@@ -32,7 +32,7 @@ const navigation: {
 	{
 		title: "Account settings",
 		icon: Settings,
-		url: "/settings",
+		url: "/my-settings",
 	},
 	{
 		title: "Payment History",

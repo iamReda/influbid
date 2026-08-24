@@ -1,5 +1,6 @@
 "use client";
 
+import { config } from "@config";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import Image from "@repo/ui/components/influencerbid/image";
 import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
@@ -14,6 +15,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+const saasBase = (config.saasUrl ?? "http://localhost:3000").replace(/\/$/, "");
+
 const navigation: {
 	title: string;
 	icon: LucideIcon;
@@ -22,22 +25,22 @@ const navigation: {
 	{
 		title: "Dashboard",
 		icon: LayoutDashboard,
-		url: "/dashboard",
+		url: `${saasBase}/my-dashboard`,
 	},
 	{
 		title: "My Public profile",
 		icon: Globe,
-		url: "/my-profile",
+		url: `${saasBase}/my-profile`,
 	},
 	{
 		title: "Account settings",
 		icon: Settings,
-		url: "/settings",
+		url: `${saasBase}/my-settings`,
 	},
 	{
 		title: "Payment History",
 		icon: Receipt,
-		url: "/payment-history",
+		url: `${saasBase}/payment-history`,
 	},
 ];
 

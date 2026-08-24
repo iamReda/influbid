@@ -8,6 +8,10 @@
 
 - **English-only**: Supported locales are limited to `en` in `packages/i18n/config.ts`. Marketing routing uses `localePrefix: "never"` so URLs stay unprefixed (`/`, `/blog`, …) with no `/en/` or `/fr/` segments. Locale switchers hide automatically when only one locale is enabled.
 
+#### Auth product UI
+
+- **InfluencerBid authenticated routes on SaaS (port 3000)**: `/my-dashboard` (replaces `/dashboard`), `/my-profile`, `/payment-history`, and `/my-settings`. Native Influbid `/settings/*` remains unchanged. Sign-in redirects to `/my-dashboard`. Marketing header menu links these destinations to `NEXT_PUBLIC_SAAS_URL`.
+
 ### Added
 
 #### UI
