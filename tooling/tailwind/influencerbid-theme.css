@@ -229,6 +229,9 @@
 	.liquid-glass-button {
 		@apply border-white/80 bg-white/75 text-t-primary shadow-hover backdrop-blur-xl hover:bg-white/90 dark:border-white/25 dark:bg-white/12 dark:text-white dark:hover:bg-white/20 relative isolate overflow-hidden rounded-full border-[1.5px] outline-0 backdrop-saturate-150 transition-all active:scale-95;
 	}
+	.header-liquid-glass {
+		@apply border-white/50 backdrop-blur-2xl dark:border-white/10 border-b bg-[#fdfdfd]/65 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-saturate-150 dark:bg-[#1a1a1a]/55 dark:shadow-[0_8px_30px_rgba(0,0,0,0.28)];
+	}
 	.influencer-avatar {
 		border-radius: 1.35rem;
 		box-shadow: inset 0 0 0 1.5px var(--color-stroke-subtle);

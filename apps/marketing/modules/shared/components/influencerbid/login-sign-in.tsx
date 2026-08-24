@@ -2,35 +2,20 @@
 
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
-import Image from "@repo/ui/components/influencerbid/image";
 import { useState } from "react";
 
 type Props = {
 	onResetPassword: () => void;
-	onSignUp: () => void;
 	onLogin: () => void;
 };
 
-const SignIn = ({ onResetPassword, onSignUp, onLogin }: Props) => {
+const SignIn = ({ onResetPassword, onLogin }: Props) => {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 
 	return (
 		<div className="">
-			<div className="mb-10 text-h3 text-center">Sign in to Briefberry</div>
-			<Button className="w-full" isPrimary onClick={onLogin}>
-				<Image
-					className="w-6 mr-2 opacity-100"
-					src="/images/google.svg"
-					width={24}
-					height={24}
-					alt="Google"
-				/>
-				Sign in with Google
-			</Button>
-			<div className="py-6 text-small font-medium text-t-tertiary text-center">
-				Or sign in with email
-			</div>
+			<div className="mb-10 text-h3 text-center">Sign in to Influbid</div>
 			<Field
 				className="mb-4"
 				label="Email"
@@ -47,21 +32,25 @@ const SignIn = ({ onResetPassword, onSignUp, onLogin }: Props) => {
 				type="password"
 				value={password}
 				onChange={(e) => setPassword(e.target.value)}
-				onResetPassword={onResetPassword}
 				required
 			/>
 			<Button className="mb-4 w-full" isSecondary onClick={onLogin}>
 				Sign in
 			</Button>
 			<div className="text-hairline font-medium text-t-secondary text-center">
-				Need an account?{" "}
+				Forgot your password?{" "}
 				<span
 					className="text-t-primary cursor-pointer border-b border-t-primary transition-colors hover:border-transparent"
-					onClick={onSignUp}
+					onClick={onResetPassword}
 				>
-					Sign up
+					Reset it
 				</span>
 			</div>
+			<div className="bg-stroke1 dark:bg-stroke2 my-6 h-px w-full" />
+			<p className="text-small text-t-tertiary leading-relaxed text-center">
+				Want to sign up? Place a one-time bid of $5 or more — forever your ticket to join a
+				community of standout influencers.
+			</p>
 		</div>
 	);
 };

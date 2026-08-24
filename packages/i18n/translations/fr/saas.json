@@ -476,11 +476,13 @@
 				},
 				"changePassword": {
 					"currentPassword": "Mot de passe actuel",
+					"description": "Pour changer votre mot de passe, saisissez votre mot de passe actuel et un nouveau qui répond aux exigences ci-dessous.",
 					"newPassword": "Nouveau mot de passe",
 					"notifications": {
 						"error": "Impossible de mettre à jour le mot de passe",
 						"success": "Le mot de passe a été mis à jour avec succès"
 					},
+					"submit": "Changer le mot de passe",
 					"title": "Votre mot de passe"
 				},
 				"connectedAccounts": {

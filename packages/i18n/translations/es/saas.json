@@ -476,11 +476,13 @@
 				},
 				"changePassword": {
 					"currentPassword": "Contraseña actual",
+					"description": "Para cambiar tu contraseña, introduce tu contraseña actual y una nueva que cumpla los requisitos siguientes.",
 					"newPassword": "Nueva contraseña",
 					"notifications": {
 						"error": "No se pudo actualizar la contraseña",
 						"success": "La contraseña se actualizó correctamente"
 					},
+					"submit": "Cambiar contraseña",
 					"title": "Tu contraseña"
 				},
 				"connectedAccounts": {

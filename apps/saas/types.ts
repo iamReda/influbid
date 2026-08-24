@@ -28,7 +28,7 @@ export interface SaasConfig {
 	 */
 	redirectAfterSignIn: string;
 	/**
-	 * Internal path users are sent to after logging out of the application.
+	 * URL or path users are sent to after logging out (marketing landing by default).
 	 */
 	redirectAfterLogout: string;
 }

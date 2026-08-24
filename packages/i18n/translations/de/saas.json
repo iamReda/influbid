@@ -475,11 +475,13 @@
 				},
 				"changePassword": {
 					"currentPassword": "Aktuelles Passwort",
+					"description": "Um dein Passwort zu ändern, gib dein aktuelles Passwort und ein neues ein, das die untenstehenden Anforderungen erfüllt.",
 					"newPassword": "Neues Passwort",
 					"notifications": {
 						"error": "Passwort kann nicht aktualisiert werden",
 						"success": "Passwort wurde erfolgreich aktualisiert"
 					},
+					"submit": "Passwort ändern",
 					"title": "Dein Passwort"
 				},
 				"connectedAccounts": {

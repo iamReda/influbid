@@ -3,22 +3,13 @@
 import { useAuthErrorMessages } from "@auth/hooks/errors-messages";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { authClient } from "@repo/auth/client";
-import { Alert, AlertDescription, AlertTitle } from "@repo/ui/components/alert";
-import { Button } from "@repo/ui/components/button";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@repo/ui/components/form";
-import { Input } from "@repo/ui/components/input";
-import { AlertTriangleIcon, ArrowLeftIcon, MailboxIcon } from "lucide-react";
+import Button from "@repo/ui/components/influencerbid/button";
+import Field from "@repo/ui/components/influencerbid/field";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import * as z from "zod";
+import { z } from "zod";
 
 const formSchema = z.object({
 	email: z.email(),
@@ -27,15 +18,19 @@ const formSchema = z.object({
 export function ForgotPasswordForm() {
 	const t = useTranslations();
 	const { getAuthErrorMessage } = useAuthErrorMessages();
+	const [submitting, setSubmitting] = useState(false);
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),
+		mode: "onBlur",
+		reValidateMode: "onBlur",
 		defaultValues: {
 			email: "",
 		},
 	});
 
 	const onSubmit = form.handleSubmit(async ({ email }) => {
+		setSubmitting(true);
 		try {
 			const redirectTo = new URL("/reset-password", window.location.origin).toString();
 
@@ -53,61 +48,76 @@ export function ForgotPasswordForm() {
 					e && typeof e === "object" && "code" in e ? (e.code as string) : undefined,
 				),
 			});
+		} finally {
+			setSubmitting(false);
 		}
 	});
 
+	const rootError = form.formState.errors.root?.message;
+	const emailError = form.formState.errors.email?.message;
+
+	if (form.formState.isSubmitSuccessful && !rootError) {
+		return (
+			<div className="">
+				<div className="mb-10 text-h3 text-center">Check your email</div>
+				<p className="text-small text-t-secondary mb-6 leading-relaxed text-center">
+					{t("auth.forgotPassword.hints.linkSent.message")}
+				</p>
+				<div className="text-hairline font-medium text-t-secondary text-center">
+					Have your password?{" "}
+					<Link
+						href="/login"
+						className="text-t-primary border-b border-t-primary transition-colors hover:border-transparent"
+					>
+						Sign in
+					</Link>
+				</div>
+			</div>
+		);
+	}
+
 	return (
-		<>
-			<h1 className="font-bold text-xl md:text-2xl text-center">
-				{t("auth.forgotPassword.title")}
-			</h1>
-			<p className="mt-1 mb-6 text-center text-balance text-foreground/60">
-				{t("auth.forgotPassword.message")}{" "}
+		<div className="">
+			<div className="mb-10 text-h3 text-center">Reset password</div>
+			<p className="text-small text-t-secondary mb-6 leading-relaxed text-center">
+				{t("auth.forgotPassword.message")}
 			</p>
 
-			{form.formState.isSubmitSuccessful ? (
-				<Alert variant="success">
-					<MailboxIcon />
-					<AlertTitle>{t("auth.forgotPassword.hints.linkSent.title")}</AlertTitle>
-					<AlertDescription>{t("auth.forgotPassword.hints.linkSent.message")}</AlertDescription>
-				</Alert>
-			) : (
-				<Form {...form}>
-					<form className="gap-4 flex flex-col items-stretch" onSubmit={onSubmit}>
-						{form.formState.errors.root && (
-							<Alert variant="error">
-								<AlertTriangleIcon />
-								<AlertTitle>{form.formState.errors.root.message}</AlertTitle>
-							</Alert>
-						)}
-
-						<FormField
-							control={form.control}
-							name="email"
-							render={({ field }) => (
-								<FormItem>
-									<FormLabel>{t("auth.forgotPassword.email")}</FormLabel>
-									<FormControl>
-										<Input {...field} autoComplete="email" />
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-
-						<Button type="submit" variant="primary" loading={form.formState.isSubmitting}>
-							{t("auth.forgotPassword.submit")}
-						</Button>
-					</form>
-				</Form>
+			{rootError && (
+				<p className="text-small text-primary3 mb-4 text-center" role="alert">
+					{rootError}
+				</p>
 			)}
 
-			<div className="mt-6 text-sm text-center">
-				<Link href="/login">
-					<ArrowLeftIcon className="mr-1 size-4 inline align-middle" />
-					{t("auth.forgotPassword.backToSignin")}
+			<form onSubmit={onSubmit}>
+				<Field
+					className="mb-6"
+					classLabel="bg-b-surface1"
+					label="Email"
+					placeholder="Enter email"
+					type="email"
+					autoComplete="email"
+					value={form.watch("email")}
+					onChange={(e) => form.setValue("email", e.target.value, { shouldDirty: true })}
+					onBlur={() => void form.trigger("email")}
+					required
+				/>
+				{emailError && <p className="text-small text-primary3 -mt-4 mb-4">{emailError}</p>}
+
+				<Button className="mb-4 w-full" isSecondary type="submit" disabled={submitting}>
+					{submitting ? "Sending..." : "Reset password"}
+				</Button>
+			</form>
+
+			<div className="text-hairline font-medium text-t-secondary text-center">
+				Have your password?{" "}
+				<Link
+					href="/login"
+					className="text-t-primary border-b border-t-primary transition-colors hover:border-transparent"
+				>
+					Sign in
 				</Link>
 			</div>
-		</>
+		</div>
 	);
 }

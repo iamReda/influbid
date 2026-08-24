@@ -12,7 +12,7 @@ export type TransactionIsolationLevel = z.infer<typeof TransactionIsolationLevel
 
 // File: UserScalarFieldEnum.schema.ts
 
-export const UserScalarFieldEnumSchema = z.enum(['id', 'name', 'email', 'emailVerified', 'image', 'createdAt', 'updatedAt', 'role', 'banned', 'banReason', 'banExpires', 'onboardingComplete', 'paymentsCustomerId', 'locale', 'twoFactorEnabled', 'lastActiveOrganizationId'])
+export const UserScalarFieldEnumSchema = z.enum(['id', 'name', 'email', 'emailVerified', 'image', 'username', 'bio', 'businessEmail', 'socialLinks', 'createdAt', 'updatedAt', 'role', 'banned', 'banReason', 'banExpires', 'onboardingComplete', 'paymentsCustomerId', 'locale', 'twoFactorEnabled', 'lastActiveOrganizationId'])
 
 export type UserScalarFieldEnum = z.infer<typeof UserScalarFieldEnumSchema>;
 
@@ -88,6 +88,12 @@ export const SortOrderSchema = z.enum(['asc', 'desc'])
 
 export type SortOrder = z.infer<typeof SortOrderSchema>;
 
+// File: NullableJsonNullValueInput.schema.ts
+
+export const NullableJsonNullValueInputSchema = z.enum(['DbNull', 'JsonNull'])
+
+export type NullableJsonNullValueInput = z.infer<typeof NullableJsonNullValueInputSchema>;
+
 // File: JsonNullValueInput.schema.ts
 
 export const JsonNullValueInputSchema = z.enum(['JsonNull'])
@@ -100,17 +106,17 @@ export const QueryModeSchema = z.enum(['default', 'insensitive'])
 
 export type QueryMode = z.infer<typeof QueryModeSchema>;
 
-// File: NullsOrder.schema.ts
-
-export const NullsOrderSchema = z.enum(['first', 'last'])
-
-export type NullsOrder = z.infer<typeof NullsOrderSchema>;
-
 // File: JsonNullValueFilter.schema.ts
 
 export const JsonNullValueFilterSchema = z.enum(['DbNull', 'JsonNull', 'AnyNull'])
 
 export type JsonNullValueFilter = z.infer<typeof JsonNullValueFilterSchema>;
+
+// File: NullsOrder.schema.ts
+
+export const NullsOrderSchema = z.enum(['first', 'last'])
+
+export type NullsOrder = z.infer<typeof NullsOrderSchema>;
 
 // File: PurchaseType.schema.ts
 
@@ -138,6 +144,10 @@ export const UserSchema = z.object({
   email: z.string(),
   emailVerified: z.boolean(),
   image: z.string().nullish(),
+  username: z.string().nullish(),
+  bio: z.string().nullish(),
+  businessEmail: z.string().nullish(),
+  socialLinks: z.unknown().refine((val) => { const getDepth = (obj: unknown, depth: number = 0): number => { if (depth > 10) return depth; if (obj === null || typeof obj !== 'object') return depth; const values = Object.values(obj as Record<string, unknown>); if (values.length === 0) return depth; return Math.max(...values.map(v => getDepth(v, depth + 1))); }; return getDepth(val) <= 10; }, "JSON nesting depth exceeds maximum of 10").nullish(),
   createdAt: z.date(),
   updatedAt: z.date(),
   role: z.string().nullish(),

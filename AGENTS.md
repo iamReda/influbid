@@ -187,10 +187,19 @@ keys before showing success UI. Do not rely on a full page reload.
 
 ## Auth & multi-tenancy
 
+- Organizations are **disabled** for this product (`packages/auth/config.ts`:
+  `organizations.enable: false`). Users operate only on a personal account —
+  no create-organization UI, no required org context, and Better Auth
+  `allowUserToCreateOrganization` is false. Do not re-enable org creation
+  unless product requirements change.
+- Public auth UI is email/password only (`enableSignup`, `enableSocialLogin`,
+  `enablePasskeys`, and `enableMagicLink` are false). Better Auth plugins for
+  those features remain registered server-side; do not remove them when only
+  hiding public entry points. `/login` uses the InfluencerBid modal design.
 - Server sessions use `getSession` from `@auth/lib/server`.
 - Client session state uses `useSession` from `@auth/hooks/use-session`.
-- Scope organization data with the active organization helpers under
-  `apps/saas/modules/organizations`.
+- Organization helpers under `apps/saas/modules/organizations` remain in the
+  codebase for starter compatibility but stay inactive while orgs are off.
 - When changing auth flows, update relevant templates under `packages/mail/emails`,
   preserve audit hooks, and verify locale handling.
 

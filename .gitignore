@@ -43,3 +43,6 @@ dist/
 .react-email/
 .content-collections/
 .prisma-zod-generator-manifest.json
+# local filesystem storage (avatars, uploads)
+.local-storage/
+

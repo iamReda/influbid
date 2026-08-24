@@ -1,15 +1,36 @@
-import MyProfilePage from "@creators/components/my-profile-page";
-import type { Metadata } from "next";
-import { Suspense } from "react";
+import { getSession } from "@auth/lib/server";
+import { ensureUserUsername } from "@repo/database";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-	title: "My profile",
+export const dynamic = "force-dynamic";
+
+type Props = {
+	searchParams: Promise<{ preview?: string }>;
 };
 
-export default function MyProfileRoutePage() {
-	return (
-		<Suspense fallback={null}>
-			<MyProfilePage />
-		</Suspense>
-	);
+export default async function MyProfileRedirectPage({ searchParams }: Props) {
+	const session = await getSession();
+
+	if (!session) {
+		redirect("/login");
+	}
+
+	let username = session.user.username as string | null | undefined;
+
+	if (!username) {
+		const updated = await ensureUserUsername(session.user.id, session.user.name ?? "user");
+		username = updated?.username;
+	}
+
+	if (!username) {
+		redirect("/dashboard");
+	}
+
+	const { preview } = await searchParams;
+
+	if (preview === "1") {
+		redirect(`/${username}/edit`);
+	}
+
+	redirect(`/${username}`);
 }

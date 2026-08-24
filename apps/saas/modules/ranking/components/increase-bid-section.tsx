@@ -1,10 +1,13 @@
 "use client";
 
+import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import About from "@shared/components/about-section";
 import { Globe, Lightbulb, Shirt } from "lucide-react";
 import { useState } from "react";
+
+const marketingBase = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
 
 const LIVE_STATS = {
 	bid: 142,
@@ -28,7 +31,7 @@ const BID_FOR_GLOBAL_1 = LIVE_STATS.bid + Math.max(0, LIVE_STATS.globalRank - 1)
 const BID_FOR_CATEGORY_1 = LIVE_STATS.bid + Math.max(0, LIVE_STATS.categoryRank - 1) * 18;
 
 const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
-	const [addAmount, setAddAmount] = useState(String(LIVE_STATS.suggestedAdd));
+	const [addAmount, setAddAmount] = useState("0");
 
 	const parsedAdd = Number(addAmount);
 	const safeAdd =
@@ -101,14 +104,18 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 								)}
 							</div>
 						</div>
-						<div className="mt-1 gap-2.5 bg-b-surface1 px-3.5 py-3 flex rounded-2xl">
+						<div className="mt-1 gap-2.5 bg-b-surface1 px-3.5 py-3 flex items-center rounded-2xl">
 							<Lightbulb
-								className="mt-0.5 size-4 text-t-primary dark:text-white shrink-0 stroke-[1.75px]"
+								className="size-4 text-t-primary dark:text-white shrink-0 stroke-[1.75px]"
 								aria-hidden
 							/>
 							<p className="text-small text-t-secondary">
-								Claim #1 in {LIVE_STATS.category} for ${BID_FOR_CATEGORY_1} and #1 in Global for $
-								{BID_FOR_GLOBAL_1}.
+								Claim <span className="text-t-primary font-semibold">#1</span> in{" "}
+								<span className="text-t-primary font-semibold">{LIVE_STATS.category}</span> for{" "}
+								<span className="text-t-primary font-semibold">${BID_FOR_CATEGORY_1}</span> and{" "}
+								<span className="text-t-primary font-semibold">#1</span> in{" "}
+								<span className="text-t-primary font-semibold">Global</span> for{" "}
+								<span className="text-t-primary font-semibold">${BID_FOR_GLOBAL_1}</span>.
 							</p>
 						</div>
 					</div>
@@ -127,10 +134,10 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 							name="about-add-amount"
 							type="text"
 							inputMode="numeric"
-							placeholder="18"
+							placeholder="0"
 							currency="$"
 						/>
-						<Button className="w-full" isSecondary as="link" href="/">
+						<Button className="w-full" isSecondary as="link" href={`${marketingBase}/`}>
 							Increase bid
 						</Button>
 					</div>

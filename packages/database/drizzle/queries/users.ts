@@ -1,6 +1,8 @@
+import { slugifyUsernameBase, withUsernameSuffix } from "@repo/utils";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import type { z } from "zod";
 
+import { toPublicProfile } from "../../lib/profile";
 import { db } from "../client";
 import { account, user } from "../schema/postgres";
 import type { UserUpdateSchema } from "../zod";
@@ -43,6 +45,112 @@ export async function getUserByEmail(email: string) {
 	});
 }
 
+export async function getUserByUsername(username: string) {
+	return await db.query.user.findFirst({
+		where: (user, { eq }) => eq(user.username, username),
+	});
+}
+
+export async function getPublicProfileByUsername(username: string) {
+	const profileUser = await db.query.user.findFirst({
+		where: (user, { eq }) => eq(user.username, username),
+		columns: {
+			username: true,
+			name: true,
+			image: true,
+			email: true,
+			bio: true,
+			businessEmail: true,
+			socialLinks: true,
+		},
+	});
+
+	if (!profileUser) {
+		return null;
+	}
+
+	return toPublicProfile(profileUser);
+}
+
+export async function updateUserProfile({
+	id,
+	name,
+	bio,
+	businessEmail,
+	socialLinks,
+}: {
+	id: string;
+	name?: string;
+	bio?: string | null;
+	businessEmail?: string | null;
+	socialLinks?: string[];
+}) {
+	await db
+		.update(user)
+		.set({
+			...(name !== undefined ? { name } : {}),
+			...(bio !== undefined ? { bio } : {}),
+			...(businessEmail !== undefined ? { businessEmail } : {}),
+			...(socialLinks !== undefined ? { socialLinks } : {}),
+			updatedAt: new Date(),
+		})
+		.where(eq(user.id, id));
+
+	const updatedUser = await db.query.user.findFirst({
+		where: (user, { eq }) => eq(user.id, id),
+		columns: {
+			id: true,
+			username: true,
+			name: true,
+			image: true,
+			email: true,
+			bio: true,
+			businessEmail: true,
+			socialLinks: true,
+		},
+	});
+
+	return updatedUser;
+}
+
+export async function isUsernameTaken(username: string, excludeUserId?: string) {
+	const existing = await getUserByUsername(username);
+	if (!existing) {
+		return false;
+	}
+	return excludeUserId ? existing.id !== excludeUserId : true;
+}
+
+export async function allocateUniqueUsername(name: string, excludeUserId?: string) {
+	const base = slugifyUsernameBase(name);
+
+	if (!(await isUsernameTaken(base, excludeUserId))) {
+		return base;
+	}
+
+	for (let attempt = 0; attempt < 20; attempt++) {
+		const candidate = withUsernameSuffix(base);
+		if (!(await isUsernameTaken(candidate, excludeUserId))) {
+			return candidate;
+		}
+	}
+
+	return withUsernameSuffix(`${base}-${Date.now().toString(36)}`);
+}
+
+export async function ensureUserUsername(userId: string, name: string) {
+	const existing = await getUserById(userId);
+	if (!existing) {
+		return null;
+	}
+	if (existing.username) {
+		return existing;
+	}
+	const username = await allocateUniqueUsername(name, userId);
+	await updateUser({ id: userId, username });
+	return getUserById(userId);
+}
+
 export async function createUser({
 	email,
 	name,
@@ -56,11 +164,14 @@ export async function createUser({
 	emailVerified: boolean;
 	onboardingComplete: boolean;
 }) {
+	const username = await allocateUniqueUsername(name);
+
 	const [{ id }] = await db
 		.insert(user)
 		.values({
 			email,
 			name,
+			username,
 			role,
 			emailVerified,
 			onboardingComplete,

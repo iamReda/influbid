@@ -1,8 +1,11 @@
 "use client";
 
+import { useSession } from "@auth/hooks/use-session";
+import { config } from "@config";
+import { authClient } from "@repo/auth/client";
 import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import UpButton from "@repo/ui/components/influencerbid/up-button";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import Footer from "./footer";
 import Header from "./header";
@@ -11,6 +14,7 @@ type Props = {
 	className?: string;
 	classContainer?: string;
 	isFixedHeader?: boolean;
+	/** @deprecated Auth state comes from the session; kept for call-site compatibility. */
 	isLoggedIn?: boolean;
 	isVisiblePlan?: boolean;
 	isHiddenFooter?: boolean;
@@ -22,13 +26,26 @@ const Layout = ({
 	className,
 	classContainer,
 	isFixedHeader,
-	isLoggedIn,
 	isVisiblePlan,
 	isHiddenFooter,
 	isMinimalHeader,
 	children,
 }: Props) => {
-	const [loginOpen, setLoginOpen] = useState(isLoggedIn);
+	const { user } = useSession();
+	const isAuthenticated = !!user;
+
+	const handleLogout = async () => {
+		await authClient.signOut({
+			fetchOptions: {
+				onSuccess: () => {
+					window.location.href = new URL(
+						config.redirectAfterLogout,
+						window.location.origin,
+					).toString();
+				},
+			},
+		});
+	};
 
 	return (
 		<div
@@ -44,11 +61,10 @@ const Layout = ({
 			)}
 			<Header
 				isFixed={isFixedHeader}
-				login={loginOpen}
+				login={isAuthenticated}
 				isVisiblePlan={isVisiblePlan}
 				isMinimal={isMinimalHeader}
-				onLogin={() => setLoginOpen(true)}
-				onLogout={() => setLoginOpen(false)}
+				onLogout={handleLogout}
 			/>
 			<div className={`grow ${classContainer || ""}`}>{children}</div>
 			{!isHiddenFooter && <Footer />}

@@ -1,7 +1,10 @@
 "use client";
 
+import { config } from "@config";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+
+const marketingBase = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
 
 const isHomeRoute = (pathname: string) =>
 	pathname === "/" || pathname === "/home" || pathname === "/about";
@@ -20,7 +23,7 @@ const Footer = () => {
 				<div className="w-0.25 h-1 mx-4 bg-t-tertiary max-md:mx-auto"></div>
 				<Link
 					className="text-small text-t-secondary hover:text-t-primary transition-colors"
-					href="/rules"
+					href={`${marketingBase}/rules`}
 				>
 					Rules
 				</Link>

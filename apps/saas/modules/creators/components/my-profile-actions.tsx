@@ -1,10 +1,17 @@
 "use client";
 
-import { Check, Copy, Download, Eye, SquarePen, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useSession } from "@auth/hooks/use-session";
+import { Check, Copy, Eye, SquarePen, type LucideIcon } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 const Actions = () => {
+	const { user } = useSession();
 	const [toastVisible, setToastVisible] = useState(false);
+
+	const profilePath = useMemo(() => {
+		const username = user?.username as string | undefined;
+		return username ? `/${username}` : "/my-profile";
+	}, [user]);
 
 	useEffect(() => {
 		if (!toastVisible) {
@@ -16,12 +23,11 @@ const Actions = () => {
 	}, [toastVisible]);
 
 	const copyProfileLink = async () => {
-		const profileLink = `${window.location.origin}/my-profile?preview=1`;
+		const profileLink = `${window.location.origin}${profilePath}?preview=1`;
 
 		try {
 			await navigator.clipboard.writeText(profileLink);
 		} catch {
-			// Fallback for environments without clipboard permission
 			const input = document.createElement("input");
 			input.value = profileLink;
 			document.body.appendChild(input);
@@ -47,19 +53,14 @@ const Actions = () => {
 			title: "Preview",
 			icon: Eye,
 			onClick: () => {
-				window.open("/my-profile?preview=1", "_blank", "noopener,noreferrer");
+				window.open(`${profilePath}?preview=1`, "_blank", "noopener,noreferrer");
 			},
-		},
-		{
-			title: "Download",
-			icon: Download,
-			onClick: () => console.log("Download"),
 		},
 		{
 			title: "Edit profile",
 			icon: SquarePen,
 			onClick: () => {
-				window.location.href = "/my-profile/edit";
+				window.location.href = `${profilePath}/edit`;
 			},
 		},
 	];

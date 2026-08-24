@@ -2,7 +2,7 @@
 
 import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import UpButton from "@repo/ui/components/influencerbid/up-button";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import Footer from "./footer";
 import Header from "./header";
@@ -22,14 +22,11 @@ const Layout = ({
 	className,
 	classContainer,
 	isFixedHeader,
-	isLoggedIn,
 	isVisiblePlan,
 	isHiddenFooter,
 	isMinimalHeader,
 	children,
 }: Props) => {
-	const [loginOpen, setLoginOpen] = useState(isLoggedIn);
-
 	return (
 		<div
 			className={`bg-b-surface1 font-satoshi text-t-primary flex min-h-screen flex-col text-[1rem] antialiased ${
@@ -42,14 +39,7 @@ const Layout = ({
 					<div className="left-0 bottom-0 right-0 h-32 from-b-surface1 max-md:h-22 max-md:from-80% pointer-events-none fixed z-2 bg-linear-to-t from-50% to-transparent"></div>
 				</>
 			)}
-			<Header
-				isFixed={isFixedHeader}
-				login={loginOpen}
-				isVisiblePlan={isVisiblePlan}
-				isMinimal={isMinimalHeader}
-				onLogin={() => setLoginOpen(true)}
-				onLogout={() => setLoginOpen(false)}
-			/>
+			<Header isFixed={isFixedHeader} isVisiblePlan={isVisiblePlan} isMinimal={isMinimalHeader} />
 			<div className={`grow ${classContainer || ""}`}>{children}</div>
 			{!isHiddenFooter && <Footer />}
 			<ThemeButton className="left-5 bottom-5 fixed! z-5" />

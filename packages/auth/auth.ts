@@ -1,6 +1,7 @@
 import { passkey } from "@better-auth/passkey";
 import {
 	db,
+	allocateUniqueUsername,
 	getInvitationById,
 	getPurchasesByOrganizationId,
 	getPurchasesByUserId,
@@ -29,10 +30,11 @@ const getLocaleFromRequest = (request?: Request) => {
 };
 
 const appUrl = getBaseUrl(process.env.NEXT_PUBLIC_SAAS_URL, 3000);
+const marketingUrl = getBaseUrl(process.env.NEXT_PUBLIC_MARKETING_URL, 3001);
 
 export const auth = betterAuth({
 	baseURL: appUrl,
-	trustedOrigins: [appUrl],
+	trustedOrigins: [appUrl, marketingUrl],
 	database: prismaAdapter(db, {
 		provider: "postgresql",
 	}),
@@ -61,6 +63,15 @@ export const auth = betterAuth({
 		},
 		user: {
 			create: {
+				before: async (user) => {
+					const username = await allocateUniqueUsername(user.name);
+					return {
+						data: {
+							...user,
+							username,
+						},
+					};
+				},
 				after: async (createdUser) => {
 					if (!createdUser?.id) {
 						return;
@@ -148,6 +159,11 @@ export const auth = betterAuth({
 			lastActiveOrganizationId: {
 				type: "string",
 				required: false,
+			},
+			username: {
+				type: "string",
+				required: false,
+				input: true,
 			},
 		},
 		deleteUser: {
@@ -237,6 +253,8 @@ export const auth = betterAuth({
 			},
 		}),
 		organization({
+			allowUserToCreateOrganization:
+				config.organizations.enable && config.organizations.enableUsersToCreateOrganizations,
 			sendInvitationEmail: async ({ email, id, organization }, request) => {
 				const locale = getLocaleFromRequest(request);
 				const existingUser = await getUserByEmail(email);

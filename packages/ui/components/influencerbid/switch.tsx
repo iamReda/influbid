@@ -29,7 +29,7 @@ const Switch = ({
 		>
 			<span
 				aria-hidden
-				className="top-0.5 left-0.5 size-6 bg-b-surface2 shadow-hover ease-in-out group-data-checked:translate-x-5.5 dark:bg-b-dark2 dark:group-data-checked:bg-b-surface2 pointer-events-none absolute rounded-full transition-transform duration-200"
+				className="top-0.5 left-0.5 size-6 bg-b-surface2 shadow-hover ease-in-out group-data-checked:translate-x-5.5 group-data-checked:bg-white dark:bg-b-dark2 dark:group-data-checked:bg-white pointer-events-none absolute rounded-full transition-transform duration-200"
 			/>
 		</HeadlessSwitch>
 	);

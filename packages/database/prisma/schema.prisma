@@ -20,6 +20,10 @@ model User {
   email                    String
   emailVerified            Boolean
   image                    String?
+  username                 String?
+  bio                      String?                      @db.Text
+  businessEmail            String?
+  socialLinks              Json?
   createdAt                DateTime
   updatedAt                DateTime
   role                     String?
@@ -42,6 +46,7 @@ model User {
   notificationPreferences  UserNotificationPreference[]
 
   @@unique([email])
+  @@unique([username])
   @@map("user")
 }
 

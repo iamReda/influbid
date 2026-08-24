@@ -1,0 +1,60 @@
+import { config as authConfig } from "@repo/auth/config";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+const EXTRA_RESERVED = [
+	"login",
+	"signup",
+	"forgot-password",
+	"reset-password",
+	"verify",
+	"onboarding",
+	"choose-plan",
+	"checkout-return",
+	"new-organization",
+	"organization-invitation",
+	"quiz",
+	"api",
+	"image-proxy",
+	"u",
+	"en",
+	"_next",
+	"favicon.ico",
+	"robots.txt",
+	"sitemap.xml",
+] as const;
+
+const RESERVED = new Set(
+	[...authConfig.organizations.forbiddenOrganizationSlugs, ...EXTRA_RESERVED].map((slug) =>
+		slug.toLowerCase(),
+	),
+);
+
+export function middleware(request: NextRequest) {
+	const { pathname } = request.nextUrl;
+	const segments = pathname.split("/").filter(Boolean);
+
+	if (segments.length === 1) {
+		const slug = segments[0]?.toLowerCase();
+		if (slug && !RESERVED.has(slug)) {
+			const url = request.nextUrl.clone();
+			url.pathname = `/u/${slug}`;
+			return NextResponse.rewrite(url);
+		}
+	}
+
+	if (segments.length === 2 && segments[1]?.toLowerCase() === "edit") {
+		const slug = segments[0]?.toLowerCase();
+		if (slug && !RESERVED.has(slug)) {
+			const url = request.nextUrl.clone();
+			url.pathname = `/u/${slug}/edit`;
+			return NextResponse.rewrite(url);
+		}
+	}
+
+	return NextResponse.next();
+}
+
+export const config = {
+	matcher: ["/((?!_next/static|_next/image|.*\\..*).*)"],
+};

@@ -49,12 +49,6 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 		document.querySelector("form")?.scrollIntoView({ behavior: "smooth", block: "center" });
 	};
 
-	const handleSeeProfile = (event: MouseEvent) => {
-		event.preventDefault();
-		event.stopPropagation();
-		openProfile();
-	};
-
 	return (
 		<article
 			className="influencer-card group gap-5 bg-b-surface2 p-5 hover:shadow-hover max-md:flex-col max-md:items-stretch max-md:gap-4 relative flex cursor-pointer items-center transition-shadow"
@@ -137,24 +131,18 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 				<div className="text-h4 text-t-blue max-md:hidden transition-opacity group-hover:pointer-events-none group-hover:opacity-0">
 					{formatBid(item.bid)}
 				</div>
-				<div className="text-h4 text-t-blue md:hidden whitespace-nowrap">{formatBid(item.bid)}</div>
-				<div className="inset-y-0 right-0 gap-2 max-md:static max-md:!flex max-md:w-full max-md:flex-wrap max-md:opacity-100 absolute hidden items-center opacity-0 transition-opacity group-hover:flex group-hover:opacity-100">
+				<div className="text-h4 text-t-blue max-md:ml-19 md:hidden whitespace-nowrap">
+					{formatBid(item.bid)}
+				</div>
+				<div className="inset-y-0 right-0 gap-2 max-md:static max-md:!flex max-md:w-full max-md:opacity-100 absolute hidden items-center opacity-0 transition-opacity group-hover:flex group-hover:opacity-100">
 					<Button
-						className="h-10! gap-2! px-4! max-md:flex-1 whitespace-nowrap"
+						className="h-10! gap-2! px-4! max-md:w-full whitespace-nowrap"
 						isSecondary
 						type="button"
 						onClick={handleTakeSpot}
 					>
 						<Armchair className="size-4 shrink-0 stroke-2" aria-hidden />
 						Take this spot for {formatBid(item.bid + 1)}
-					</Button>
-					<Button
-						className="h-10! px-4! max-md:flex-1 text-t-primary! fill-t-primary! hover:text-t-primary! hover:fill-t-primary! border-t-primary! whitespace-nowrap hover:border-t-primary/60! dark:border-[#fdfdfd]! dark:fill-[#fdfdfd]! dark:text-[#fdfdfd]! dark:hover:border-[#fdfdfd]/60! dark:hover:fill-[#fdfdfd]! dark:hover:text-[#fdfdfd]!"
-						isStroke
-						type="button"
-						onClick={handleSeeProfile}
-					>
-						See profile
 					</Button>
 				</div>
 			</div>

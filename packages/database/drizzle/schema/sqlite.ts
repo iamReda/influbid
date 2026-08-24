@@ -10,6 +10,10 @@ export const user = sqliteTable("user", {
 	email: text("email").notNull().unique(),
 	emailVerified: integer("emailVerified", { mode: "boolean" }).notNull().default(false),
 	image: text("image"),
+	username: text("username").unique(),
+	bio: text("bio"),
+	businessEmail: text("businessEmail"),
+	socialLinks: text("socialLinks", { mode: "json" }).$type<string[]>(),
 	createdAt: integer("createdAt", { mode: "timestamp" })
 		.notNull()
 		.default(sql`CURRENT_TIMESTAMP`),

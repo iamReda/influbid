@@ -1,45 +1,43 @@
 import { config } from "@config";
-import { cn, ColorModeToggle, Logo } from "@repo/ui";
-import { getTranslations } from "next-intl/server";
+import { cn } from "@repo/ui";
+import Image from "@repo/ui/components/influencerbid/image";
+import Link from "next/link";
 import type { PropsWithChildren } from "react";
-
-import { Footer } from "./Footer";
-import { LocaleSwitch } from "./LocaleSwitch";
 
 export async function AuthWrapper({
 	children,
 	contentClass,
 }: PropsWithChildren<{ contentClass?: string }>) {
-	const t = await getTranslations();
+	const marketingUrl = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
 
 	return (
-		<div className="py-6 flex min-h-screen w-full">
-			<div className="gap-8 flex w-full flex-col items-center justify-between">
-				<div className="container">
-					<div className="flex items-center justify-between">
-						<a href={config.marketingUrl ?? "/"} className="block">
-							<Logo withLabel={false} />
-						</a>
-
-						<div className="gap-2 flex items-center justify-end">
-							<LocaleSwitch />
-							<ColorModeToggle
-								modes={["system", "light", "dark"]}
-								labels={{
-									system: t("common.colorMode.system"),
-									light: t("common.colorMode.light"),
-									dark: t("common.colorMode.dark"),
-								}}
-							/>
-						</div>
-					</div>
+		<div className="bg-b-surface1 font-satoshi text-t-primary p-4 max-md:p-0 flex min-h-screen w-full items-center justify-center">
+			<div className="inset-0 max-md:bg-b-surface1 pointer-events-none fixed bg-[#282828]/90" />
+			<div
+				className={cn(
+					"max-w-120 p-16 bg-b-surface1 max-md:min-h-screen max-md:rounded-none max-md:px-6 max-md:pb-12 max-md:pt-16 relative z-10 m-auto w-full rounded-4xl",
+					contentClass,
+				)}
+			>
+				<div className="mb-8 flex justify-center">
+					<Link href={marketingUrl} className="w-33.75">
+						<Image
+							className="w-full opacity-100 dark:hidden!"
+							src="/images/logo-dark.svg"
+							width={135}
+							height={36}
+							alt="Influbid"
+						/>
+						<Image
+							className="hidden! w-full opacity-100 dark:block!"
+							src="/images/logo-light.svg"
+							width={135}
+							height={36}
+							alt="Influbid"
+						/>
+					</Link>
 				</div>
-
-				<div className="container flex justify-center">
-					<main className={cn("max-w-md w-full", contentClass)}>{children}</main>
-				</div>
-
-				<Footer />
+				{children}
 			</div>
 		</div>
 	);

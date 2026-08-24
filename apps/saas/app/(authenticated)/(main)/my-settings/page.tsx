@@ -1,10 +1,5 @@
-import MySettingsPage from "@settings/components/my-settings-page";
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-	title: "Account settings",
-};
-
-export default function MySettingsRoutePage() {
-	return <MySettingsPage />;
+export default function MySettingsRedirectPage() {
+	redirect("/account");
 }

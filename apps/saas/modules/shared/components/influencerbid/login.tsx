@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import CreateAccount from "./login-create-account";
 import ResetPassword from "./login-reset-password";
 import SignIn from "./login-sign-in";
 
@@ -11,19 +10,12 @@ type Props = {
 };
 
 const Login = ({ onLogin }: Props) => {
-	const [step, setStep] = useState<"signIn" | "createAccount" | "resetPassword">("signIn");
+	const [step, setStep] = useState<"signIn" | "resetPassword">("signIn");
 
 	return (
 		<div className="">
 			{step === "signIn" && (
-				<SignIn
-					onResetPassword={() => setStep("resetPassword")}
-					onSignUp={() => setStep("createAccount")}
-					onLogin={onLogin}
-				/>
-			)}
-			{step === "createAccount" && (
-				<CreateAccount onSignIn={() => setStep("signIn")} onCreateAccount={onLogin} />
+				<SignIn onResetPassword={() => setStep("resetPassword")} onLogin={onLogin} />
 			)}
 			{step === "resetPassword" && (
 				<ResetPassword

@@ -1,6 +1,7 @@
 import { getSession } from "@auth/lib/server";
 import { ChangeEmailForm } from "@settings/components/ChangeEmailForm";
 import { ChangeNameForm } from "@settings/components/ChangeNameForm";
+import { ChangeUsernameForm } from "@settings/components/ChangeUsernameForm";
 import { DeleteAccountForm } from "@settings/components/DeleteAccountForm";
 import { UserAvatarForm } from "@settings/components/UserAvatarForm";
 import { UserLanguageForm } from "@settings/components/UserLanguageForm";
@@ -34,6 +35,7 @@ export default async function AccountSettingsPage() {
 				<UserAvatarForm />
 				<UserLanguageForm />
 				<ChangeNameForm />
+				<ChangeUsernameForm />
 				<ChangeEmailForm />
 				<DeleteAccountForm />
 			</SettingsList>

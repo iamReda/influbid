@@ -10,7 +10,12 @@
 
 #### Auth product UI
 
-- **InfluencerBid authenticated routes on SaaS (port 3000)**: `/my-dashboard` (replaces `/dashboard`), `/my-profile`, `/payment-history`, and `/my-settings`. Native Influbid `/settings/*` remains unchanged. Sign-in redirects to `/my-dashboard`. Marketing header menu links these destinations to `NEXT_PUBLIC_SAAS_URL`.
+- **InfluencerBid authenticated routes on SaaS (port 3000)**: `/dashboard` (post-login home; `/` and `/my-dashboard` redirect here), `/my-profile`, `/payment-history`, `/my-settings`, and `/rank-higher`. Native Influbid `/settings/*` remains unchanged. Sign-in redirects to `/dashboard`. Marketing header menu links these destinations to `NEXT_PUBLIC_SAAS_URL`.
+- **Organizations disabled**: `packages/auth/config.ts` sets `organizations.enable` to `false` (and blocks user creation via Better Auth `allowUserToCreateOrganization`). Users use a personal account only; `/new-organization` redirects away.
+- **Local avatar storage**: Default `STORAGE_PROVIDER=local` writes uploads under `.local-storage/` (no S3/MinIO). Set `STORAGE_PROVIDER=s3` to use MinIO/S3 again.
+- **Public auth UI**: Signup, social login, passkeys, and magic link are hidden in the product UI (`packages/auth/config.ts`). `/login` and `/forgot-password` use the InfluencerBid modal design while still calling Better Auth email/password (and 2FA redirect when enabled).
+- **Marketing header session**: Public marketing pages (port 3001) show **Sign in** when logged out, and **Rank higher** + account avatar when a SaaS session is present (Better Auth client against `NEXT_PUBLIC_SAAS_URL`, with marketing origin trusted for CORS).
+- **Username profile URLs**: Users get a unique `username` derived from their public name at signup (`spaces` → `-`, conflicts get a numeric suffix like `reda-15465`). Profiles live at `/:username` (e.g. `/reda`); `/my-profile` redirects there. Username is editable under account settings.
 
 ### Added
 

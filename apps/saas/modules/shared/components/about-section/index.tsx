@@ -110,7 +110,7 @@ const About = ({ hideHeader = false, embedded = false, firstCard }: AboutProps) 
 									</div>
 								</div>
 							)}
-							<div className="group-first:max-w-93.5 max-md:group-first:max-w-full relative z-2 group-first:mr-auto">
+							<div className="group-first:max-w-93.5 max-md:group-first:max-w-full max-md:w-full relative z-2 group-first:mr-auto">
 								<div className="mb-6 fill-t-primary text-t-primary">
 									{isFirstOverride && firstCard.useRocketIcon ? (
 										<Rocket className="size-6 stroke-[1.75px]" aria-hidden />
@@ -123,11 +123,15 @@ const About = ({ hideHeader = false, embedded = false, firstCard }: AboutProps) 
 								) : (
 									<div className="mb-3 text-body-lg-bold">{title}</div>
 								)}
-								<div className="max-w-94 text-body text-t-secondary max-lg:max-w-70 max-lg:[&_br]:hidden">
+								<div
+									className={`text-body text-t-secondary max-lg:[&_br]:hidden ${
+										isFirstOverride ? "max-w-94 max-md:max-w-full" : "max-w-94 max-lg:max-w-70"
+									}`}
+								>
 									{body}
 								</div>
 								{isFirstOverride && firstCard.footer && (
-									<div className="mt-8">{firstCard.footer}</div>
+									<div className="mt-8 w-full">{firstCard.footer}</div>
 								)}
 							</div>
 							{(index === 1 || isFirstOverride) && (

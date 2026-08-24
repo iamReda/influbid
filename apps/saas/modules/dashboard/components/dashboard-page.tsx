@@ -1,6 +1,5 @@
 "use client";
 
-import IncreaseBidSection from "@ranking/components/increase-bid-section";
 import Select from "@repo/ui/components/influencerbid/select";
 import Layout from "@shared/components/influencerbid/layout";
 import SocialPlatformIcon, { type Platform } from "@shared/components/social-platform-icon";
@@ -431,8 +430,6 @@ const DashboardPage = () => {
 					</div>
 				</div>
 			</div>
-
-			<IncreaseBidSection />
 		</Layout>
 	);
 };

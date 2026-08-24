@@ -5,7 +5,7 @@ import { ActiveOrganizationProvider } from "@organizations/components/ActiveOrga
 import { organizationListQueryKey } from "@organizations/lib/api";
 import { listPurchases } from "@payments/lib/server";
 import { config as authConfig } from "@repo/auth/config";
-import { getOrganizationMembership } from "@repo/database";
+import { ensureUserUsername, getOrganizationMembership } from "@repo/database";
 import { config as paymentsConfig } from "@repo/payments/config";
 import { ConfirmationAlertProvider } from "@shared/components/ConfirmationAlertProvider";
 import { PermixProvider } from "@shared/components/PermixProvider";
@@ -26,18 +26,27 @@ export default async function AuthenticatedLayout({ children }: PropsWithChildre
 		redirect("/login");
 	}
 
+	let sessionUser = session.user;
+
+	if (!sessionUser.username) {
+		const updated = await ensureUserUsername(sessionUser.id, sessionUser.name ?? "user");
+		if (updated?.username) {
+			sessionUser = { ...sessionUser, username: updated.username };
+		}
+	}
+
 	let membershipRole: string | null = null;
 
 	if (session.session.activeOrganizationId) {
 		const membership = await getOrganizationMembership(
 			session.session.activeOrganizationId,
-			session.user.id,
+			sessionUser.id,
 		);
 		membershipRole = membership?.role ?? null;
 	}
 
 	setupPermissions({
-		user: session.user,
+		user: sessionUser,
 		membershipRole,
 	});
 
@@ -45,7 +54,10 @@ export default async function AuthenticatedLayout({ children }: PropsWithChildre
 
 	await queryClient.prefetchQuery({
 		queryKey: sessionQueryKey,
-		queryFn: () => session,
+		queryFn: () => ({
+			...session,
+			user: sessionUser,
+		}),
 	});
 
 	if (authConfig.organizations.enable) {

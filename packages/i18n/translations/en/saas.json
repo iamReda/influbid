@@ -445,6 +445,14 @@
 				},
 				"title": "Your name"
 			},
+			"changeUsername": {
+				"description": "Your public profile URL is based on this username. Use lowercase letters, numbers, and hyphens.",
+				"notifications": {
+					"error": "Could not update username. It may already be taken.",
+					"success": "Username was updated successfully"
+				},
+				"title": "Your username"
+			},
 			"deleteAccount": {
 				"confirmation": "Are you sure you want to delete your account?",
 				"description": "Permanently delete your account. Once you delete your account, there is no going back. To confirm, please enter your password below:",
@@ -476,11 +484,13 @@
 				},
 				"changePassword": {
 					"currentPassword": "Current password",
+					"description": "To change your password, enter your current password and a new one that meets the requirements below.",
 					"newPassword": "New password",
 					"notifications": {
 						"error": "Could not update password",
 						"success": "Password was updated successfully"
 					},
+					"submit": "Change Password",
 					"title": "Your password"
 				},
 				"connectedAccounts": {

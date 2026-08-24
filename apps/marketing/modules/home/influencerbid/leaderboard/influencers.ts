@@ -110,7 +110,7 @@ const toHandle = (name: string) =>
 		.slice(0, 14);
 
 /** In-app public profile page (not an external social URL). */
-export const APP_PROFILE_PATH = "/my-profile?preview=1";
+export const APP_PROFILE_PATH = "/my-profile";
 
 export const buildPlatformUrl = (name: string, platform: Platform) => {
 	const handle = toHandle(name);
