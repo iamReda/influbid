@@ -5,7 +5,12 @@ import { ActiveOrganizationProvider } from "@organizations/components/ActiveOrga
 import { organizationListQueryKey } from "@organizations/lib/api";
 import { listPurchases } from "@payments/lib/server";
 import { config as authConfig } from "@repo/auth/config";
-import { ensureUserUsername, getOrganizationMembership } from "@repo/database";
+import {
+	ensureUserUsername,
+	getCreatorProfileByUserId,
+	getOrganizationMembership,
+	markCreatorAccountClaimed,
+} from "@repo/database";
 import { config as paymentsConfig } from "@repo/payments/config";
 import { ConfirmationAlertProvider } from "@shared/components/ConfirmationAlertProvider";
 import { PermixProvider } from "@shared/components/PermixProvider";
@@ -33,6 +38,11 @@ export default async function AuthenticatedLayout({ children }: PropsWithChildre
 		if (updated?.username) {
 			sessionUser = { ...sessionUser, username: updated.username };
 		}
+	}
+
+	const creatorProfile = await getCreatorProfileByUserId(sessionUser.id);
+	if (creatorProfile && creatorProfile.accountClaimedAt === null) {
+		await markCreatorAccountClaimed(creatorProfile.id);
 	}
 
 	let membershipRole: string | null = null;

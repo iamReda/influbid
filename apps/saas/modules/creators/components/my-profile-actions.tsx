@@ -1,17 +1,11 @@
 "use client";
 
-import { useSession } from "@auth/hooks/use-session";
 import { Check, Copy, Eye, SquarePen, type LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-const Actions = () => {
-	const { user } = useSession();
+const Actions = ({ username }: { username: string }) => {
 	const [toastVisible, setToastVisible] = useState(false);
-
-	const profilePath = useMemo(() => {
-		const username = user?.username as string | undefined;
-		return username ? `/${username}` : "/my-profile";
-	}, [user]);
+	const profilePath = `/${username}`;
 
 	useEffect(() => {
 		if (!toastVisible) {

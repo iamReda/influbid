@@ -70,3 +70,23 @@
 		);
 	}
 }
+
+@keyframes influencer-confetti-fall {
+	0% {
+		transform: translate3d(0, -12vh, 0) rotate(0deg);
+		opacity: 0;
+	}
+	12% {
+		opacity: 1;
+	}
+	100% {
+		transform: translate3d(0, 110vh, 0) rotate(720deg);
+		opacity: 0;
+	}
+}
+
+.influencer-confetti {
+	animation-name: influencer-confetti-fall;
+	animation-timing-function: linear;
+	animation-iteration-count: infinite;
+}

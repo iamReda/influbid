@@ -1,8 +1,19 @@
-import Image from "@repo/ui/components/influencerbid/image";
+"use client";
 
+import Image from "@repo/ui/components/influencerbid/image";
+import { useState } from "react";
+
+import type { CategoryOptionDto } from "./actions";
 import BidForm from "./bid-form";
 
-const Start = () => {
+type StartProps = {
+	categories: CategoryOptionDto[];
+	defaultBidDollars: number;
+};
+
+const Start = ({ categories, defaultBidDollars }: StartProps) => {
+	const [claimRank, setClaimRank] = useState(1);
+
 	return (
 		<div className="section section-lines mb-12! max-xl:mb-10! max-lg:mb-8! max-md:mb-6! pt-6 max-md:pt-4 before:-top-38! before:-bottom-21! after:-top-38! after:-bottom-21! max-lg:before:-top-23.5! max-lg:before:-bottom-4! max-lg:after:-top-23.5! max-lg:after:-bottom-4! max-md:before:hidden max-md:after:hidden">
 			<div className="before:top-0 before:left-0 before:right-0 after:bottom-0 after:left-0 after:right-0 max-md:before:hidden max-md:after:hidden relative before:absolute before:h-[1.5px] before:bg-linear-(--gradient-horizontal) after:absolute after:h-[1.5px] after:bg-linear-(--gradient-horizontal)">
@@ -26,13 +37,19 @@ const Start = () => {
 									</span>
 								</div>
 								<h1 className="mb-5 text-hero max-lg:mx-auto max-lg:mb-5 max-lg:max-w-132 max-md:max-w-full">
-									Claim the <span className="text-t-blue">#1</span> spot in the influencer rankings.
+									Claim the <span className="text-t-blue">#{claimRank}</span> spot in the influencer
+									rankings.
 								</h1>
 								<div className="mb-8 text-body-lg text-t-secondary max-md:mb-6">
 									<span className="text-t-blue">Bids start at $5</span>. Bid under the #1 price and
 									you still land on the board - exactly where your amount ranks.
 								</div>
-								<BidForm className="mb-0 mt-6 max-md:mb-0 max-md:ml-0 max-md:mt-4" />
+								<BidForm
+									className="mb-0 mt-6 max-md:mb-0 max-md:ml-0 max-md:mt-4"
+									categories={categories}
+									defaultBidDollars={defaultBidDollars}
+									onRankChange={setClaimRank}
+								/>
 							</div>
 						</div>
 					</div>

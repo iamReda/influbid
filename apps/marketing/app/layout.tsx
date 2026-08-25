@@ -7,7 +7,7 @@ import "./globals.css";
 export const metadata: Metadata = {
 	title: {
 		default: config.appName,
-		template: `%s – ${config.appName}`,
+		template: `%s | ${config.appName}`,
 	},
 };
 

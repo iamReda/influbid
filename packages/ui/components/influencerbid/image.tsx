@@ -8,10 +8,11 @@ const Image = ({ className, ...props }: ImageProps) => {
 
 	return (
 		<NextImage
-			className={`inline-block align-top opacity-0 transition-opacity ${
-				loaded && "opacity-100"
+			className={`inline-block align-top transition-opacity ${
+				loaded ? "opacity-100" : "opacity-0"
 			} ${className || ""}`}
 			onLoad={() => setLoaded(true)}
+			onError={() => setLoaded(true)}
 			{...props}
 		/>
 	);

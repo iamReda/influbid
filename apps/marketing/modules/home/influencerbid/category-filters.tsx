@@ -1,8 +1,10 @@
 "use client";
 
-import { influencerCategories } from "@home/influencerbid/constants/categories";
 import { LayoutGrid, type LucideIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+import type { CategoryOptionDto } from "./actions";
+import { getCategoryUi } from "./lib/category-ui";
 
 type FilterItem = {
 	value: string;
@@ -10,23 +12,16 @@ type FilterItem = {
 	icon: LucideIcon;
 };
 
-const filterItems: FilterItem[] = [
-	{ value: "all", title: "ALL", icon: LayoutGrid },
-	...influencerCategories.map((category) => ({
-		value: category.slug,
-		title: category.name,
-		icon: category.icon,
-	})),
-];
-
 type CategoryFiltersProps = {
 	className?: string;
+	categories: CategoryOptionDto[];
 	activeTag?: string;
 	onActiveTagChange?: (value: string) => void;
 };
 
 const CategoryFilters = ({
 	className,
+	categories,
 	activeTag: controlledActiveTag,
 	onActiveTagChange,
 }: CategoryFiltersProps) => {
@@ -35,6 +30,18 @@ const CategoryFilters = ({
 	const setActiveTag = onActiveTagChange ?? setUncontrolledActiveTag;
 	const tagsRef = useRef<HTMLDivElement>(null);
 	const [scrollState, setScrollState] = useState<"start" | "middle" | "end">("start");
+
+	const filterItems = useMemo<FilterItem[]>(
+		() => [
+			{ value: "all", title: "ALL", icon: LayoutGrid },
+			...categories.map((category) => ({
+				value: category.slug,
+				title: category.name,
+				icon: getCategoryUi(category.slug).icon,
+			})),
+		],
+		[categories],
+	);
 
 	const handleScroll = () => {
 		if (tagsRef.current) {
@@ -75,7 +82,7 @@ const CategoryFilters = ({
 						ref={tagsRef}
 					>
 						{filterItems.map((item) => {
-							const Icon = item.icon;
+							const ItemIcon = item.icon;
 							const isActive = activeTag === item.value;
 
 							return (
@@ -89,7 +96,7 @@ const CategoryFilters = ({
 									type="button"
 									onClick={() => setActiveTag(item.value)}
 								>
-									<Icon
+									<ItemIcon
 										className={`size-3.5 shrink-0 stroke-2 ${
 											isActive ? "text-t-primary" : "text-t-secondary"
 										}`}

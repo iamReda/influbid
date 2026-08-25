@@ -1,12 +1,18 @@
 "use client";
 
+import {
+	createPendingAvatarUploadUrlAction,
+	submitCompleteProfileAction,
+} from "@home/influencerbid/actions";
 import SocialPlatformIcon, {
 	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
+import { formatBidDollars } from "@home/influencerbid/lib/format";
+import { clearSignupDraft, type SignupDraft } from "@home/influencerbid/lib/signup-draft";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
-import Image from "@repo/ui/components/influencerbid/image";
+import { useRouter } from "next/navigation";
 import { useEffect, useState, type ChangeEvent } from "react";
 
 type ExtraSocial = {
@@ -15,6 +21,7 @@ type ExtraSocial = {
 };
 
 const DESCRIPTION_MAX = 160;
+const MAX_SOCIAL_PROFILES = 10;
 
 const SOCIAL_PLATFORMS: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
 
@@ -102,18 +109,43 @@ const SocialUrlField = ({
 	);
 };
 
-const Form = () => {
-	const [avatarPreview, setAvatarPreview] = useState("/images/avatar.png");
-	const [publicName, setPublicName] = useState("Luna Martinez");
-	const [description, setDescription] = useState(
-		"Fashion & lifestyle creator sharing daily inspiration, style tips, and brand-friendly content.",
-	);
-	const [primaryUrl, setPrimaryUrl] = useState("https://instagram.com/lunamartinez");
-	const [email, setEmail] = useState("luna@example.com");
+type FormProps = {
+	draft: SignupDraft | null;
+};
+
+const Form = ({ draft }: FormProps) => {
+	const router = useRouter();
+	const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+	const [avatarPath, setAvatarPath] = useState<string | null>(null);
+	const [avatarFile, setAvatarFile] = useState<File | null>(null);
+	const [publicName, setPublicName] = useState("");
+	const [description, setDescription] = useState("");
+	const [primaryUrl, setPrimaryUrl] = useState("");
+	const [email, setEmail] = useState("");
 	const [extraSocials, setExtraSocials] = useState<ExtraSocial[]>([]);
 	const [nextSocialId, setNextSocialId] = useState(1);
+	const [submitting, setSubmitting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (!draft) {
+			return;
+		}
+
+		setPrimaryUrl(draft.primarySocialUrl);
+	}, [draft]);
+
+	useEffect(() => {
+		return () => {
+			if (avatarPreview?.startsWith("blob:")) {
+				URL.revokeObjectURL(avatarPreview);
+			}
+		};
+	}, [avatarPreview]);
 
 	const primaryPlatform = detectPlatform(primaryUrl.trim());
+	const socialCount = 1 + extraSocials.length;
+	const canAddSocial = socialCount < MAX_SOCIAL_PROFILES;
 
 	const handleAvatarChange = (event: ChangeEvent<HTMLInputElement>) => {
 		const file = event.target.files?.[0];
@@ -122,10 +154,21 @@ const Form = () => {
 			return;
 		}
 
-		setAvatarPreview(URL.createObjectURL(file));
+		setAvatarFile(file);
+		setAvatarPreview((current) => {
+			if (current?.startsWith("blob:")) {
+				URL.revokeObjectURL(current);
+			}
+			return URL.createObjectURL(file);
+		});
+		setAvatarPath(null);
 	};
 
 	const addSocialProfile = () => {
+		if (!canAddSocial) {
+			return;
+		}
+
 		setExtraSocials((current) => [...current, { id: nextSocialId, url: "" }]);
 		setNextSocialId((current) => current + 1);
 	};
@@ -138,6 +181,120 @@ const Form = () => {
 		setExtraSocials((current) => current.filter((item) => item.id !== id));
 	};
 
+	const uploadAvatarIfNeeded = async () => {
+		if (avatarPath) {
+			return avatarPath;
+		}
+
+		if (!avatarFile) {
+			throw new Error("Avatar is required.");
+		}
+
+		const { signedUploadUrl, path } = await createPendingAvatarUploadUrlAction();
+		const response = await fetch(signedUploadUrl, {
+			method: "PUT",
+			body: avatarFile,
+			headers: {
+				"Content-Type": avatarFile.type || "image/png",
+			},
+		});
+
+		if (!response.ok) {
+			throw new Error("Avatar upload failed. Is the SaaS app running?");
+		}
+
+		setAvatarPath(path);
+		return path;
+	};
+
+	const handleSubmit = async () => {
+		setError(null);
+
+		if (!draft) {
+			setError("Start from the homepage bid form first.");
+			return;
+		}
+
+		if (!publicName.trim()) {
+			setError("Public name is required.");
+			return;
+		}
+
+		if (!email.trim()) {
+			setError("Email is required.");
+			return;
+		}
+
+		if (!primaryUrl.trim()) {
+			setError("Primary social profile is required.");
+			return;
+		}
+
+		if (!avatarFile && !avatarPath) {
+			setError("Avatar is required.");
+			return;
+		}
+
+		const socialUrls = [primaryUrl, ...extraSocials.map((item) => item.url)]
+			.map((url) => url.trim())
+			.filter(Boolean);
+
+		if (socialUrls.length < 1) {
+			setError("At least one social profile is required.");
+			return;
+		}
+
+		setSubmitting(true);
+
+		try {
+			const uploadedPath = await uploadAvatarIfNeeded();
+			const result = await submitCompleteProfileAction({
+				email,
+				publicName,
+				avatarPath: uploadedPath,
+				description,
+				categoryId: draft.categoryId,
+				bidAmountCents: draft.bidAmountCents,
+				estimatedRank: draft.estimatedGeneralRank,
+				socialUrls,
+			});
+
+			if (!result.ok) {
+				setError(result.error);
+				return;
+			}
+
+			clearSignupDraft();
+			const successParams = new URLSearchParams();
+			if (result.email) {
+				successParams.set("email", result.email);
+			}
+			const successQuery = successParams.toString();
+			router.push(successQuery ? `/success?${successQuery}` : "/success");
+			router.refresh();
+		} catch (submitError) {
+			setError(
+				submitError instanceof Error ? submitError.message : "Something went wrong. Try again.",
+			);
+		} finally {
+			setSubmitting(false);
+		}
+	};
+
+	if (!draft) {
+		return (
+			<div className="max-w-2xl mx-auto flex w-full flex-col">
+				<h1 className="mb-4 text-h2 max-md:text-h3">Complete your profile</h1>
+				<p className="mb-6 text-body text-t-secondary">
+					Choose a category and bid amount on the homepage first, then come back here.
+				</p>
+				<Button isSecondary as="link" href="/">
+					Go to homepage
+				</Button>
+			</div>
+		);
+	}
+
 	return (
 		<div className="max-w-2xl mx-auto flex w-full flex-col">
 			<div className="mb-10 max-md:mb-8">
@@ -149,13 +306,16 @@ const Form = () => {
 				<div className="gap-5 max-sm:flex-col flex items-start">
 					<div className="shrink-0">
 						<div className="influencer-avatar group size-28 bg-b-surface1 after:inset-0 max-md:size-24 relative overflow-hidden after:absolute after:z-1 after:bg-[#141414]/30 after:opacity-0 after:transition-opacity hover:after:opacity-100">
-							<Image
-								className="size-full object-cover opacity-100"
-								src={avatarPreview}
-								width={112}
-								height={112}
-								alt="Profile photo"
-							/>
+							{avatarPreview ? (
+								// oxlint-disable-next-line nextjs/no-img-element -- local preview uses a blob URL
+								<img
+									className="size-full object-cover opacity-100"
+									src={avatarPreview}
+									width={112}
+									height={112}
+									alt="Profile photo"
+								/>
+							) : null}
 							<input
 								className="inset-0 absolute z-3 cursor-pointer opacity-0"
 								type="file"
@@ -256,9 +416,11 @@ const Form = () => {
 					})}
 				</div>
 
-				<Button className="mt-4" isPrimary type="button" icon="plus" onClick={addSocialProfile}>
-					Add another social profile
-				</Button>
+				{canAddSocial && (
+					<Button className="mt-4" isPrimary type="button" icon="plus" onClick={addSocialProfile}>
+						Add another social profile
+					</Button>
+				)}
 			</section>
 
 			<section className="mb-10 bg-b-surface2 p-5 max-md:mb-8 rounded-3xl">
@@ -282,15 +444,23 @@ const Form = () => {
 				<div className="gap-3 text-body flex flex-col">
 					<div className="gap-3 flex items-center justify-between">
 						<span className="text-t-secondary">Your bid</span>
-						<span className="text-body-bold text-t-primary">$120</span>
+						<span className="text-body-bold text-t-primary">
+							{formatBidDollars(draft.bidAmountDollars)}
+						</span>
 					</div>
 					<div className="gap-3 flex items-center justify-between">
 						<span className="text-t-secondary">General Rank</span>
-						<span className="text-body-bold text-t-primary">#4 General</span>
+						<span className="text-body-bold text-t-primary">
+							#{draft.estimatedGeneralRank} General
+						</span>
 					</div>
 					<div className="gap-3 flex items-center justify-between">
 						<span className="text-t-secondary">Category rank</span>
-						<span className="text-body-bold text-t-primary">#1 in Fashion</span>
+						<span className="text-body-bold text-t-primary">
+							{draft.estimatedCategoryRank
+								? `#${draft.estimatedCategoryRank} in ${draft.categoryName}`
+								: draft.categoryName}
+						</span>
 					</div>
 				</div>
 				<p className="mt-4 text-small text-t-tertiary">
@@ -299,8 +469,15 @@ const Form = () => {
 			</section>
 
 			<div>
-				<Button className="w-full" isSecondary as="link" href="/">
-					Continue to payment
+				{error && <p className="mb-3 text-small text-primary3 text-center">{error}</p>}
+				<Button
+					className="w-full"
+					isSecondary
+					type="button"
+					disabled={submitting}
+					onClick={() => void handleSubmit()}
+				>
+					{submitting ? "Processing payment…" : "Continue to payment"}
 				</Button>
 				<p className="mt-3 text-small text-t-tertiary text-center">
 					Your profile will go live immediately after successful payment.

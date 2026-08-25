@@ -148,7 +148,39 @@ export async function updateUserProfile({
 	});
 }
 
+const RESERVED_USERNAMES = new Set([
+	"about",
+	"account",
+	"admin",
+	"api",
+	"blog",
+	"categories",
+	"changelog",
+	"complete-your-profile",
+	"contact",
+	"dashboard",
+	"docs",
+	"legal",
+	"login",
+	"my-dashboard",
+	"my-profile",
+	"my-settings",
+	"out",
+	"payment-history",
+	"rank-higher",
+	"rules",
+	"settings",
+	"signup",
+	"success",
+	"u",
+	"user",
+]);
+
 export async function isUsernameTaken(username: string, excludeUserId?: string) {
+	if (RESERVED_USERNAMES.has(username.toLowerCase())) {
+		return true;
+	}
+
 	const existing = await db.user.findUnique({
 		where: { username },
 		select: { id: true },
@@ -175,7 +207,7 @@ export async function allocateUniqueUsername(name: string, excludeUserId?: strin
 		}
 	}
 
-	return withUsernameSuffix(`${base}-${Date.now().toString(36)}`);
+	return withUsernameSuffix(base);
 }
 
 export async function ensureUserUsername(userId: string, name: string) {

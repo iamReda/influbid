@@ -4,19 +4,15 @@ import SocialPlatformIcon from "@home/influencerbid/bid-form/social-platform-ico
 import Button from "@repo/ui/components/influencerbid/button";
 import Icon from "@repo/ui/components/influencerbid/icon";
 import Image from "@repo/ui/components/influencerbid/image";
-import { MousePointerClick, Armchair } from "lucide-react";
+import { Armchair, MousePointerClick } from "lucide-react";
 import { useRouter } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
 
-import {
-	buildPlatformUrl,
-	formatBid,
-	formatClicks,
-	type LeaderboardInfluencer,
-} from "./influencers";
+import type { LeaderboardItemDto } from "../actions";
+import { buildPlatformUrl, formatBid, formatClicks } from "./influencers";
 
 type InfluencerCardProps = {
-	item: LeaderboardInfluencer;
+	item: LeaderboardItemDto;
 	rank: number;
 };
 

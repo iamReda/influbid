@@ -1,17 +1,15 @@
 "use client";
 
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import {
-	influencerCategories,
-	type InfluencerCategory,
-} from "@home/influencerbid/constants/categories";
 import Button from "@repo/ui/components/influencerbid/button";
 import Icon from "@repo/ui/components/influencerbid/icon";
 import { Minus, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect, useMemo, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
 
-import { leaderboardInfluencers } from "../leaderboard/influencers";
+import { estimateSignupRankAction, type CategoryOptionDto } from "../actions";
+import { getCategoryUi } from "../lib/category-ui";
+import { saveSignupDraft } from "../lib/signup-draft";
 import SocialPlatformIcon, { type Platform } from "./social-platform-icon";
 
 const SOCIAL_PLATFORMS: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
@@ -38,9 +36,8 @@ const detectPlatform = (value: string): Platform | null => {
 	return null;
 };
 
-const MIN_BID = 3;
+const MIN_BID = 5;
 const BID_STEP = 1;
-const DEFAULT_BID = 100;
 
 type FormErrors = {
 	bid?: string;
@@ -65,26 +62,36 @@ const isValidUrl = (value: string) => {
 	}
 };
 
-const BidForm = ({ className }: { className?: string }) => {
+type BidFormProps = {
+	className?: string;
+	categories: CategoryOptionDto[];
+	defaultBidDollars: number;
+	onRankChange?: (rank: number) => void;
+};
+
+const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: BidFormProps) => {
 	const router = useRouter();
-	const [bid, setBid] = useState(DEFAULT_BID);
-	const [bidInput, setBidInput] = useState(String(DEFAULT_BID));
+	const initialBid = clampBid(defaultBidDollars);
+	const [bid, setBid] = useState(initialBid);
+	const [bidInput, setBidInput] = useState(String(initialBid));
 	const [socialUrl, setSocialUrl] = useState("");
-	const [category, setCategory] = useState<InfluencerCategory | null>(null);
+	const [category, setCategory] = useState<CategoryOptionDto | null>(null);
 	const [categoryQuery, setCategoryQuery] = useState("");
 	const [errors, setErrors] = useState<FormErrors>({});
 	const [submitted, setSubmitted] = useState(false);
 	const [platformCycleIndex, setPlatformCycleIndex] = useState(0);
+	const [claimRank, setClaimRank] = useState(1);
+	const [categoryRank, setCategoryRank] = useState<number | null>(null);
 
 	const filteredCategories = useMemo(() => {
 		const query = categoryQuery.trim().toLowerCase();
 
 		if (!query) {
-			return influencerCategories;
+			return categories;
 		}
 
-		return influencerCategories.filter((option) => option.name.toLowerCase().includes(query));
-	}, [categoryQuery]);
+		return categories.filter((option) => option.name.toLowerCase().includes(query));
+	}, [categories, categoryQuery]);
 
 	const detectedPlatform = detectPlatform(socialUrl.trim());
 
@@ -100,17 +107,33 @@ const BidForm = ({ className }: { className?: string }) => {
 		return () => clearInterval(interval);
 	}, [detectedPlatform]);
 
+	useEffect(() => {
+		const bidAmountCents = clampBid(bid) * 100;
+		let cancelled = false;
+
+		const timer = setTimeout(() => {
+			void estimateSignupRankAction({
+				bidAmountCents,
+				categoryId: category?.id,
+			}).then((result) => {
+				if (cancelled) {
+					return;
+				}
+
+				setClaimRank(result.generalRank);
+				setCategoryRank(result.categoryRank);
+				onRankChange?.(result.generalRank);
+			});
+		}, 200);
+
+		return () => {
+			cancelled = true;
+			clearTimeout(timer);
+		};
+	}, [bid, category?.id, onRankChange]);
+
 	const activePlatform = detectedPlatform ?? SOCIAL_PLATFORMS[platformCycleIndex];
 	const isPlatformLocked = !!detectedPlatform;
-
-	const claimRank = useMemo(() => {
-		const pool = category
-			? leaderboardInfluencers.filter((influencer) => influencer.categorySlug === category.slug)
-			: leaderboardInfluencers;
-		const higherBids = pool.filter((influencer) => influencer.bid > bid).length;
-
-		return higherBids + 1;
-	}, [bid, category]);
 
 	const decreaseBid = () => {
 		setBid((current) => {
@@ -181,7 +204,17 @@ const BidForm = ({ className }: { className?: string }) => {
 
 		setErrors(nextErrors);
 
-		if (Object.keys(nextErrors).length === 0) {
+		if (Object.keys(nextErrors).length === 0 && category) {
+			saveSignupDraft({
+				primarySocialUrl: socialUrl.trim(),
+				categoryId: category.id,
+				categorySlug: category.slug,
+				categoryName: category.name,
+				bidAmountDollars: normalizedBid,
+				bidAmountCents: normalizedBid * 100,
+				estimatedGeneralRank: claimRank,
+				estimatedCategoryRank: categoryRank,
+			});
 			router.push("/complete-your-profile");
 		}
 	};
@@ -289,6 +322,7 @@ const BidForm = ({ className }: { className?: string }) => {
 						as="div"
 						className="relative"
 						value={category}
+						by="id"
 						onChange={(value) => {
 							setCategory(value);
 							setCategoryQuery("");
@@ -308,7 +342,10 @@ const BidForm = ({ className }: { className?: string }) => {
 							<span className="min-w-0 gap-2 flex items-center truncate">
 								{category ? (
 									<>
-										<category.icon className="size-4 shrink-0 stroke-2" aria-hidden />
+										{(() => {
+											const CategoryIcon = getCategoryUi(category.slug).icon;
+											return <CategoryIcon className="size-4 shrink-0 stroke-2" aria-hidden />;
+										})()}
 										<span className="truncate">{category.name}</span>
 									</>
 								) : (
@@ -344,16 +381,20 @@ const BidForm = ({ className }: { className?: string }) => {
 							</div>
 							<div className="max-h-60 overflow-auto">
 								{filteredCategories.length > 0 ? (
-									filteredCategories.map((option) => (
-										<ListboxOption
-											key={option.id}
-											className="gap-3 py-2 pl-2.5 pr-6 text-button text-t-secondary after:right-2.5 after:top-3.5 after:size-2 after:bg-t-blue data-focus:bg-b-highlight data-focus:text-t-primary data-selected:text-t-primary relative flex w-full cursor-pointer items-center rounded-full text-left transition-colors after:absolute after:rounded-full after:opacity-0 after:transition-opacity data-selected:after:opacity-100"
-											value={option}
-										>
-											<option.icon className="size-4 shrink-0 stroke-2" aria-hidden />
-											{option.name}
-										</ListboxOption>
-									))
+									filteredCategories.map((option) => {
+										const CategoryIcon = getCategoryUi(option.slug).icon;
+
+										return (
+											<ListboxOption
+												key={option.id}
+												className="gap-3 py-2 pl-2.5 pr-6 text-button text-t-secondary after:right-2.5 after:top-3.5 after:size-2 after:bg-t-blue data-focus:bg-b-highlight data-focus:text-t-primary data-selected:text-t-primary relative flex w-full cursor-pointer items-center rounded-full text-left transition-colors after:absolute after:rounded-full after:opacity-0 after:transition-opacity data-selected:after:opacity-100"
+												value={option}
+											>
+												<CategoryIcon className="size-4 shrink-0 stroke-2" aria-hidden />
+												{option.name}
+											</ListboxOption>
+										);
+									})
 								) : (
 									<p className="px-2.5 py-2 text-small text-t-tertiary">No category found</p>
 								)}

@@ -250,7 +250,7 @@ Canonical auth examples:
 - Locale configuration and cookie name are in `packages/i18n/config.ts`.
   The product is English-only (`en`); marketing routing uses `localePrefix: "never"` so public URLs have no `/en/` (or other locale) segment.
 - Document titles use `title.template` in each app root layout:
-  `%s – ${config.appName}` (en dash). Set `generateMetadata` `{ title }` on
+  `%s | ${config.appName}` (pipe). Set `generateMetadata` `{ title }` on
   every SaaS page. Pages without a title (marketing homepage) show
   `config.appName` alone.
 

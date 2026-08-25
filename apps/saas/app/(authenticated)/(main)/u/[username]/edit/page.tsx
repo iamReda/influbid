@@ -1,6 +1,10 @@
 import { getSession } from "@auth/lib/server";
 import MyProfileEditPage from "@creators/components/my-profile-edit-page";
-import { ensureUserUsername, getPublicProfileByUsername } from "@repo/database";
+import {
+	ensureUserUsername,
+	getPublishedCreatorByUsername,
+	toCreatorEditProfile,
+} from "@repo/database";
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 
@@ -10,19 +14,19 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
 	const { username } = await params;
-	const profile = await getPublicProfileByUsername(username.toLowerCase());
+	const creator = await getPublishedCreatorByUsername(username.toLowerCase());
 
 	return {
-		title: profile?.name ? `Edit ${profile.name}` : "Edit profile",
+		title: creator?.publicName ? `Edit ${creator.publicName}` : "Edit profile",
 	};
 }
 
 export default async function UsernameProfileEditPage({ params }: Props) {
 	const { username } = await params;
 	const normalizedUsername = username.toLowerCase();
-	const profile = await getPublicProfileByUsername(normalizedUsername);
+	const creator = await getPublishedCreatorByUsername(normalizedUsername);
 
-	if (!profile) {
+	if (!creator || !creator.user.username) {
 		notFound();
 	}
 
@@ -43,5 +47,5 @@ export default async function UsernameProfileEditPage({ params }: Props) {
 		notFound();
 	}
 
-	return <MyProfileEditPage profile={profile} />;
+	return <MyProfileEditPage profile={toCreatorEditProfile(creator)} />;
 }

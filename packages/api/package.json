@@ -7,7 +7,8 @@
 		"test": "vitest run",
 		"test:watch": "vitest",
 		"test:coverage": "vitest run --coverage",
-		"type-check": "tsc --noEmit"
+		"type-check": "tsc --noEmit",
+		"verify:mock-flow": "dotenv -c -e ../../.env.local -e ../../.env -- tsx scripts/verify-mock-flow.ts"
 	},
 	"dependencies": {
 		"@orpc/client": "catalog:",
@@ -34,6 +35,9 @@
 	"devDependencies": {
 		"@repo/tsconfig": "workspace:*",
 		"@vitest/coverage-v8": "catalog:",
+		"dotenv": "catalog:",
+		"dotenv-cli": "catalog:",
+		"tsx": "catalog:",
 		"typescript": "catalog:",
 		"vitest": "catalog:"
 	}

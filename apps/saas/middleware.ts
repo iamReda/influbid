@@ -8,6 +8,7 @@ const EXTRA_RESERVED = [
 	"forgot-password",
 	"reset-password",
 	"verify",
+	"auth",
 	"onboarding",
 	"choose-plan",
 	"checkout-return",
@@ -17,11 +18,13 @@ const EXTRA_RESERVED = [
 	"api",
 	"image-proxy",
 	"u",
+	"out",
 	"en",
 	"_next",
 	"favicon.ico",
 	"robots.txt",
 	"sitemap.xml",
+	"success",
 ] as const;
 
 const RESERVED = new Set(

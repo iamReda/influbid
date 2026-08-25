@@ -46,3 +46,8 @@ dist/
 # local filesystem storage (avatars, uploads)
 .local-storage/
 
+
+
+# tasks MD
+tasks 
+*.md

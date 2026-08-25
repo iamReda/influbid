@@ -142,7 +142,7 @@
 			"failedToGetSession": "Could not get the session.",
 			"invalidPassword": "The entered password is incorrect.",
 			"invalidEmail": "The entered email is invalid.",
-			"invalidToken": "The token you entered is invalid or has expired.",
+			"invalidToken": "This sign-in link is invalid or has already been used. Request a new magic link or sign in with your password.",
 			"credentialAccountNotFound": "Account not found.",
 			"emailCanNotBeUpdated": "Email could not be updated. Please try again.",
 			"emailNotVerified": "Please verify your email first before logging in.",

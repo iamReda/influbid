@@ -82,6 +82,48 @@ export const UserNotificationPreferenceScalarFieldEnumSchema = z.enum(['id', 'us
 
 export type UserNotificationPreferenceScalarFieldEnum = z.infer<typeof UserNotificationPreferenceScalarFieldEnumSchema>;
 
+// File: CreatorCategoryScalarFieldEnum.schema.ts
+
+export const CreatorCategoryScalarFieldEnumSchema = z.enum(['id', 'name', 'slug', 'description', 'icon', 'active', 'order', 'createdAt', 'updatedAt'])
+
+export type CreatorCategoryScalarFieldEnum = z.infer<typeof CreatorCategoryScalarFieldEnumSchema>;
+
+// File: CreatorProfileScalarFieldEnum.schema.ts
+
+export const CreatorProfileScalarFieldEnumSchema = z.enum(['id', 'userId', 'publicName', 'avatarUrl', 'description', 'categoryId', 'totalBidCents', 'currency', 'joinedAt', 'bidReachedAt', 'accountClaimedAt', 'isPublished', 'createdAt', 'updatedAt'])
+
+export type CreatorProfileScalarFieldEnum = z.infer<typeof CreatorProfileScalarFieldEnumSchema>;
+
+// File: SocialProfileScalarFieldEnum.schema.ts
+
+export const SocialProfileScalarFieldEnumSchema = z.enum(['id', 'creatorId', 'platform', 'url', 'normalizedUrl', 'position', 'deletedAt', 'createdAt', 'updatedAt'])
+
+export type SocialProfileScalarFieldEnum = z.infer<typeof SocialProfileScalarFieldEnumSchema>;
+
+// File: PendingCreatorScalarFieldEnum.schema.ts
+
+export const PendingCreatorScalarFieldEnumSchema = z.enum(['id', 'email', 'publicName', 'avatarUrl', 'description', 'categoryId', 'socialProfiles', 'bidAmountCents', 'currency', 'estimatedRank', 'status', 'paymentReference', 'createdAt', 'updatedAt', 'expiresAt'])
+
+export type PendingCreatorScalarFieldEnum = z.infer<typeof PendingCreatorScalarFieldEnumSchema>;
+
+// File: CreatorBidScalarFieldEnum.schema.ts
+
+export const CreatorBidScalarFieldEnumSchema = z.enum(['id', 'creatorId', 'type', 'status', 'amountCents', 'currency', 'totalAfterCents', 'paymentSource', 'providerPaymentId', 'idempotencyKey', 'createdAt', 'paidAt'])
+
+export type CreatorBidScalarFieldEnum = z.infer<typeof CreatorBidScalarFieldEnumSchema>;
+
+// File: CreatorAnalyticsEventScalarFieldEnum.schema.ts
+
+export const CreatorAnalyticsEventScalarFieldEnumSchema = z.enum(['id', 'creatorId', 'type', 'socialProfileId', 'platformSnapshot', 'urlSnapshot', 'visitorKeyHash', 'createdAt'])
+
+export type CreatorAnalyticsEventScalarFieldEnum = z.infer<typeof CreatorAnalyticsEventScalarFieldEnumSchema>;
+
+// File: CreatorAccountReportScalarFieldEnum.schema.ts
+
+export const CreatorAccountReportScalarFieldEnumSchema = z.enum(['id', 'creatorId', 'reporterUserId', 'reporterName', 'reporterEmail', 'reason', 'message', 'status', 'createdAt', 'updatedAt'])
+
+export type CreatorAccountReportScalarFieldEnum = z.infer<typeof CreatorAccountReportScalarFieldEnumSchema>;
+
 // File: SortOrder.schema.ts
 
 export const SortOrderSchema = z.enum(['asc', 'desc'])
@@ -135,6 +177,48 @@ export type NotificationType = z.infer<typeof NotificationTypeSchema>;
 export const NotificationTargetSchema = z.enum(['IN_APP', 'EMAIL'])
 
 export type NotificationTarget = z.infer<typeof NotificationTargetSchema>;
+
+// File: PendingCreatorStatus.schema.ts
+
+export const PendingCreatorStatusSchema = z.enum(['PENDING_PAYMENT', 'PROCESSING', 'COMPLETED', 'EXPIRED'])
+
+export type PendingCreatorStatus = z.infer<typeof PendingCreatorStatusSchema>;
+
+// File: CreatorBidType.schema.ts
+
+export const CreatorBidTypeSchema = z.enum(['INITIAL', 'INCREASE'])
+
+export type CreatorBidType = z.infer<typeof CreatorBidTypeSchema>;
+
+// File: CreatorBidStatus.schema.ts
+
+export const CreatorBidStatusSchema = z.enum(['PENDING', 'PAID', 'FAILED'])
+
+export type CreatorBidStatus = z.infer<typeof CreatorBidStatusSchema>;
+
+// File: CreatorPaymentSource.schema.ts
+
+export const CreatorPaymentSourceSchema = z.enum(['MOCK', 'STRIPE'])
+
+export type CreatorPaymentSource = z.infer<typeof CreatorPaymentSourceSchema>;
+
+// File: CreatorAnalyticsEventType.schema.ts
+
+export const CreatorAnalyticsEventTypeSchema = z.enum(['PROFILE_VIEW', 'SOCIAL_CLICK', 'CONTACT_CLICK'])
+
+export type CreatorAnalyticsEventType = z.infer<typeof CreatorAnalyticsEventTypeSchema>;
+
+// File: CreatorReportReason.schema.ts
+
+export const CreatorReportReasonSchema = z.enum(['ADULT_CONTENT', 'DRUG_RELATED', 'ILLEGAL', 'FAKE_OR_IMPERSONATION', 'OTHER'])
+
+export type CreatorReportReason = z.infer<typeof CreatorReportReasonSchema>;
+
+// File: CreatorReportStatus.schema.ts
+
+export const CreatorReportStatusSchema = z.enum(['OPEN', 'REVIEWED', 'DISMISSED', 'ACTIONED'])
+
+export type CreatorReportStatus = z.infer<typeof CreatorReportStatusSchema>;
 
 // File: User.schema.ts
 
@@ -339,4 +423,135 @@ export const UserNotificationPreferenceSchema = z.object({
 });
 
 export type UserNotificationPreferenceType = z.infer<typeof UserNotificationPreferenceSchema>;
+
+
+// File: CreatorCategory.schema.ts
+
+export const CreatorCategorySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  slug: z.string(),
+  description: z.string().nullish(),
+  icon: z.string().nullish(),
+  active: z.boolean().default(true),
+  order: z.number().int(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type CreatorCategoryType = z.infer<typeof CreatorCategorySchema>;
+
+
+// File: CreatorProfile.schema.ts
+
+export const CreatorProfileSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  publicName: z.string(),
+  avatarUrl: z.string(),
+  description: z.string().nullish(),
+  categoryId: z.string(),
+  totalBidCents: z.number().int(),
+  currency: z.string().default("USD"),
+  joinedAt: z.date(),
+  bidReachedAt: z.date(),
+  accountClaimedAt: z.date().nullish(),
+  isPublished: z.boolean(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type CreatorProfileType = z.infer<typeof CreatorProfileSchema>;
+
+
+// File: SocialProfile.schema.ts
+
+export const SocialProfileSchema = z.object({
+  id: z.string(),
+  creatorId: z.string(),
+  platform: z.string(),
+  url: z.string(),
+  normalizedUrl: z.string(),
+  position: z.number().int(),
+  deletedAt: z.date().nullish(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type SocialProfileType = z.infer<typeof SocialProfileSchema>;
+
+
+// File: PendingCreator.schema.ts
+
+export const PendingCreatorSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  publicName: z.string(),
+  avatarUrl: z.string(),
+  description: z.string().nullish(),
+  categoryId: z.string(),
+  socialProfiles: z.unknown().refine((val) => { const getDepth = (obj: unknown, depth: number = 0): number => { if (depth > 10) return depth; if (obj === null || typeof obj !== 'object') return depth; const values = Object.values(obj as Record<string, unknown>); if (values.length === 0) return depth; return Math.max(...values.map(v => getDepth(v, depth + 1))); }; return getDepth(val) <= 10; }, "JSON nesting depth exceeds maximum of 10"),
+  bidAmountCents: z.number().int(),
+  currency: z.string().default("USD"),
+  estimatedRank: z.number().int().nullish(),
+  status: PendingCreatorStatusSchema.default("PENDING_PAYMENT"),
+  paymentReference: z.string().nullish(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  expiresAt: z.date(),
+});
+
+export type PendingCreatorType = z.infer<typeof PendingCreatorSchema>;
+
+
+// File: CreatorBid.schema.ts
+
+export const CreatorBidSchema = z.object({
+  id: z.string(),
+  creatorId: z.string(),
+  type: CreatorBidTypeSchema,
+  status: CreatorBidStatusSchema,
+  amountCents: z.number().int(),
+  currency: z.string().default("USD"),
+  totalAfterCents: z.number().int().nullish(),
+  paymentSource: CreatorPaymentSourceSchema,
+  providerPaymentId: z.string().nullish(),
+  idempotencyKey: z.string(),
+  createdAt: z.date(),
+  paidAt: z.date().nullish(),
+});
+
+export type CreatorBidModel = z.infer<typeof CreatorBidSchema>;
+
+// File: CreatorAnalyticsEvent.schema.ts
+
+export const CreatorAnalyticsEventSchema = z.object({
+  id: z.string(),
+  creatorId: z.string(),
+  type: CreatorAnalyticsEventTypeSchema,
+  socialProfileId: z.string().nullish(),
+  platformSnapshot: z.string().nullish(),
+  urlSnapshot: z.string().nullish(),
+  visitorKeyHash: z.string().nullish(),
+  createdAt: z.date(),
+});
+
+export type CreatorAnalyticsEventModel = z.infer<typeof CreatorAnalyticsEventSchema>;
+
+// File: CreatorAccountReport.schema.ts
+
+export const CreatorAccountReportSchema = z.object({
+  id: z.string(),
+  creatorId: z.string(),
+  reporterUserId: z.string().nullish(),
+  reporterName: z.string().nullish(),
+  reporterEmail: z.string().nullish(),
+  reason: CreatorReportReasonSchema,
+  message: z.string(),
+  status: CreatorReportStatusSchema.default("OPEN"),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+});
+
+export type CreatorAccountReportType = z.infer<typeof CreatorAccountReportSchema>;
 

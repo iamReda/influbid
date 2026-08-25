@@ -1,5 +1,60 @@
 # Changelog
 
+## 2026-08-25
+
+### Changed
+
+#### Login page
+
+- Login uses a full-bleed looping background video (`/videos/login.mp4`) behind the sign-in card.
+- Signup hint copy under the form uses stronger contrast for readability.
+
+### Added
+
+#### Creator bidding domain
+
+- **Prisma/Drizzle models**: `CreatorCategory`, `CreatorProfile`, `SocialProfile`, `PendingCreator`, `CreatorBid`, `CreatorAnalyticsEvent` (plus enums). Additive only; Supastarter auth/`Purchase` unchanged.
+- **Category seed**: `pnpm --filter @repo/database seed:categories` seeds the 10 UI categories.
+- **oRPC `creators` module**: list categories/cards/leaderboard, estimate rank, create pending creator, mock initial payment (`MOCK_PAYMENTS`, non-production only) calling shared `finalizeCreatorPayment()`.
+- **Env**: `MOCK_PAYMENTS` documented in `.env.local.example`.
+- **Marketing signup wiring**: Homepage bid form uses DB categories + live rank estimate (min $5), carries draft to `/complete-your-profile`, mock payment finalizes the creator. Leaderboard, categories page (`/?category=`), and recent bids read from the database.
+- **Authenticated creator surfaces**: `/dashboard`, `/rank-higher`, and `/payment-history` load live creator ranks, analytics (week/month/all), and paid bid history. Mock bid increases call `finalizeBidIncrease()`. First authenticated session sets `accountClaimedAt`.
+- **Public profiles**: Marketing `/{username}` shows published creators, records a `PROFILE_VIEW` on every real profile open (card click, direct URL, refresh; bots/prefetch excluded), and social icons use `/out/social/{id}` click tracking redirects.
+- **Payment success**: Marketing `/success` confirms payment with the signup email and instructs the creator to use the Better Auth magic link for dashboard access.
+- **Profile edit**: SaaS `/{username}/edit` updates `CreatorProfile` + soft-deletes removed `SocialProfile` rows (history preserved). Marketing `/{username}/edit` redirects to SaaS.
+- **Mock-flow verification**: `pnpm --filter @repo/api verify:mock-flow` exercises signup → finalize → rankings → increase → analytics → edit/soft-delete → claim → idempotency against the local DB.
+
+### Fixed
+
+#### Creator signup magic link
+
+- Magic links after mock payment now expire in **24 hours** (Better Auth default was 5 minutes, so links often expired before open).
+- `finalizeCreatorPayment` sends magic links with SaaS `Origin`/`Referer` headers, relative `callbackURL: /dashboard`, and logs send failures instead of swallowing them.
+- Email template rendering no longer fails on missing React import in `@repo/ui` `Logo`.
+- Successful payment redirects to marketing `/success?email=…` (profile is already live; the link is only for dashboard access).
+
+#### Creator mock payment flow
+
+- Soft-delete social sync no longer collides on `@@unique([creatorId, position])`.
+- `finalizeCreatorPayment` returns username on idempotent retries and short-circuits when the email already has a creator.
+- Signup rejects emails that already own a published creator profile.
+- Complete-profile avatar starts empty (no placeholder image) and pending uploads use a slash-free storage path so local storage no longer throws `Invalid storage path`.
+- Marketing avatar URLs use same-origin `/image-proxy/...` (rewritten to SaaS) so Next.js 16 Image optimization no longer blocks localhost and leaderboard photos render.
+- Homepage bid defaults to $5 when the board is empty, otherwise leading bid + $1; the hero `#N` updates live with the typed amount.
+- Restored marketing `GET /out/social/[socialProfileId]` route handler (records `SOCIAL_CLICK`, redirects to the external URL).
+- Marketing `/image-proxy` requests no longer pass through the next-intl proxy, so avatar rewrites to SaaS storage work on public profiles.
+- Homepage recent-bids scroller no longer duplicates rows when there are fewer than five signups; it lists paid **initial** signups from the last **36 hours** only.
+- Creator magic links now open a SaaS **confirm** page (`/auth/magic-link`) before Better Auth verify, so email link scanners cannot burn the one-time token. Invalid/used links land on `/login` with a clear error.
+- Default signup usernames are now continuous lowercase slugs from the public name (`Julien Dupont` → `juliendupont`); collisions use `name-#####` (5 digits).
+- Dashboard **Profile views** count every public profile page open (no 30-minute visitor dedupe).
+- Dashboard loads creator + analytics on the server first so the page no longer flashes empty-state copy (e.g. “Create a ranking bid…”) before real values.
+- Dashboard performance chart uses real daily/weekly buckets from analytics events; social-clicks series uses brand green (`primary2`).
+- Bid increases run mock payment then redirect to SaaS `/success` with a **Return to dashboard** CTA (same payment → success pattern as signup).
+- Public **Profile views** ignore the profile owner’s own visits; only other signed-in users and anonymous visitors count. Dashboard KPI subtitle renamed from “Live” to “Views”.
+- SaaS creator profiles (`/:username`) are publicly viewable without signing in; Copy / Preview / Edit actions remain owner-only.
+- SaaS public profile opens also record **Profile views** (same beacon as marketing; owner visits still skipped).
+- Document titles use `{page} | Influbid` (`config.appName` is Influbid). Supastarter branding removed from app names and footers.
+
 ## 2026-08-24
 
 ### Changed
@@ -15,7 +70,7 @@
 - **Local avatar storage**: Default `STORAGE_PROVIDER=local` writes uploads under `.local-storage/` (no S3/MinIO). Set `STORAGE_PROVIDER=s3` to use MinIO/S3 again.
 - **Public auth UI**: Signup, social login, passkeys, and magic link are hidden in the product UI (`packages/auth/config.ts`). `/login` and `/forgot-password` use the InfluencerBid modal design while still calling Better Auth email/password (and 2FA redirect when enabled).
 - **Marketing header session**: Public marketing pages (port 3001) show **Sign in** when logged out, and **Rank higher** + account avatar when a SaaS session is present (Better Auth client against `NEXT_PUBLIC_SAAS_URL`, with marketing origin trusted for CORS).
-- **Username profile URLs**: Users get a unique `username` derived from their public name at signup (`spaces` → `-`, conflicts get a numeric suffix like `reda-15465`). Profiles live at `/:username` (e.g. `/reda`); `/my-profile` redirects there. Username is editable under account settings.
+- **Username profile URLs**: Users get a unique `username` derived from their public name at signup (lowercase letters/digits only, e.g. `Julien Dupont` → `juliendupont`; conflicts get a 5-digit suffix like `johndoe-12345`). Profiles live at `/:username`; `/my-profile` redirects there. Username is editable under account settings.
 
 ### Added
 

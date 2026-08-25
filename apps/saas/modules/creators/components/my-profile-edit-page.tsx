@@ -2,8 +2,7 @@
 
 import { useSession } from "@auth/hooks/use-session";
 import { MAX_SOCIAL_LINKS, MIN_SOCIAL_LINKS, detectPlatform } from "@creators/lib/profile";
-import { authClient } from "@repo/auth/client";
-import type { PublicProfile } from "@repo/database";
+import type { CreatorEditProfile } from "@repo/api/modules/creators/types";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
@@ -26,32 +25,33 @@ type SocialEntry = {
 };
 
 type MyProfileEditPageProps = {
-	profile: PublicProfile;
+	profile: CreatorEditProfile;
 };
 
 const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const { user, reloadSession } = useSession();
-	const [publicName, setPublicName] = useState(profile.name);
-	const [description, setDescription] = useState(profile.bio ?? "");
+	const { user } = useSession();
+	const [publicName, setPublicName] = useState(profile.publicName);
+	const [description, setDescription] = useState(profile.description ?? "");
 	const [contactEnabled, setContactEnabled] = useState(Boolean(profile.businessEmail));
 	const [businessEmail, setBusinessEmail] = useState(profile.businessEmail ?? "");
 	const [socials, setSocials] = useState<SocialEntry[]>(() => {
-		const links = profile.socialLinks.length > 0 ? profile.socialLinks : [""];
+		const links =
+			profile.socialProfiles.length > 0 ? profile.socialProfiles.map((social) => social.url) : [""];
 		return links.map((url, index) => ({ id: index + 1, url }));
 	});
 	const [nextSocialId, setNextSocialId] = useState(() =>
-		Math.max(profile.socialLinks.length, MIN_SOCIAL_LINKS),
+		Math.max(profile.socialProfiles.length, MIN_SOCIAL_LINKS),
 	);
-	const [pendingAvatar, setPendingAvatar] = useState<Blob | null>(null);
+	const [pendingAvatarBlob, setPendingAvatarBlob] = useState<Blob | null>(null);
 	const [avatarPreviewUrl, setAvatarPreviewUrl] = useState<string | null>(null);
 	const [saving, setSaving] = useState(false);
 	const socialInputRefs = useRef(new Map<number, HTMLInputElement>());
 
-	const avatarImage = user?.image ?? profile.image;
+	const avatarImage = profile.avatarUrl;
 
-	const updateProfileMutation = useMutation(orpc.users.updateProfile.mutationOptions());
+	const updateCreatorMutation = useMutation(orpc.creators.updateMyCreator.mutationOptions());
 	const getSignedUploadUrlMutation = useMutation(orpc.users.avatarUploadUrl.mutationOptions());
 
 	useEffect(() => {
@@ -116,19 +116,19 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 			URL.revokeObjectURL(avatarPreviewUrl);
 		}
 
-		setPendingAvatar(blob);
 		setAvatarPreviewUrl(URL.createObjectURL(blob));
+		setPendingAvatarBlob(blob);
 	};
 
 	const uploadPendingAvatar = async () => {
-		if (!pendingAvatar) {
-			return;
+		if (!pendingAvatarBlob) {
+			return null;
 		}
 
 		const { signedUploadUrl, path } = await getSignedUploadUrlMutation.mutateAsync({});
 		const response = await fetch(signedUploadUrl, {
 			method: "PUT",
-			body: pendingAvatar,
+			body: pendingAvatarBlob,
 			headers: {
 				"Content-Type": "image/png",
 			},
@@ -138,13 +138,7 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 			throw new Error("Failed to upload image");
 		}
 
-		const { error } = await authClient.updateUser({
-			image: path,
-		});
-
-		if (error) {
-			throw error;
-		}
+		return path;
 	};
 
 	const onSave = async () => {
@@ -206,24 +200,29 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 		setSaving(true);
 
 		try {
-			if (pendingAvatar) {
-				await uploadPendingAvatar();
+			let avatarUrl: string | undefined;
+
+			if (pendingAvatarBlob) {
+				const path = await uploadPendingAvatar();
+				if (path) {
+					avatarUrl = path;
+				}
 			}
 
-			await updateProfileMutation.mutateAsync({
-				name: trimmedName,
-				bio: description.trim() ? description.trim() : null,
+			await updateCreatorMutation.mutateAsync({
+				publicName: trimmedName,
+				description: description.trim() ? description.trim() : null,
 				businessEmail: contactEnabled ? trimmedEmail : null,
-				socialLinks,
+				socialUrls: socialLinks,
+				...(avatarUrl ? { avatarUrl } : {}),
 			});
 
 			await queryClient.invalidateQueries({
-				queryKey: orpc.users.getPublicProfile.queryKey({
-					input: { username: profile.username },
-				}),
+				queryKey: orpc.creators.getMyCreator.key(),
 			});
-
-			await reloadSession();
+			await queryClient.invalidateQueries({
+				queryKey: orpc.creators.getMyCreatorForEdit.key(),
+			});
 
 			toast.add({
 				title: "Profile updated",

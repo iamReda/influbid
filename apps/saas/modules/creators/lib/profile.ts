@@ -105,7 +105,7 @@ export function getAvatarSrc(image: string | null | undefined) {
 		return null;
 	}
 
-	if (image.startsWith("http")) {
+	if (image.startsWith("http") || image.startsWith("/")) {
 		return image;
 	}
 

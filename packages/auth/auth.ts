@@ -238,15 +238,35 @@ export const auth = betterAuth({
 		passkey(),
 		magicLink({
 			disableSignUp: false,
+			// Default Better Auth expiry is 5 minutes; creators need time to open email.
+			expiresIn: 60 * 60 * 24,
 			sendMagicLink: async ({ email, url }, ctx) => {
 				const request = ctx?.request as Request;
-
 				const locale = getLocaleFromRequest(request);
+
+				// Better Auth consumes the token on the first GET to `/magic-link/verify`.
+				// Email scanners (Gmail, Outlook Safe Links, etc.) prefetch that URL and
+				// burn the one-time token before the user clicks. Point the email at a
+				// confirm page that only hits verify after an explicit form submit.
+				const verifyUrl = new URL(url);
+				const confirmUrl = new URL("/auth/magic-link", appUrl);
+				for (const key of [
+					"token",
+					"callbackURL",
+					"errorCallbackURL",
+					"newUserCallbackURL",
+				] as const) {
+					const value = verifyUrl.searchParams.get(key);
+					if (value) {
+						confirmUrl.searchParams.set(key, value);
+					}
+				}
+
 				await sendEmail({
 					to: email,
 					templateId: "magicLink",
 					context: {
-						url,
+						url: confirmUrl.toString(),
 					},
 					locale,
 				});

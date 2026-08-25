@@ -1,7 +1,7 @@
 import { AnalyticsScript } from "@analytics";
 import { config } from "@config";
 import { config as i18nConfig } from "@i18n/config";
-import { cn } from "@repo/ui";
+import { cn, Toaster } from "@repo/ui";
 import { ClientProviders } from "@shared/components/ClientProviders";
 import { ConsentBanner } from "@shared/components/ConsentBanner";
 import { ConsentProvider } from "@shared/components/ConsentProvider";
@@ -92,6 +92,7 @@ export default async function MarketingLayout({
 							>
 								{children}
 
+								<Toaster position="top-right" closeLabel="Close notification" />
 								<ConsentBanner />
 								<AnalyticsScript />
 							</ThemeProvider>

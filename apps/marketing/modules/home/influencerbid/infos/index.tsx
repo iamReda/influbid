@@ -1,7 +1,10 @@
 "use client";
 
 import RecentBidRow from "@home/influencerbid/recent-bids/recent-bid-row";
-import { RECENT_BIDS_VISIBLE_ROWS, recentBids } from "@home/influencerbid/recent-bids/recent-bids";
+import {
+	RECENT_BIDS_VISIBLE_ROWS,
+	type RecentBid,
+} from "@home/influencerbid/recent-bids/recent-bids";
 import Icon from "@repo/ui/components/influencerbid/icon";
 import Image from "@repo/ui/components/influencerbid/image";
 import { useTheme } from "next-themes";
@@ -64,24 +67,32 @@ const InfosImageSlider = ({
 
 const AUTO_SCROLL_SPEED_PX_PER_SEC = 12;
 
-const InfosRecentBidsScroller = () => {
+const InfosRecentBidsScroller = ({ recentBids }: { recentBids: RecentBid[] }) => {
 	const trackRef = useRef<HTMLDivElement>(null);
 	const offsetRef = useRef(0);
 	const isPausedRef = useRef(false);
 	const lastTimeRef = useRef<number | null>(null);
+	const shouldLoop = recentBids.length > RECENT_BIDS_VISIBLE_ROWS;
 
 	const loopedRecentBids = useMemo(
-		() => [
-			...recentBids,
-			...recentBids.map((bid, index) => ({
-				...bid,
-				id: `${bid.id}-loop-${index}`,
-			})),
-		],
-		[],
+		() =>
+			shouldLoop
+				? [
+						...recentBids,
+						...recentBids.map((bid, index) => ({
+							...bid,
+							id: `${bid.id}-loop-${index}`,
+						})),
+					]
+				: recentBids,
+		[recentBids, shouldLoop],
 	);
 
 	useEffect(() => {
+		if (!shouldLoop) {
+			return;
+		}
+
 		const track = trackRef.current;
 		if (!track) return;
 
@@ -118,7 +129,7 @@ const InfosRecentBidsScroller = () => {
 			cancelAnimationFrame(animationFrame);
 			lastTimeRef.current = null;
 		};
-	}, []);
+	}, [shouldLoop]);
 
 	return (
 		<div
@@ -148,7 +159,7 @@ const InfosRecentBidsScroller = () => {
 	);
 };
 
-const Infos = ({}) => {
+const Infos = ({ recentBids }: { recentBids: RecentBid[] }) => {
 	const [isMounted, setIsMounted] = useState(false);
 	const [activeSlide, setActiveSlide] = useState(0);
 	const { theme } = useTheme();
@@ -208,8 +219,12 @@ const Infos = ({}) => {
 														imageHeight={imageHeight}
 													/>
 												)
+											) : recentBids.length > 0 ? (
+												<InfosRecentBidsScroller recentBids={recentBids} />
 											) : (
-												<InfosRecentBidsScroller />
+												<div className="bg-b-surface1 p-4 text-small text-t-tertiary rounded-2xl">
+													Recent bids will appear here after the first paid signup.
+												</div>
 											)}
 										</div>
 									</div>

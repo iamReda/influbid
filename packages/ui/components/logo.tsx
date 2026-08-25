@@ -1,3 +1,5 @@
+import React from "react";
+
 import { cn } from "../lib";
 
 export function Logo({ withLabel = true, className }: { className?: string; withLabel?: boolean }) {

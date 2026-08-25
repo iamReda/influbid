@@ -3,7 +3,7 @@
 import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Image from "@repo/ui/components/influencerbid/image";
-import { Rocket } from "lucide-react";
+import { LayoutDashboard, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -82,6 +82,9 @@ const Header = ({ isFixed, login, isVisiblePlan, isMinimal, onLogout }: HeaderPr
 								<Button isSecondary as="link" href="/rank-higher" aria-label="Rank higher">
 									<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
 									<span>Rank higher</span>
+								</Button>
+								<Button isSecondary isCircle as="link" href="/dashboard" aria-label="Dashboard">
+									<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
 								</Button>
 								<Menu onLogout={onLogout} />
 							</>

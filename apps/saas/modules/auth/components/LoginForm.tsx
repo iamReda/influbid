@@ -36,6 +36,13 @@ export function LoginForm() {
 	const invitationId = searchParams.get("invitationId");
 	const email = searchParams.get("email");
 	const redirectTo = searchParams.get("redirectTo");
+	const authError = searchParams.get("error");
+	const magicLinkError =
+		authError === "INVALID_TOKEN"
+			? getAuthErrorMessage("INVALID_TOKEN")
+			: authError
+				? getAuthErrorMessage(authError)
+				: null;
 
 	const form = useForm({
 		resolver: zodResolver(formSchema),
@@ -100,9 +107,9 @@ export function LoginForm() {
 
 			{invitationId && <OrganizationInvitationAlert className="mb-6" />}
 
-			{rootError && (
+			{(rootError || magicLinkError) && (
 				<p className="text-small text-primary3 mb-4 text-center" role="alert">
-					{rootError}
+					{rootError || magicLinkError}
 				</p>
 			)}
 
@@ -151,7 +158,7 @@ export function LoginForm() {
 
 			<div className="bg-stroke1 dark:bg-stroke2 my-6 h-px w-full" />
 
-			<p className="text-small text-t-tertiary leading-relaxed text-center">
+			<p className="text-hairline font-normal text-t-primary leading-snug text-center">
 				Want to sign up? Place a one-time bid of $5 or more — forever your ticket to join a
 				community of standout influencers.
 			</p>

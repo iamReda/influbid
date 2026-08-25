@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"clean": "git clean -xdf .cache .turbo dist node_modules",
-		"create:user": "dotenv -c -e ../../.env -- tsx ./src/create-user.ts",
+		"create:user": "dotenv -c -e ../../.env.local -- tsx ./src/create-user.ts",
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {

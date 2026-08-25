@@ -18,6 +18,40 @@ export const notificationTypeEnum = pgEnum("NotificationType", ["WELCOME", "APP_
 
 export const notificationTargetEnum = pgEnum("NotificationTarget", ["IN_APP", "EMAIL"]);
 
+export const pendingCreatorStatusEnum = pgEnum("PendingCreatorStatus", [
+	"PENDING_PAYMENT",
+	"PROCESSING",
+	"COMPLETED",
+	"EXPIRED",
+]);
+
+export const creatorBidTypeEnum = pgEnum("CreatorBidType", ["INITIAL", "INCREASE"]);
+
+export const creatorBidStatusEnum = pgEnum("CreatorBidStatus", ["PENDING", "PAID", "FAILED"]);
+
+export const creatorPaymentSourceEnum = pgEnum("CreatorPaymentSource", ["MOCK", "STRIPE"]);
+
+export const creatorAnalyticsEventTypeEnum = pgEnum("CreatorAnalyticsEventType", [
+	"PROFILE_VIEW",
+	"SOCIAL_CLICK",
+	"CONTACT_CLICK",
+]);
+
+export const creatorReportReasonEnum = pgEnum("CreatorReportReason", [
+	"ADULT_CONTENT",
+	"DRUG_RELATED",
+	"ILLEGAL",
+	"FAKE_OR_IMPERSONATION",
+	"OTHER",
+]);
+
+export const creatorReportStatusEnum = pgEnum("CreatorReportStatus", [
+	"OPEN",
+	"REVIEWED",
+	"DISMISSED",
+	"ACTIONED",
+]);
+
 export const user = pgTable("user", {
 	id: text("id")
 		.$defaultFn(() => cuid())
@@ -284,7 +318,239 @@ export const userNotificationPreference = pgTable(
 	],
 );
 
-export const userRelations = relations(user, ({ many }) => ({
+export const creatorCategory = pgTable(
+	"creator_category",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		name: text("name").notNull(),
+		slug: text("slug").notNull().unique(),
+		description: text("description"),
+		icon: text("icon"),
+		active: boolean("active").notNull().default(true),
+		order: integer("order").notNull().default(0),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		updatedAt: timestamp("updatedAt")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [index("creator_category_active_order_idx").on(table.active, table.order)],
+);
+
+export const creatorProfile = pgTable(
+	"creator_profile",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		userId: text("userId")
+			.notNull()
+			.unique()
+			.references(() => user.id, { onDelete: "cascade" }),
+		publicName: text("publicName").notNull(),
+		avatarUrl: text("avatarUrl").notNull(),
+		description: text("description"),
+		categoryId: text("categoryId")
+			.notNull()
+			.references(() => creatorCategory.id),
+		totalBidCents: integer("totalBidCents").notNull().default(0),
+		currency: text("currency").notNull().default("USD"),
+		joinedAt: timestamp("joinedAt").notNull(),
+		bidReachedAt: timestamp("bidReachedAt").notNull(),
+		accountClaimedAt: timestamp("accountClaimedAt"),
+		isPublished: boolean("isPublished").notNull().default(false),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		updatedAt: timestamp("updatedAt")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("creator_profile_totalBidCents_bidReachedAt_idx").on(
+			table.totalBidCents,
+			table.bidReachedAt,
+		),
+		index("creator_profile_categoryId_totalBidCents_bidReachedAt_idx").on(
+			table.categoryId,
+			table.totalBidCents,
+			table.bidReachedAt,
+		),
+		index("creator_profile_isPublished_totalBidCents_idx").on(
+			table.isPublished,
+			table.totalBidCents,
+		),
+		index("creator_profile_categoryId_isPublished_totalBidCents_idx").on(
+			table.categoryId,
+			table.isPublished,
+			table.totalBidCents,
+		),
+	],
+);
+
+export const socialProfile = pgTable(
+	"social_profile",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		creatorId: text("creatorId")
+			.notNull()
+			.references(() => creatorProfile.id, { onDelete: "cascade" }),
+		platform: text("platform").notNull(),
+		url: text("url").notNull(),
+		normalizedUrl: text("normalizedUrl").notNull(),
+		position: integer("position").notNull(),
+		deletedAt: timestamp("deletedAt"),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		updatedAt: timestamp("updatedAt")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex("social_profile_creatorId_position_uidx").on(table.creatorId, table.position),
+		index("social_profile_creatorId_deletedAt_idx").on(table.creatorId, table.deletedAt),
+		index("social_profile_normalizedUrl_idx").on(table.normalizedUrl),
+		index("social_profile_creatorId_position_idx").on(table.creatorId, table.position),
+	],
+);
+
+export const pendingCreator = pgTable(
+	"pending_creator",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		email: text("email").notNull(),
+		publicName: text("publicName").notNull(),
+		avatarUrl: text("avatarUrl").notNull(),
+		description: text("description"),
+		categoryId: text("categoryId")
+			.notNull()
+			.references(() => creatorCategory.id),
+		socialProfiles: jsonb("socialProfiles").notNull(),
+		bidAmountCents: integer("bidAmountCents").notNull(),
+		currency: text("currency").notNull().default("USD"),
+		estimatedRank: integer("estimatedRank"),
+		status: pendingCreatorStatusEnum("status").notNull().default("PENDING_PAYMENT"),
+		paymentReference: text("paymentReference").unique(),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		updatedAt: timestamp("updatedAt")
+			.defaultNow()
+			.$onUpdate(() => /* @__PURE__ */ new Date())
+			.notNull(),
+		expiresAt: timestamp("expiresAt").notNull(),
+	},
+	(table) => [
+		index("pending_creator_email_idx").on(table.email),
+		index("pending_creator_status_expiresAt_idx").on(table.status, table.expiresAt),
+		index("pending_creator_categoryId_idx").on(table.categoryId),
+	],
+);
+
+export const creatorBid = pgTable(
+	"creator_bid",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		creatorId: text("creatorId")
+			.notNull()
+			.references(() => creatorProfile.id, { onDelete: "cascade" }),
+		type: creatorBidTypeEnum("type").notNull(),
+		status: creatorBidStatusEnum("status").notNull(),
+		amountCents: integer("amountCents").notNull(),
+		currency: text("currency").notNull().default("USD"),
+		totalAfterCents: integer("totalAfterCents"),
+		paymentSource: creatorPaymentSourceEnum("paymentSource").notNull(),
+		providerPaymentId: text("providerPaymentId").unique(),
+		idempotencyKey: text("idempotencyKey").notNull().unique(),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		paidAt: timestamp("paidAt"),
+	},
+	(table) => [
+		index("creator_bid_creatorId_createdAt_idx").on(table.creatorId, table.createdAt),
+		index("creator_bid_creatorId_status_createdAt_idx").on(
+			table.creatorId,
+			table.status,
+			table.createdAt,
+		),
+		index("creator_bid_status_createdAt_idx").on(table.status, table.createdAt),
+	],
+);
+
+export const creatorAnalyticsEvent = pgTable(
+	"creator_analytics_event",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		creatorId: text("creatorId")
+			.notNull()
+			.references(() => creatorProfile.id, { onDelete: "cascade" }),
+		type: creatorAnalyticsEventTypeEnum("type").notNull(),
+		socialProfileId: text("socialProfileId").references(() => socialProfile.id, {
+			onDelete: "set null",
+		}),
+		platformSnapshot: text("platformSnapshot"),
+		urlSnapshot: text("urlSnapshot"),
+		visitorKeyHash: text("visitorKeyHash"),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+	},
+	(table) => [
+		index("creator_analytics_event_creatorId_createdAt_idx").on(table.creatorId, table.createdAt),
+		index("creator_analytics_event_creatorId_type_createdAt_idx").on(
+			table.creatorId,
+			table.type,
+			table.createdAt,
+		),
+		index("creator_analytics_event_socialProfileId_createdAt_idx").on(
+			table.socialProfileId,
+			table.createdAt,
+		),
+		index("creator_analytics_event_creatorId_type_visitorKeyHash_createdAt_idx").on(
+			table.creatorId,
+			table.type,
+			table.visitorKeyHash,
+			table.createdAt,
+		),
+	],
+);
+
+export const creatorAccountReport = pgTable(
+	"creator_account_report",
+	{
+		id: text("id")
+			.$defaultFn(() => cuid())
+			.primaryKey(),
+		creatorId: text("creatorId")
+			.notNull()
+			.references(() => creatorProfile.id, { onDelete: "cascade" }),
+		reporterUserId: text("reporterUserId").references(() => user.id, { onDelete: "set null" }),
+		reporterName: text("reporterName"),
+		reporterEmail: text("reporterEmail"),
+		reason: creatorReportReasonEnum("reason").notNull(),
+		message: text("message").notNull(),
+		status: creatorReportStatusEnum("status").notNull().default("OPEN"),
+		createdAt: timestamp("createdAt").defaultNow().notNull(),
+		updatedAt: timestamp("updatedAt")
+			.defaultNow()
+			.$onUpdate(() => new Date())
+			.notNull(),
+	},
+	(table) => [
+		index("creator_account_report_creatorId_createdAt_idx").on(table.creatorId, table.createdAt),
+		index("creator_account_report_status_createdAt_idx").on(table.status, table.createdAt),
+		index("creator_account_report_reporterUserId_createdAt_idx").on(
+			table.reporterUserId,
+			table.createdAt,
+		),
+	],
+);
+
+export const userRelations = relations(user, ({ many, one }) => ({
 	sessions: many(session),
 	accounts: many(account),
 	passkeys: many(passkey),
@@ -294,6 +560,8 @@ export const userRelations = relations(user, ({ many }) => ({
 	purchases: many(purchase),
 	notifications: many(notification),
 	notificationPreferences: many(userNotificationPreference),
+	creatorProfile: one(creatorProfile),
+	creatorAccountReports: many(creatorAccountReport),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -380,3 +648,67 @@ export const userNotificationPreferenceRelations = relations(
 		}),
 	}),
 );
+
+export const creatorCategoryRelations = relations(creatorCategory, ({ many }) => ({
+	creators: many(creatorProfile),
+	pendingCreators: many(pendingCreator),
+}));
+
+export const creatorProfileRelations = relations(creatorProfile, ({ one, many }) => ({
+	user: one(user, {
+		fields: [creatorProfile.userId],
+		references: [user.id],
+	}),
+	category: one(creatorCategory, {
+		fields: [creatorProfile.categoryId],
+		references: [creatorCategory.id],
+	}),
+	socialProfiles: many(socialProfile),
+	bids: many(creatorBid),
+	analyticsEvents: many(creatorAnalyticsEvent),
+	accountReports: many(creatorAccountReport),
+}));
+
+export const socialProfileRelations = relations(socialProfile, ({ one, many }) => ({
+	creator: one(creatorProfile, {
+		fields: [socialProfile.creatorId],
+		references: [creatorProfile.id],
+	}),
+	analyticsEvents: many(creatorAnalyticsEvent),
+}));
+
+export const pendingCreatorRelations = relations(pendingCreator, ({ one }) => ({
+	category: one(creatorCategory, {
+		fields: [pendingCreator.categoryId],
+		references: [creatorCategory.id],
+	}),
+}));
+
+export const creatorBidRelations = relations(creatorBid, ({ one }) => ({
+	creator: one(creatorProfile, {
+		fields: [creatorBid.creatorId],
+		references: [creatorProfile.id],
+	}),
+}));
+
+export const creatorAnalyticsEventRelations = relations(creatorAnalyticsEvent, ({ one }) => ({
+	creator: one(creatorProfile, {
+		fields: [creatorAnalyticsEvent.creatorId],
+		references: [creatorProfile.id],
+	}),
+	socialProfile: one(socialProfile, {
+		fields: [creatorAnalyticsEvent.socialProfileId],
+		references: [socialProfile.id],
+	}),
+}));
+
+export const creatorAccountReportRelations = relations(creatorAccountReport, ({ one }) => ({
+	creator: one(creatorProfile, {
+		fields: [creatorAccountReport.creatorId],
+		references: [creatorProfile.id],
+	}),
+	reporterUser: one(user, {
+		fields: [creatorAccountReport.reporterUserId],
+		references: [user.id],
+	}),
+}));

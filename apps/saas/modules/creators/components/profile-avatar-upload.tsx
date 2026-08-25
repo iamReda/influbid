@@ -2,7 +2,6 @@
 
 import { getAvatarSrc, getInitials } from "@creators/lib/profile";
 import Icon from "@repo/ui/components/influencerbid/icon";
-import Image from "@repo/ui/components/influencerbid/image";
 import { CropImageDialog } from "@settings/components/CropImageDialog";
 import { useMemo, useState, type HTMLAttributes } from "react";
 import { useDropzone } from "react-dropzone";
@@ -62,26 +61,16 @@ export function ProfileAvatarUpload({
 				>
 					<input {...getInputProps()} />
 					{avatarSrc ? (
-						avatarSrc.startsWith("blob:") ? (
-							// oxlint-disable-next-line nextjs/no-img-element -- local crop preview uses a blob URL
-							<img
-								className="size-full object-cover opacity-100"
-								src={avatarSrc}
-								width={112}
-								height={112}
-								alt={`${name} profile photo`}
-							/>
-						) : (
-							<Image
-								className="size-full object-cover opacity-100"
-								src={avatarSrc}
-								width={112}
-								height={112}
-								alt={`${name} profile photo`}
-							/>
-						)
+						// oxlint-disable-next-line nextjs/no-img-element -- upload control needs immediate paint for blob + proxy URLs
+						<img
+							className="relative z-0 size-full object-cover object-center"
+							src={avatarSrc}
+							width={112}
+							height={112}
+							alt={`${name} profile photo`}
+						/>
 					) : (
-						<div className="text-h4 text-t-secondary flex size-full items-center justify-center">
+						<div className="text-h4 text-t-secondary relative z-0 flex size-full items-center justify-center">
 							{getInitials(name)}
 						</div>
 					)}

@@ -1,46 +1,122 @@
 "use client";
 
-import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import About from "@shared/components/about-section";
+import { orpc } from "@shared/lib/orpc-query-utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, Lightbulb, Shirt } from "lucide-react";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useDebounceValue } from "usehooks-ts";
 
-const marketingBase = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
+const centsToDollars = (cents: number) => Math.round(cents / 100);
 
-const LIVE_STATS = {
-	bid: 142,
-	globalRank: 18,
-	categoryRank: 3,
-	category: "Fashion",
-	suggestedAdd: 18,
+const opportunityDollars = (amountCents: number, minIncreaseCents: number) => {
+	if (amountCents <= 0) {
+		return 0;
+	}
+
+	return centsToDollars(Math.max(amountCents, minIncreaseCents));
 };
-
-const getProjectedGlobalRank = (totalBid: number) => {
-	const added = Math.max(0, totalBid - LIVE_STATS.bid);
-	return Math.max(1, LIVE_STATS.globalRank - Math.floor(added / 9));
-};
-
-const getProjectedCategoryRank = (totalBid: number) => {
-	const added = Math.max(0, totalBid - LIVE_STATS.bid);
-	return Math.max(1, LIVE_STATS.categoryRank - Math.floor(added / 18));
-};
-
-const BID_FOR_GLOBAL_1 = LIVE_STATS.bid + Math.max(0, LIVE_STATS.globalRank - 1) * 9;
-const BID_FOR_CATEGORY_1 = LIVE_STATS.bid + Math.max(0, LIVE_STATS.categoryRank - 1) * 18;
 
 const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
+	const router = useRouter();
+	const queryClient = useQueryClient();
 	const [addAmount, setAddAmount] = useState("0");
+	const [error, setError] = useState<string | null>(null);
+	const [debouncedAddAmount, setDebouncedAddAmount] = useDebounceValue(addAmount, 300);
+
+	useEffect(() => {
+		setDebouncedAddAmount(addAmount);
+	}, [addAmount, setDebouncedAddAmount]);
+
+	const { data: creator, isLoading } = useQuery(orpc.creators.getMyCreator.queryOptions());
 
 	const parsedAdd = Number(addAmount);
 	const safeAdd =
 		addAmount === "" || Number.isNaN(parsedAdd) ? 0 : Math.max(0, Math.round(parsedAdd));
-	const newTotal = LIVE_STATS.bid + safeAdd;
-	const projectedGlobalRank = getProjectedGlobalRank(newTotal);
-	const projectedCategoryRank = getProjectedCategoryRank(newTotal);
-	const globalRankGain = Math.max(0, LIVE_STATS.globalRank - projectedGlobalRank);
-	const categoryRankGain = Math.max(0, LIVE_STATS.categoryRank - projectedCategoryRank);
+	const addedAmountCents = safeAdd * 100;
+
+	const debouncedParsed = Number(debouncedAddAmount);
+	const debouncedAddCents =
+		debouncedAddAmount === "" || Number.isNaN(debouncedParsed)
+			? 0
+			: Math.max(0, Math.round(debouncedParsed)) * 100;
+
+	const { data: estimate } = useQuery({
+		...orpc.creators.estimateMyBidIncrease.queryOptions({
+			input: { addedAmountCents: debouncedAddCents },
+		}),
+		enabled: Boolean(creator),
+	});
+
+	const confirmIncrease = useMutation(
+		orpc.creators.mockConfirmBidIncrease.mutationOptions({
+			onSuccess: async () => {
+				await Promise.all([
+					queryClient.invalidateQueries({
+						queryKey: orpc.creators.getMyCreator.key(),
+					}),
+					queryClient.invalidateQueries({
+						queryKey: orpc.creators.listMyBids.key(),
+					}),
+					queryClient.invalidateQueries({
+						queryKey: orpc.creators.estimateMyBidIncrease.key(),
+					}),
+				]);
+				const successParams = new URLSearchParams();
+				successParams.set("amount", String(safeAdd));
+				router.push(`/success?${successParams.toString()}`);
+				router.refresh();
+			},
+			onError: (mutationError) => {
+				setError(
+					mutationError instanceof Error
+						? mutationError.message
+						: "Payment failed. Please try again.",
+				);
+			},
+		}),
+	);
+
+	if (!isLoading && !creator) {
+		return (
+			<About
+				hideHeader
+				embedded={embedded}
+				firstCard={{
+					title: "Increase your bid",
+					content:
+						"Add more to your current bid to move higher in the ranking and gain more visibility.",
+					useRocketIcon: true,
+					media: (
+						<div className="gap-3 bg-b-surface2 p-5 max-md:p-4 relative z-3 flex w-full flex-col rounded-3xl">
+							<p className="text-small text-t-secondary">
+								Create a ranking bid to unlock bid increases and live rank projections.
+							</p>
+						</div>
+					),
+				}}
+			/>
+		);
+	}
+
+	const currentBid = creator ? centsToDollars(creator.totalBidCents) : 0;
+	const newTotal = estimate ? centsToDollars(estimate.previewTotalCents) : currentBid + safeAdd;
+	const projectedGlobalRank = estimate?.generalRank ?? creator?.generalRank ?? 0;
+	const projectedCategoryRank = estimate?.categoryRank ?? creator?.categoryRank ?? 0;
+	const globalRankGain = Math.max(0, (creator?.generalRank ?? 0) - projectedGlobalRank);
+	const categoryRankGain = Math.max(0, (creator?.categoryRank ?? 0) - projectedCategoryRank);
+	const categoryName = creator?.categoryName ?? "Category";
+	const minIncreaseCents = creator?.minIncreaseCents ?? 500;
+	const categoryOpportunity = creator
+		? opportunityDollars(creator.amountToCategoryOneCents, minIncreaseCents)
+		: 0;
+	const globalOpportunity = creator
+		? opportunityDollars(creator.amountToGeneralOneCents, minIncreaseCents)
+		: 0;
+	const canSubmit = addedAmountCents >= minIncreaseCents && !confirmIncrease.isPending;
 
 	return (
 		<About
@@ -55,7 +131,7 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 					<div className="gap-3 bg-b-surface2 p-5 max-md:p-4 relative z-3 flex w-full flex-col rounded-3xl">
 						<div className="gap-3 flex items-center justify-between">
 							<span className="text-small text-t-primary dark:text-white">Current bid</span>
-							<span className="text-button text-t-primary dark:text-white">${LIVE_STATS.bid}</span>
+							<span className="text-button text-t-primary dark:text-white">${currentBid}</span>
 						</div>
 						<div className="gap-3 flex items-center justify-between">
 							<span className="text-small text-t-primary dark:text-white">Added amount</span>
@@ -89,7 +165,7 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 										<Shirt className="size-3.5 stroke-[1.75px]" aria-hidden />
 									</span>
 									<span className="text-hairline text-t-primary dark:text-white">
-										{LIVE_STATS.category}
+										{categoryName}
 									</span>
 								</div>
 								<div className="text-h5 text-t-primary dark:text-white">
@@ -110,12 +186,31 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 								aria-hidden
 							/>
 							<p className="text-small text-t-secondary">
-								Claim <span className="text-t-primary font-semibold">#1</span> in{" "}
-								<span className="text-t-primary font-semibold">{LIVE_STATS.category}</span> for{" "}
-								<span className="text-t-primary font-semibold">${BID_FOR_CATEGORY_1}</span> and{" "}
-								<span className="text-t-primary font-semibold">#1</span> in{" "}
-								<span className="text-t-primary font-semibold">Global</span> for{" "}
-								<span className="text-t-primary font-semibold">${BID_FOR_GLOBAL_1}</span>.
+								{categoryOpportunity > 0 || globalOpportunity > 0 ? (
+									<>
+										Claim <span className="text-t-primary font-semibold">#1</span> in{" "}
+										<span className="text-t-primary font-semibold">{categoryName}</span>
+										{categoryOpportunity > 0 ? (
+											<>
+												{" "}
+												for{" "}
+												<span className="text-t-primary font-semibold">${categoryOpportunity}</span>
+											</>
+										) : null}{" "}
+										and <span className="text-t-primary font-semibold">#1</span> in{" "}
+										<span className="text-t-primary font-semibold">Global</span>
+										{globalOpportunity > 0 ? (
+											<>
+												{" "}
+												for{" "}
+												<span className="text-t-primary font-semibold">${globalOpportunity}</span>
+											</>
+										) : null}
+										.
+									</>
+								) : (
+									<>You are already #1 in {categoryName} and Global.</>
+								)}
 							</p>
 						</div>
 					</div>
@@ -129,6 +224,7 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 							value={addAmount}
 							onChange={(event) => {
 								const next = event.target.value.replace(/[^\d]/g, "");
+								setError(null);
 								setAddAmount(next);
 							}}
 							name="about-add-amount"
@@ -137,8 +233,24 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 							placeholder="0"
 							currency="$"
 						/>
-						<Button className="w-full" isSecondary as="link" href={`${marketingBase}/`}>
-							Increase bid
+						{error ? (
+							<p className="text-small text-primary3 text-center" role="alert">
+								{error}
+							</p>
+						) : null}
+						<Button
+							className="w-full"
+							isSecondary
+							disabled={!canSubmit}
+							onClick={() => {
+								if (!canSubmit) {
+									return;
+								}
+								setError(null);
+								confirmIncrease.mutate({ addedAmountCents });
+							}}
+						>
+							{confirmIncrease.isPending ? "Processing payment…" : "Increase bid"}
 						</Button>
 					</div>
 				),

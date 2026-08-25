@@ -1,39 +1,51 @@
 "use client";
 
 import Layout from "@shared/components/influencerbid/layout";
+import { orpc } from "@shared/lib/orpc-query-utils";
+import { useQuery } from "@tanstack/react-query";
 import { Receipt } from "lucide-react";
 
-type Payment = {
-	id: string;
-	date: string;
-	description: "Ranking bid" | "Bid increase";
-	amount: number;
-};
-
-const payments: Payment[] = [
-	{
-		id: "pay-1",
-		date: "Aug 18, 2026 · 2:34 PM",
-		description: "Bid increase",
-		amount: 142,
-	},
-	{
-		id: "pay-2",
-		date: "Aug 9, 2026 · 11:08 AM",
-		description: "Bid increase",
-		amount: 89,
-	},
-	{
-		id: "pay-3",
-		date: "Jul 27, 2026 · 6:51 PM",
-		description: "Ranking bid",
-		amount: 76,
-	},
-];
+const centsToDollars = (cents: number) => Math.round(cents / 100);
 
 const formatAmount = (amount: number) => `$${amount.toLocaleString("en-US")}`;
 
+const formatPaidAt = (value: Date | string | null) => {
+	if (!value) {
+		return "Pending";
+	}
+
+	const date = typeof value === "string" ? new Date(value) : value;
+	const datePart = date.toLocaleDateString("en-US", {
+		month: "short",
+		day: "numeric",
+		year: "numeric",
+	});
+	const timePart = date.toLocaleTimeString("en-US", {
+		hour: "numeric",
+		minute: "2-digit",
+	});
+
+	return `${datePart} · ${timePart}`;
+};
+
+const descriptionForType = (type: "INITIAL" | "INCREASE") =>
+	type === "INITIAL" ? "Ranking bid" : "Bid increase";
+
 const PaymentHistoryPage = () => {
+	const { data: bids = [] } = useQuery(orpc.creators.listMyBids.queryOptions());
+
+	const payments = bids.map((bid) => ({
+		id: bid.id,
+		date: formatPaidAt(bid.paidAt),
+		dateTime: bid.paidAt
+			? typeof bid.paidAt === "string"
+				? bid.paidAt
+				: bid.paidAt.toISOString()
+			: undefined,
+		description: descriptionForType(bid.type),
+		amount: centsToDollars(bid.amountCents),
+	}));
+
 	const totalSpent = payments.reduce((sum, payment) => sum + payment.amount, 0);
 
 	return (
@@ -53,7 +65,9 @@ const PaymentHistoryPage = () => {
 								</span>
 								<div className="min-w-0">
 									<h2 className="text-body-bold text-t-primary">Recent payments</h2>
-									<p className="mt-0.5 text-small text-t-tertiary">{payments.length} payments</p>
+									<p className="mt-0.5 text-small text-t-tertiary">
+										{payments.length} {payments.length === 1 ? "payment" : "payments"}
+									</p>
 								</div>
 							</div>
 							<div className="shrink-0 text-right">
@@ -64,23 +78,33 @@ const PaymentHistoryPage = () => {
 							</div>
 						</div>
 
-						<div className="divide-stroke-subtle divide-y">
-							{payments.map((payment) => (
-								<div key={payment.id} className="gap-4 py-4 first:pt-0 last:pb-0 flex items-center">
-									<div className="min-w-0 flex-1">
-										<div className="text-button font-bold text-t-primary truncate">
-											{payment.description}
+						{payments.length === 0 ? (
+							<p className="text-small text-t-tertiary">No payments yet.</p>
+						) : (
+							<div className="divide-stroke-subtle divide-y">
+								{payments.map((payment) => (
+									<div
+										key={payment.id}
+										className="gap-4 py-4 first:pt-0 last:pb-0 flex items-center"
+									>
+										<div className="min-w-0 flex-1">
+											<div className="text-button font-bold text-t-primary truncate">
+												{payment.description}
+											</div>
+											<time
+												className="mt-1 text-small text-t-tertiary block"
+												dateTime={payment.dateTime}
+											>
+												{payment.date}
+											</time>
 										</div>
-										<time className="mt-1 text-small text-t-tertiary block" dateTime={payment.date}>
-											{payment.date}
-										</time>
+										<span className="text-body-bold text-t-primary shrink-0">
+											{formatAmount(payment.amount)}
+										</span>
 									</div>
-									<span className="text-body-bold text-t-primary shrink-0">
-										{formatAmount(payment.amount)}
-									</span>
-								</div>
-							))}
-						</div>
+								))}
+							</div>
+						)}
 					</article>
 				</div>
 			</div>

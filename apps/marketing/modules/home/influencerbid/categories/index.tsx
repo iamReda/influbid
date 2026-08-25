@@ -1,20 +1,24 @@
 "use client";
 
-import { influencerCategories } from "@home/influencerbid/constants/categories";
 import Layout from "@shared/components/influencerbid/layout";
 import { useMemo, useState } from "react";
 
+import type { CategoryCardDto } from "../actions";
 import Category from "./category-card";
 
-const CategoriesPage = () => {
+type CategoriesPageProps = {
+	categories: CategoryCardDto[];
+};
+
+const CategoriesPage = ({ categories }: CategoriesPageProps) => {
 	const [search, setSearch] = useState("");
 
 	const filteredCategories = useMemo(
 		() =>
-			influencerCategories.filter((category) =>
+			categories.filter((category) =>
 				category.name.toLowerCase().includes(search.trim().toLowerCase()),
 			),
-		[search],
+		[categories, search],
 	);
 
 	return (

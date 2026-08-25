@@ -12,11 +12,7 @@ export function Footer() {
 				<div>
 					<Logo className="font-heading opacity-70" />
 					<p className="mt-4 max-w-xs text-sm leading-relaxed">
-						© {new Date().getFullYear()} {config.appName}.{" "}
-						<a href="https://supastarter.dev" className="transition-colors hover:text-touch">
-							{t("common.footer.builtWith")}
-						</a>
-						.
+						© {new Date().getFullYear()} {config.appName}.
 					</p>
 				</div>
 

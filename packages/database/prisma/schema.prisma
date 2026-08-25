@@ -44,6 +44,8 @@ model User {
   twofactors               TwoFactor[]
   notifications            Notification[]
   notificationPreferences  UserNotificationPreference[]
+  creatorProfile           CreatorProfile?
+  creatorAccountReports    CreatorAccountReport[]
 
   @@unique([email])
   @@unique([username])
@@ -248,4 +250,242 @@ model UserNotificationPreference {
 
   @@unique([userId, type, target])
   @@map("user_notification_preference")
+}
+
+enum PendingCreatorStatus {
+  PENDING_PAYMENT
+  PROCESSING
+  COMPLETED
+  EXPIRED
+}
+
+enum CreatorBidType {
+  INITIAL
+  INCREASE
+}
+
+enum CreatorBidStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+enum CreatorPaymentSource {
+  MOCK
+  STRIPE
+}
+
+enum CreatorAnalyticsEventType {
+  PROFILE_VIEW
+  SOCIAL_CLICK
+  CONTACT_CLICK
+}
+
+enum CreatorReportReason {
+  ADULT_CONTENT
+  DRUG_RELATED
+  ILLEGAL
+  FAKE_OR_IMPERSONATION
+  OTHER
+}
+
+enum CreatorReportStatus {
+  OPEN
+  REVIEWED
+  DISMISSED
+  ACTIONED
+}
+
+model CreatorCategory {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String? @db.Text
+  icon        String?
+  active      Boolean @default(true)
+  order       Int     @default(0)
+
+  creators        CreatorProfile[]
+  pendingCreators PendingCreator[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+  @@map("creator_category")
+}
+
+model CreatorProfile {
+  id String @id @default(cuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  publicName  String
+  avatarUrl   String
+  description String? @db.Text
+
+  categoryId String
+  category   CreatorCategory @relation(fields: [categoryId], references: [id])
+
+  totalBidCents Int    @default(0)
+  currency      String @default("USD")
+
+  joinedAt         DateTime
+  bidReachedAt     DateTime
+  accountClaimedAt DateTime?
+
+  isPublished Boolean @default(false)
+
+  socialProfiles  SocialProfile[]
+  bids            CreatorBid[]
+  analyticsEvents CreatorAnalyticsEvent[]
+  accountReports  CreatorAccountReport[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([totalBidCents, bidReachedAt])
+  @@index([categoryId, totalBidCents, bidReachedAt])
+  @@index([isPublished, totalBidCents])
+  @@index([categoryId, isPublished, totalBidCents])
+  @@map("creator_profile")
+}
+
+model SocialProfile {
+  id String @id @default(cuid())
+
+  creatorId String
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  platform      String
+  url           String
+  normalizedUrl String
+  position      Int
+
+  deletedAt DateTime?
+
+  analyticsEvents CreatorAnalyticsEvent[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([creatorId, position])
+  @@index([creatorId, deletedAt])
+  @@index([normalizedUrl])
+  @@index([creatorId, position])
+  @@map("social_profile")
+}
+
+model PendingCreator {
+  id String @id @default(cuid())
+
+  email       String
+  publicName  String
+  avatarUrl   String
+  description String? @db.Text
+
+  categoryId String
+  category   CreatorCategory @relation(fields: [categoryId], references: [id])
+
+  socialProfiles Json
+
+  bidAmountCents Int
+  currency       String @default("USD")
+
+  estimatedRank Int?
+
+  status PendingCreatorStatus @default(PENDING_PAYMENT)
+
+  paymentReference String? @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  expiresAt DateTime
+
+  @@index([email])
+  @@index([status, expiresAt])
+  @@index([categoryId])
+  @@map("pending_creator")
+}
+
+model CreatorBid {
+  id String @id @default(cuid())
+
+  creatorId String
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  type   CreatorBidType
+  status CreatorBidStatus
+
+  amountCents Int
+  currency    String @default("USD")
+
+  totalAfterCents Int?
+
+  paymentSource CreatorPaymentSource
+
+  providerPaymentId String? @unique
+  idempotencyKey    String  @unique
+
+  createdAt DateTime  @default(now())
+  paidAt    DateTime?
+
+  @@index([creatorId, createdAt])
+  @@index([creatorId, status, createdAt])
+  @@index([status, createdAt])
+  @@map("creator_bid")
+}
+
+model CreatorAnalyticsEvent {
+  id String @id @default(cuid())
+
+  creatorId String
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  type CreatorAnalyticsEventType
+
+  socialProfileId String?
+  socialProfile   SocialProfile? @relation(fields: [socialProfileId], references: [id], onDelete: SetNull)
+
+  platformSnapshot String?
+  urlSnapshot      String?
+
+  visitorKeyHash String?
+
+  createdAt DateTime @default(now())
+
+  @@index([creatorId, createdAt])
+  @@index([creatorId, type, createdAt])
+  @@index([socialProfileId, createdAt])
+  @@index([creatorId, type, visitorKeyHash, createdAt])
+  @@map("creator_analytics_event")
+}
+
+model CreatorAccountReport {
+  id String @id @default(cuid())
+
+  creatorId String
+  creator   CreatorProfile @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+
+  reporterUserId String?
+  reporterUser   User?   @relation(fields: [reporterUserId], references: [id], onDelete: SetNull)
+
+  /// Guest reporter name when not signed in
+  reporterName  String?
+  /// Guest reporter email when not signed in
+  reporterEmail String?
+
+  reason  CreatorReportReason
+  message String              @db.Text
+
+  status CreatorReportStatus @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([creatorId, createdAt])
+  @@index([status, createdAt])
+  @@index([reporterUserId, createdAt])
+  @@map("creator_account_report")
 }

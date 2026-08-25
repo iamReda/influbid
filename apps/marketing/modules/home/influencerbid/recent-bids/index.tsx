@@ -1,9 +1,9 @@
 import Icon from "@repo/ui/components/influencerbid/icon";
 
 import RecentBidRow from "./recent-bid-row";
-import { RECENT_BIDS_VISIBLE_ROWS, recentBids } from "./recent-bids";
+import { RECENT_BIDS_VISIBLE_ROWS, type RecentBid } from "./recent-bids";
 
-const RecentBids = () => (
+const RecentBids = ({ recentBids }: { recentBids: RecentBid[] }) => (
 	<div className="section">
 		<div className="center">
 			<div className="bg-b-surface2 p-5 max-md:p-4 overflow-hidden rounded-4xl shadow-[inset_0_0_0_1.5px_var(--color-stroke-subtle)]">

@@ -4,15 +4,7 @@ import { useSession } from "@auth/hooks/use-session";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import { UserAvatar } from "@shared/components/UserAvatar";
-import {
-	Globe,
-	LayoutDashboard,
-	Lightbulb,
-	LogOut,
-	Receipt,
-	Settings,
-	type LucideIcon,
-} from "lucide-react";
+import { Globe, Lightbulb, LogOut, Receipt, Settings, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -57,11 +49,6 @@ const UserMenu = ({ onLogout }: Props) => {
 	const { name, email, image } = user;
 
 	const navigation: NavItem[] = [
-		{
-			title: "Dashboard",
-			icon: LayoutDashboard,
-			url: "/dashboard",
-		},
 		{
 			title: "My Public profile",
 			icon: Globe,
