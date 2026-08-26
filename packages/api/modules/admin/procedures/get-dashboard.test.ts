@@ -37,6 +37,7 @@ describe("getDashboard", () => {
 				socialCtrPercent: 20,
 			},
 			revenueSeries: [{ date: "2026-08-01", revenueCents: 5000, transactions: 2 }],
+			activitySeries: [{ date: "2026-08-01", profileViews: 10, socialClicks: 2 }],
 			latestBids: [],
 			categoryPerformance: [],
 			topCreators: [],

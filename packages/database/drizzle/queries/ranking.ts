@@ -61,6 +61,7 @@ export async function getCreatorRank(options: {
 
 export type LeaderboardRow = {
 	id: string;
+	userId: string;
 	rank: number;
 	publicName: string;
 	avatarUrl: string;
@@ -73,6 +74,7 @@ export type LeaderboardRow = {
 	categorySlug: string;
 	username: string | null;
 	platforms: string[];
+	profileViewCount: number;
 	socialClickCount: number;
 };
 
@@ -119,7 +121,7 @@ export async function listLeaderboard(options: {
 					columns: { id: true, name: true, slug: true },
 				},
 				user: {
-					columns: { username: true },
+					columns: { id: true, username: true },
 				},
 				socialProfiles: {
 					where: (social, { isNull }) => isNull(social.deletedAt),
@@ -132,27 +134,37 @@ export async function listLeaderboard(options: {
 
 	const total = totalRow?.count ?? 0;
 	const creatorIds = rows.map((row) => row.id);
-	const clickCounts =
+	const eventCounts =
 		creatorIds.length === 0
 			? []
 			: await db
 					.select({
 						creatorId: creatorAnalyticsEvent.creatorId,
+						type: creatorAnalyticsEvent.type,
 						count: sql<number>`count(*)::int`,
 					})
 					.from(creatorAnalyticsEvent)
 					.where(
 						and(
 							inArray(creatorAnalyticsEvent.creatorId, creatorIds),
-							eq(creatorAnalyticsEvent.type, "SOCIAL_CLICK"),
+							inArray(creatorAnalyticsEvent.type, ["PROFILE_VIEW", "SOCIAL_CLICK"]),
 						),
 					)
-					.groupBy(creatorAnalyticsEvent.creatorId);
+					.groupBy(creatorAnalyticsEvent.creatorId, creatorAnalyticsEvent.type);
 
-	const clicksByCreator = new Map(clickCounts.map((row) => [row.creatorId, row.count] as const));
+	const viewsByCreator = new Map<string, number>();
+	const clicksByCreator = new Map<string, number>();
+	for (const row of eventCounts) {
+		if (row.type === "PROFILE_VIEW") {
+			viewsByCreator.set(row.creatorId, row.count);
+		} else if (row.type === "SOCIAL_CLICK") {
+			clicksByCreator.set(row.creatorId, row.count);
+		}
+	}
 
 	const items: LeaderboardRow[] = rows.map((row, index) => ({
 		id: row.id,
+		userId: row.userId,
 		rank: skip + index + 1,
 		publicName: row.publicName,
 		avatarUrl: row.avatarUrl,
@@ -165,6 +177,7 @@ export async function listLeaderboard(options: {
 		categorySlug: row.category.slug,
 		username: row.user.username,
 		platforms: row.socialProfiles.map((social) => social.platform),
+		profileViewCount: viewsByCreator.get(row.id) ?? 0,
 		socialClickCount: clicksByCreator.get(row.id) ?? 0,
 	}));
 

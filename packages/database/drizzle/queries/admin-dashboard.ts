@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, inArray, lte, sql } from "drizzle-orm";
 
 import { db } from "../client";
 import {
@@ -74,6 +74,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 		categories,
 		topCreators,
 		publishedCounts,
+		activityEvents,
 	] = await Promise.all([
 		db.select({ value: count() }).from(creatorProfile).where(eq(creatorProfile.isPublished, true)),
 		db
@@ -115,6 +116,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 				totalAfterCents: creatorBid.totalAfterCents,
 				paidAt: creatorBid.paidAt,
 				creatorId: creatorProfile.id,
+				userId: creatorProfile.userId,
 				publicName: creatorProfile.publicName,
 				avatarUrl: creatorProfile.avatarUrl,
 				username: user.username,
@@ -127,7 +129,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 			.innerJoin(creatorCategory, eq(creatorProfile.categoryId, creatorCategory.id))
 			.where(eq(creatorBid.status, "PAID"))
 			.orderBy(desc(creatorBid.paidAt))
-			.limit(10),
+			.limit(4),
 		db
 			.select({
 				id: creatorCategory.id,
@@ -142,6 +144,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 		db
 			.select({
 				id: creatorProfile.id,
+				userId: creatorProfile.userId,
 				publicName: creatorProfile.publicName,
 				avatarUrl: creatorProfile.avatarUrl,
 				totalBidCents: creatorProfile.totalBidCents,
@@ -154,7 +157,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 			.innerJoin(user, eq(creatorProfile.userId, user.id))
 			.where(eq(creatorProfile.isPublished, true))
 			.orderBy(desc(creatorProfile.totalBidCents), asc(creatorProfile.bidReachedAt))
-			.limit(10),
+			.limit(5),
 		db
 			.select({
 				categoryId: creatorProfile.categoryId,
@@ -163,6 +166,16 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 			.from(creatorProfile)
 			.where(eq(creatorProfile.isPublished, true))
 			.groupBy(creatorProfile.categoryId),
+		db
+			.select({
+				type: creatorAnalyticsEvent.type,
+				createdAt: creatorAnalyticsEvent.createdAt,
+			})
+			.from(creatorAnalyticsEvent)
+			.where(
+				and(inArray(creatorAnalyticsEvent.type, ["PROFILE_VIEW", "SOCIAL_CLICK"]), analyticsFilter),
+			)
+			.orderBy(asc(creatorAnalyticsEvent.createdAt)),
 	]);
 
 	const bidTransactions = toInt(bidStats[0]?.transactions);
@@ -212,6 +225,39 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 		publishedCounts.map((row) => [row.categoryId, row.value] as const),
 	);
 
+	const activityBuckets = new Map<
+		string,
+		{ date: string; profileViews: number; socialClicks: number }
+	>();
+	const ensureActivityBucket = (key: string) => {
+		const existing = activityBuckets.get(key);
+		if (existing) {
+			return existing;
+		}
+		const created = { date: key, profileViews: 0, socialClicks: 0 };
+		activityBuckets.set(key, created);
+		return created;
+	};
+
+	if (from) {
+		let cursor = startOfUtcDay(from);
+		const end = startOfUtcDay(to);
+		while (cursor.getTime() <= end.getTime()) {
+			ensureActivityBucket(cursor.toISOString().slice(0, 10));
+			cursor = addUtcDays(cursor, 1);
+		}
+	}
+
+	for (const event of activityEvents) {
+		const key = startOfUtcDay(event.createdAt).toISOString().slice(0, 10);
+		const bucket = ensureActivityBucket(key);
+		if (event.type === "PROFILE_VIEW") {
+			bucket.profileViews += 1;
+		} else if (event.type === "SOCIAL_CLICK") {
+			bucket.socialClicks += 1;
+		}
+	}
+
 	return {
 		range,
 		overview: {
@@ -226,6 +272,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 				profileViews > 0 ? Math.round((socialClicks / profileViews) * 1000) / 10 : 0,
 		},
 		revenueSeries: [...buckets.values()].sort((a, b) => a.date.localeCompare(b.date)),
+		activitySeries: [...activityBuckets.values()].sort((a, b) => a.date.localeCompare(b.date)),
 		latestBids: latestBids.map((bid) => ({
 			id: bid.id,
 			type: bid.type,
@@ -234,6 +281,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 			totalAfterCents: bid.totalAfterCents,
 			paidAt: bid.paidAt,
 			creatorId: bid.creatorId,
+			userId: bid.userId,
 			publicName: bid.publicName,
 			avatarUrl: bid.avatarUrl,
 			username: bid.username,
@@ -259,6 +307,7 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 		}),
 		topCreators: topCreators.map((creator, index) => ({
 			id: creator.id,
+			userId: creator.userId,
 			rank: index + 1,
 			publicName: creator.publicName,
 			avatarUrl: creator.avatarUrl,

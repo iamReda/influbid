@@ -167,7 +167,63 @@ export async function listAdminBidRevenueSeries(range: AdminDashboardRange) {
 	return [...buckets.values()].sort((a, b) => a.date.localeCompare(b.date));
 }
 
-export async function listAdminLatestPaidBids(limit = 10) {
+/** Daily profile views + social clicks for the selected admin dashboard range. */
+export async function listAdminActivitySeries(range: AdminDashboardRange) {
+	const { from, to } = getAdminDashboardRangeBounds(range);
+	const events = await db.creatorAnalyticsEvent.findMany({
+		where: {
+			type: { in: ["PROFILE_VIEW", "SOCIAL_CLICK"] },
+			...(from
+				? {
+						createdAt: {
+							gte: from,
+							lte: to,
+						},
+					}
+				: {}),
+		},
+		select: {
+			type: true,
+			createdAt: true,
+		},
+		orderBy: { createdAt: "asc" },
+	});
+
+	const buckets = new Map<string, { date: string; profileViews: number; socialClicks: number }>();
+
+	const ensureBucket = (key: string) => {
+		const existing = buckets.get(key);
+		if (existing) {
+			return existing;
+		}
+		const created = { date: key, profileViews: 0, socialClicks: 0 };
+		buckets.set(key, created);
+		return created;
+	};
+
+	if (from) {
+		let cursor = startOfUtcDay(from);
+		const end = startOfUtcDay(to);
+		while (cursor.getTime() <= end.getTime()) {
+			ensureBucket(cursor.toISOString().slice(0, 10));
+			cursor = addUtcDays(cursor, 1);
+		}
+	}
+
+	for (const event of events) {
+		const key = startOfUtcDay(event.createdAt).toISOString().slice(0, 10);
+		const bucket = ensureBucket(key);
+		if (event.type === "PROFILE_VIEW") {
+			bucket.profileViews += 1;
+		} else {
+			bucket.socialClicks += 1;
+		}
+	}
+
+	return [...buckets.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function listAdminLatestPaidBids(limit = 4) {
 	const bids = await db.creatorBid.findMany({
 		where: { status: "PAID" },
 		orderBy: { paidAt: "desc" },
@@ -178,8 +234,9 @@ export async function listAdminLatestPaidBids(limit = 10) {
 					id: true,
 					publicName: true,
 					avatarUrl: true,
+					userId: true,
 					category: { select: { name: true, slug: true } },
-					user: { select: { username: true } },
+					user: { select: { id: true, username: true } },
 				},
 			},
 		},
@@ -193,6 +250,7 @@ export async function listAdminLatestPaidBids(limit = 10) {
 		totalAfterCents: bid.totalAfterCents,
 		paidAt: bid.paidAt,
 		creatorId: bid.creator.id,
+		userId: bid.creator.userId,
 		publicName: bid.creator.publicName,
 		avatarUrl: bid.creator.avatarUrl,
 		username: bid.creator.user.username,
@@ -280,18 +338,20 @@ export async function listAdminCategoryPerformance(range: AdminDashboardRange) {
 }
 
 export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
-	const [overview, revenueSeries, latestBids, categoryPerformance, topCreators] = await Promise.all(
-		[
+	const [overview, revenueSeries, activitySeries, latestBids, categoryPerformance, topCreators] =
+		await Promise.all([
 			getAdminDashboardOverview(range),
 			listAdminBidRevenueSeries(range),
-			listAdminLatestPaidBids(10),
+			listAdminActivitySeries(range),
+			listAdminLatestPaidBids(4),
 			listAdminCategoryPerformance(range),
 			db.creatorProfile.findMany({
 				where: { isPublished: true },
 				orderBy: [{ totalBidCents: "desc" }, { bidReachedAt: "asc" }],
-				take: 10,
+				take: 5,
 				select: {
 					id: true,
+					userId: true,
 					publicName: true,
 					avatarUrl: true,
 					totalBidCents: true,
@@ -299,17 +359,18 @@ export async function getAdminDashboardSnapshot(range: AdminDashboardRange) {
 					user: { select: { username: true } },
 				},
 			}),
-		],
-	);
+		]);
 
 	return {
 		range,
 		overview,
 		revenueSeries,
+		activitySeries,
 		latestBids,
 		categoryPerformance,
 		topCreators: topCreators.map((creator, index) => ({
 			id: creator.id,
+			userId: creator.userId,
 			rank: index + 1,
 			publicName: creator.publicName,
 			avatarUrl: creator.avatarUrl,

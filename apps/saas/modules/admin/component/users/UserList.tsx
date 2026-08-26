@@ -247,7 +247,7 @@ export function UserList() {
 			<DropdownMenu>
 				<DropdownMenuTrigger
 					render={
-						<Button size="icon" variant="ghost">
+						<Button size="icon" variant="ghost" onClick={(event) => event.stopPropagation()}>
 							<MoreVerticalIcon className="size-4" />
 						</Button>
 					}
@@ -475,7 +475,11 @@ export function UserList() {
 								<TableBody>
 									{table.getRowModel().rows?.length
 										? table.getRowModel().rows.map((row) => (
-												<TableRow key={row.id} className="group">
+												<TableRow
+													key={row.id}
+													className="group cursor-pointer"
+													onClick={() => router.push(`/admin/users/${row.original.id}`)}
+												>
 													{row.getVisibleCells().map((cell) => (
 														<TableCell
 															key={cell.id}

@@ -17,6 +17,7 @@ import { orpc } from "@shared/lib/orpc-query-utils";
 import { useQuery } from "@tanstack/react-query";
 import { LayoutGrid, type LucideIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { parseAsInteger, parseAsString, useQueryState } from "nuqs";
 import { useEffect, useMemo } from "react";
 
@@ -33,6 +34,7 @@ function formatUsd(cents: number, formatter: ReturnType<typeof useFormatter>) {
 export function AdminLeaderboardList() {
 	const t = useTranslations("admin.leaderboard");
 	const formatter = useFormatter();
+	const router = useRouter();
 	const [currentPage, setCurrentPage] = useQueryState("currentPage", parseAsInteger.withDefault(1));
 	const [categorySlug, setCategorySlug] = useQueryState(
 		"category",
@@ -117,12 +119,17 @@ export function AdminLeaderboardList() {
 								<TableHead>{t("columns.creator")}</TableHead>
 								<TableHead>{t("columns.category")}</TableHead>
 								<TableHead className="text-right">{t("columns.totalBid")}</TableHead>
+								<TableHead className="text-right">{t("columns.profileViews")}</TableHead>
 								<TableHead className="text-right">{t("columns.socialClicks")}</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody>
 							{items.map((item) => (
-								<TableRow key={item.id}>
+								<TableRow
+									key={item.id}
+									className="cursor-pointer"
+									onClick={() => router.push(`/admin/users/${item.userId}`)}
+								>
 									<TableCell className="font-medium">#{item.rank}</TableCell>
 									<TableCell>
 										<div className="gap-2 flex items-center">
@@ -142,6 +149,9 @@ export function AdminLeaderboardList() {
 									<TableCell>{item.categoryName}</TableCell>
 									<TableCell className="font-medium text-right">
 										{formatUsd(item.totalBidCents, formatter)}
+									</TableCell>
+									<TableCell className="text-right">
+										{formatter.number(item.profileViewCount)}
 									</TableCell>
 									<TableCell className="text-right">
 										{formatter.number(item.socialClickCount)}
