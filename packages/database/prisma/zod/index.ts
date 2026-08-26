@@ -84,7 +84,7 @@ export type UserNotificationPreferenceScalarFieldEnum = z.infer<typeof UserNotif
 
 // File: CreatorCategoryScalarFieldEnum.schema.ts
 
-export const CreatorCategoryScalarFieldEnumSchema = z.enum(['id', 'name', 'slug', 'description', 'icon', 'active', 'order', 'createdAt', 'updatedAt'])
+export const CreatorCategoryScalarFieldEnumSchema = z.enum(['id', 'name', 'slug', 'description', 'icon', 'color', 'active', 'order', 'createdAt', 'updatedAt'])
 
 export type CreatorCategoryScalarFieldEnum = z.infer<typeof CreatorCategoryScalarFieldEnumSchema>;
 
@@ -433,6 +433,7 @@ export const CreatorCategorySchema = z.object({
   slug: z.string(),
   description: z.string().nullish(),
   icon: z.string().nullish(),
+  color: z.string().nullish(),
   active: z.boolean().default(true),
   order: z.number().int(),
   createdAt: z.date(),

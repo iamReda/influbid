@@ -63,6 +63,67 @@ export async function listPaidCreatorBids(creatorId: string) {
 	});
 }
 
+export async function listCreatorBidsByCreatorId(creatorId: string) {
+	return db.creatorBid.findMany({
+		where: { creatorId },
+		orderBy: { createdAt: "desc" },
+	});
+}
+
+export async function listAllCreatorBids(options?: {
+	limit?: number;
+	offset?: number;
+	status?: CreatorBidStatus;
+	query?: string;
+}) {
+	const limit = options?.limit ?? 50;
+	const offset = options?.offset ?? 0;
+	const query = options?.query?.trim();
+
+	const where = {
+		...(options?.status ? { status: options.status } : {}),
+		...(query
+			? {
+					creator: {
+						OR: [
+							{ publicName: { contains: query, mode: "insensitive" as const } },
+							{ user: { email: { contains: query, mode: "insensitive" as const } } },
+							{ user: { username: { contains: query, mode: "insensitive" as const } } },
+						],
+					},
+				}
+			: {}),
+	};
+
+	const [bids, total] = await Promise.all([
+		db.creatorBid.findMany({
+			where,
+			orderBy: { createdAt: "desc" },
+			take: limit,
+			skip: offset,
+			include: {
+				creator: {
+					select: {
+						id: true,
+						publicName: true,
+						avatarUrl: true,
+						user: {
+							select: {
+								id: true,
+								email: true,
+								username: true,
+							},
+						},
+					},
+				},
+			},
+		}),
+		db.creatorBid.count({ where }),
+	]);
+
+	return { bids, total };
+}
+
 /**
  * Atomically apply a paid bid increase.
  * Idempotent when called with an existing idempotencyKey that is already PAID.

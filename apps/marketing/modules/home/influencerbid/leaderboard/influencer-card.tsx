@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
 
 import type { LeaderboardItemDto } from "../actions";
-import { buildPlatformUrl, formatBid, formatClicks } from "./influencers";
+import { formatBid, formatClicks } from "./influencers";
 
 type InfluencerCardProps = {
 	item: LeaderboardItemDto;
@@ -94,19 +94,9 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 
 					<div className="mb-2 gap-2.5 flex items-center">
 						{item.platforms.map((platform) => (
-							<a
-								key={platform}
-								className="inline-flex transition-opacity hover:opacity-80"
-								href={buildPlatformUrl(item.name, platform)}
-								target="_blank"
-								rel="noopener noreferrer"
-								aria-label={`Open ${item.name} on ${platform}`}
-								onClick={(event) => {
-									event.stopPropagation();
-								}}
-							>
+							<span key={platform} className="inline-flex" aria-hidden>
 								<SocialPlatformIcon platform={platform} className="size-5 shrink-0" colored />
-							</a>
+							</span>
 						))}
 					</div>
 

@@ -37,12 +37,17 @@ export function middleware(request: NextRequest) {
 	const { pathname } = request.nextUrl;
 	const segments = pathname.split("/").filter(Boolean);
 
+	const requestHeaders = new Headers(request.headers);
+	requestHeaders.set("x-pathname", pathname);
+
 	if (segments.length === 1) {
 		const slug = segments[0]?.toLowerCase();
 		if (slug && !RESERVED.has(slug)) {
 			const url = request.nextUrl.clone();
 			url.pathname = `/u/${slug}`;
-			return NextResponse.rewrite(url);
+			return NextResponse.rewrite(url, {
+				request: { headers: requestHeaders },
+			});
 		}
 	}
 
@@ -51,11 +56,15 @@ export function middleware(request: NextRequest) {
 		if (slug && !RESERVED.has(slug)) {
 			const url = request.nextUrl.clone();
 			url.pathname = `/u/${slug}/edit`;
-			return NextResponse.rewrite(url);
+			return NextResponse.rewrite(url, {
+				request: { headers: requestHeaders },
+			});
 		}
 	}
 
-	return NextResponse.next();
+	return NextResponse.next({
+		request: { headers: requestHeaders },
+	});
 }
 
 export const config = {

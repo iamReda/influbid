@@ -33,7 +33,7 @@ const Start = ({ categories, defaultBidDollars }: StartProps) => {
 							<div className="max-w-200 max-lg:max-w-175 max-md:max-w-full max-md:text-left mx-auto text-center">
 								<div className="mb-4 max-md:justify-start flex justify-center">
 									<span className="border-primary1/15 bg-primary1/5 px-3 py-1.5 text-button text-t-blue inline-flex items-center rounded-2xl border-[1.5px]">
-										Get discovered by more people and brands.
+										Get discovered ✨ by more people and brands 🚀.
 									</span>
 								</div>
 								<h1 className="mb-5 text-hero max-lg:mx-auto max-lg:mb-5 max-lg:max-w-132 max-md:max-w-full">

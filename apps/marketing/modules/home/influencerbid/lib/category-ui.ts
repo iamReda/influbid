@@ -14,15 +14,17 @@ import {
 
 export type CategoryUiMeta = {
 	icon: LucideIcon;
+	iconName: string | null;
 	colors: {
 		icon: string;
 		bg: string;
 		border: string;
 	};
+	hexColor: string | null;
 };
 
-/** Presentation-only mapping keyed by DB category slug. */
-export const CATEGORY_UI_BY_SLUG: Record<string, CategoryUiMeta> = {
+/** Presentation-only fallback mapping keyed by DB category slug. */
+export const CATEGORY_UI_BY_SLUG: Record<string, Omit<CategoryUiMeta, "iconName" | "hexColor">> = {
 	fashion: {
 		icon: Shirt,
 		colors: {
@@ -105,7 +107,7 @@ export const CATEGORY_UI_BY_SLUG: Record<string, CategoryUiMeta> = {
 	},
 };
 
-export const fallbackCategoryUi: CategoryUiMeta = {
+export const fallbackCategoryUi: Omit<CategoryUiMeta, "iconName" | "hexColor"> = {
 	icon: Heart,
 	colors: {
 		icon: "text-t-secondary",
@@ -114,6 +116,15 @@ export const fallbackCategoryUi: CategoryUiMeta = {
 	},
 };
 
-export function getCategoryUi(slug: string): CategoryUiMeta {
-	return CATEGORY_UI_BY_SLUG[slug] ?? fallbackCategoryUi;
+export function getCategoryUi(
+	slug: string,
+	overrides?: { icon?: string | null; color?: string | null },
+): CategoryUiMeta {
+	const base = CATEGORY_UI_BY_SLUG[slug] ?? fallbackCategoryUi;
+
+	return {
+		...base,
+		iconName: overrides?.icon ?? null,
+		hexColor: overrides?.color ?? null,
+	};
 }

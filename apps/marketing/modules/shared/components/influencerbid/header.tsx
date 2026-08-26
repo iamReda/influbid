@@ -3,7 +3,7 @@
 import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Image from "@repo/ui/components/influencerbid/image";
-import { Rocket } from "lucide-react";
+import { LayoutDashboard, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -95,22 +95,45 @@ const Header = ({ isFixed, isVisiblePlan, isMinimal }: HeaderProps) => {
 						{isVisiblePlan && <Plan />}
 						{isLoggedIn ? (
 							<>
-								<Button
-									isSecondary
-									as="link"
-									href={`${saasBase}/rank-higher`}
-									aria-label="Rank higher"
-								>
-									<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
-									<span>Rank higher</span>
-								</Button>
-								<Menu
-									name={user.name ?? ""}
-									email={user.email}
-									image={user.image}
-									username={(user as { username?: string | null }).username}
-									onLogout={handleLogout}
-								/>
+								{user.role === "admin" ? (
+									<Button
+										isSecondary
+										isCircle
+										as="link"
+										href={`${saasBase}/admin/dashboard`}
+										aria-label="Dashboard"
+									>
+										<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+									</Button>
+								) : (
+									<>
+										<Button
+											isSecondary
+											as="link"
+											href={`${saasBase}/rank-higher`}
+											aria-label="Rank higher"
+										>
+											<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
+											<span>Rank higher</span>
+										</Button>
+										<Button
+											isSecondary
+											isCircle
+											as="link"
+											href={`${saasBase}/dashboard`}
+											aria-label="Dashboard"
+										>
+											<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+										</Button>
+										<Menu
+											name={user.name ?? ""}
+											email={user.email}
+											image={user.image}
+											username={(user as { username?: string | null }).username}
+											onLogout={handleLogout}
+										/>
+									</>
+								)}
 							</>
 						) : (
 							!isPending && (

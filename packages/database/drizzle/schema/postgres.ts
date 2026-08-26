@@ -328,6 +328,7 @@ export const creatorCategory = pgTable(
 		slug: text("slug").notNull().unique(),
 		description: text("description"),
 		icon: text("icon"),
+		color: text("color"),
 		active: boolean("active").notNull().default(true),
 		order: integer("order").notNull().default(0),
 		createdAt: timestamp("createdAt").defaultNow().notNull(),

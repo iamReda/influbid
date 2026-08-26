@@ -18,6 +18,7 @@ import {
 import { passwordSchema } from "@repo/utils";
 import { PasswordInput } from "@shared/components/PasswordInput";
 import { useRouter } from "@shared/hooks/router";
+import { getPostAuthRedirectPath } from "@shared/lib/admin-routing";
 import { AlertTriangleIcon, ArrowLeftIcon, MailboxIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -56,7 +57,7 @@ export function ResetPasswordForm() {
 			}
 
 			if (user) {
-				router.push(config.redirectAfterSignIn);
+				router.push(getPostAuthRedirectPath(user, null, config.redirectAfterSignIn));
 			}
 		} catch (e) {
 			form.setError("root", {

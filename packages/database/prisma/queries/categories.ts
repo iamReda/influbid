@@ -9,12 +9,14 @@ export async function seedCreatorCategories() {
 				name: category.name,
 				slug: category.slug,
 				icon: category.icon,
+				color: category.color,
 				order: category.order,
 				active: true,
 			},
 			update: {
 				name: category.name,
 				icon: category.icon,
+				color: category.color,
 				order: category.order,
 				active: true,
 			},
@@ -31,6 +33,20 @@ export async function listActiveCreatorCategories() {
 	});
 }
 
+export async function listAllCreatorCategories() {
+	return db.creatorCategory.findMany({
+		orderBy: [{ order: "asc" }, { name: "asc" }],
+		include: {
+			_count: {
+				select: {
+					creators: true,
+					pendingCreators: true,
+				},
+			},
+		},
+	});
+}
+
 export async function getCreatorCategoryBySlug(slug: string) {
 	return db.creatorCategory.findFirst({
 		where: { slug, active: true },
@@ -43,11 +59,102 @@ export async function getCreatorCategoryById(id: string) {
 	});
 }
 
+export async function createCreatorCategory(input: {
+	name: string;
+	slug: string;
+	description?: string | null;
+	icon?: string | null;
+	color?: string | null;
+	active?: boolean;
+	order?: number;
+}) {
+	const maxOrder = await db.creatorCategory.aggregate({
+		_max: { order: true },
+	});
+
+	return db.creatorCategory.create({
+		data: {
+			name: input.name,
+			slug: input.slug,
+			description: input.description ?? null,
+			icon: input.icon ?? null,
+			color: input.color ?? null,
+			active: input.active ?? true,
+			order: input.order ?? (maxOrder._max.order ?? 0) + 1,
+		},
+	});
+}
+
+export async function updateCreatorCategory(
+	id: string,
+	input: {
+		name?: string;
+		slug?: string;
+		description?: string | null;
+		icon?: string | null;
+		color?: string | null;
+		active?: boolean;
+		order?: number;
+	},
+) {
+	return db.creatorCategory.update({
+		where: { id },
+		data: {
+			...(input.name !== undefined ? { name: input.name } : {}),
+			...(input.slug !== undefined ? { slug: input.slug } : {}),
+			...(input.description !== undefined ? { description: input.description } : {}),
+			...(input.icon !== undefined ? { icon: input.icon } : {}),
+			...(input.color !== undefined ? { color: input.color } : {}),
+			...(input.active !== undefined ? { active: input.active } : {}),
+			...(input.order !== undefined ? { order: input.order } : {}),
+		},
+	});
+}
+
+export async function deleteCreatorCategory(id: string) {
+	const usage = await db.creatorCategory.findUnique({
+		where: { id },
+		include: {
+			_count: {
+				select: {
+					creators: true,
+					pendingCreators: true,
+				},
+			},
+		},
+	});
+
+	if (!usage) {
+		return { deleted: false as const, reason: "NOT_FOUND" as const };
+	}
+
+	if (usage._count.creators > 0 || usage._count.pendingCreators > 0) {
+		return { deleted: false as const, reason: "IN_USE" as const, category: usage };
+	}
+
+	await db.creatorCategory.delete({ where: { id } });
+	return { deleted: true as const, category: usage };
+}
+
+export async function reorderCreatorCategories(orderedIds: string[]) {
+	await db.$transaction(
+		orderedIds.map((id, index) =>
+			db.creatorCategory.update({
+				where: { id },
+				data: { order: index + 1 },
+			}),
+		),
+	);
+
+	return listAllCreatorCategories();
+}
+
 export type CategoryCardData = {
 	id: string;
 	name: string;
 	slug: string;
 	icon: string | null;
+	color: string | null;
 	order: number;
 	influencerCount: number;
 	topCreators: Array<{
@@ -93,6 +200,7 @@ export async function listCategoryCards(): Promise<CategoryCardData[]> {
 				name: category.name,
 				slug: category.slug,
 				icon: category.icon,
+				color: category.color,
 				order: category.order,
 				influencerCount,
 				topCreators: topCreators.map((creator) => ({

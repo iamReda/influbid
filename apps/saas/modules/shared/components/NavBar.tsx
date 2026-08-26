@@ -33,11 +33,15 @@ import {
 	BotMessageSquareIcon,
 	ChevronLeftIcon,
 	ChevronRightIcon,
+	FolderKanbanIcon,
 	HomeIcon,
+	LayoutDashboardIcon,
 	MenuIcon,
+	ReceiptIcon,
 	SettingsIcon,
-	ShieldUserIcon,
+	TrophyIcon,
 	UserCogIcon,
+	UsersIcon,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -381,18 +385,53 @@ export function NavBar() {
 				: undefined;
 
 		return [
-			{
-				label: t("app.menu.start"),
-				href: startHref,
-				icon: HomeIcon,
-				isActive: pathname === "/" || pathname === basePath,
-			},
-			{
-				label: t("app.menu.aiChatbot"),
-				href: "/chatbot",
-				icon: BotMessageSquareIcon,
-				isActive: pathname.startsWith("/chatbot"),
-			},
+			...(canAccessAdmin
+				? [
+						{
+							label: t("app.menu.dashboard"),
+							href: "/admin/dashboard",
+							icon: LayoutDashboardIcon,
+							isActive: pathname.startsWith("/admin/dashboard"),
+						},
+						{
+							label: t("app.menu.leaderboard"),
+							href: "/admin/leaderboard",
+							icon: TrophyIcon,
+							isActive: pathname.startsWith("/admin/leaderboard"),
+						},
+						{
+							label: t("app.menu.users"),
+							href: "/admin/users",
+							icon: UsersIcon,
+							isActive: pathname.startsWith("/admin/users"),
+						},
+						{
+							label: t("app.menu.categories"),
+							href: "/admin/categories",
+							icon: FolderKanbanIcon,
+							isActive: pathname.startsWith("/admin/categories"),
+						},
+						{
+							label: t("app.menu.paymentHistory"),
+							href: "/admin/payment-history",
+							icon: ReceiptIcon,
+							isActive: pathname.startsWith("/admin/payment-history"),
+						},
+					]
+				: [
+						{
+							label: t("app.menu.start"),
+							href: startHref,
+							icon: HomeIcon,
+							isActive: pathname === "/" || pathname === basePath,
+						},
+						{
+							label: t("app.menu.aiChatbot"),
+							href: "/chatbot",
+							icon: BotMessageSquareIcon,
+							isActive: pathname.startsWith("/chatbot"),
+						},
+					]),
 			...(organizationSubItems
 				? [
 						{
@@ -411,16 +450,6 @@ export function NavBar() {
 				isActive: pathname.startsWith("/settings/"),
 				subItems: accountSubItems,
 			},
-			...(canAccessAdmin
-				? [
-						{
-							label: t("app.menu.admin"),
-							href: "/admin",
-							icon: ShieldUserIcon,
-							isActive: pathname.startsWith("/admin/"),
-						},
-					]
-				: []),
 		];
 	}, [
 		activeOrganization,

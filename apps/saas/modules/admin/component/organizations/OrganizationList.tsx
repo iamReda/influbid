@@ -209,9 +209,7 @@ export function OrganizationList() {
 
 	return (
 		<Card className="p-6">
-			<div className="mb-4 gap-6 flex items-center justify-between">
-				<h2 className="font-semibold text-2xl">{t("admin.organizations.title")}</h2>
-
+			<div className="mb-4 flex justify-end">
 				<Button
 					render={(props) => (
 						<Link {...props} href={getAdminPath("/organizations/new")}>

@@ -5,6 +5,7 @@ import Image from "@repo/ui/components/influencerbid/image";
 import type { MouseEvent } from "react";
 
 import type { CategoryCardDto } from "../actions";
+import { CategoryIcon } from "../lib/category-icon";
 import { getCategoryUi } from "../lib/category-ui";
 import { formatBidCents, formatInfluencerCount } from "../lib/format";
 
@@ -13,8 +14,7 @@ type CategoryProps = {
 };
 
 const Category = ({ item }: CategoryProps) => {
-	const ui = getCategoryUi(item.slug);
-	const Icon = ui.icon;
+	const ui = getCategoryUi(item.slug, { icon: item.icon, color: item.color });
 
 	const handleTakeSpot = (event: MouseEvent) => {
 		event.preventDefault();
@@ -26,9 +26,23 @@ const Category = ({ item }: CategoryProps) => {
 		<div className="group mt-6 mx-3 p-6 bg-b-surface2 hover:shadow-hover max-3xl:w-[calc(33.333%-1.5rem)] max-md:w-full max-md:mt-4 max-md:mx-0 flex w-[calc(25%-1.5rem)] flex-col rounded-4xl transition-shadow max-[1179px]:w-[calc(50%-1.5rem)]">
 			<div className="mb-7 gap-3 max-md:mb-6 flex items-center justify-start">
 				<div
-					className={`size-11 flex shrink-0 items-center justify-center rounded-full border-[1.5px] ${ui.colors.border} ${ui.colors.bg}`}
+					className={`size-11 flex shrink-0 items-center justify-center rounded-full border-[1.5px] ${
+						ui.hexColor ? "" : `${ui.colors.border} ${ui.colors.bg}`
+					}`}
+					style={
+						ui.hexColor
+							? {
+									backgroundColor: `${ui.hexColor}1a`,
+									borderColor: `${ui.hexColor}33`,
+									color: ui.hexColor,
+								}
+							: undefined
+					}
 				>
-					<Icon className={`size-5 shrink-0 stroke-2 ${ui.colors.icon}`} aria-hidden />
+					<CategoryIcon
+						ui={ui}
+						className={`size-5 shrink-0 stroke-2 ${ui.hexColor ? "" : ui.colors.icon}`}
+					/>
 				</div>
 				<div className="min-w-0 text-left">
 					<div className="text-body-bold text-t-primary truncate">{item.name}</div>

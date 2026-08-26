@@ -302,6 +302,7 @@ model CreatorCategory {
   slug        String  @unique
   description String? @db.Text
   icon        String?
+  color       String?
   active      Boolean @default(true)
   order       Int     @default(0)
 

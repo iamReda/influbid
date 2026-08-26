@@ -1,36 +1,180 @@
 import { slugifyUsernameBase, withUsernameSuffix } from "@repo/utils";
-import { eq, ilike, or, sql } from "drizzle-orm";
+import { and, count, desc, eq, gt, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { z } from "zod";
 
 import { toPublicProfile } from "../../lib/profile";
 import { db } from "../client";
-import { account, user } from "../schema/postgres";
+import { account, creatorCategory, creatorProfile, user } from "../schema/postgres";
 import type { UserUpdateSchema } from "../zod";
+
+export type AdminUsersAudience = "admins" | "influencers";
+export type AdminUsersStatus = "ALL" | "PUBLISHED" | "DRAFT" | "BANNED";
+
+type AdminUsersListOptions = {
+	limit: number;
+	offset: number;
+	query?: string;
+	audience?: AdminUsersAudience;
+	categorySlug?: string;
+	status?: AdminUsersStatus;
+};
+
+function buildSearchCondition(query?: string): SQL | undefined {
+	if (!query) {
+		return undefined;
+	}
+
+	return or(
+		ilike(user.name, `%${query}%`),
+		ilike(user.email, `%${query}%`),
+		ilike(user.username, `%${query}%`),
+	);
+}
+
+function buildAudienceConditions({
+	audience,
+	categorySlug,
+	status = "ALL",
+}: Pick<AdminUsersListOptions, "audience" | "categorySlug" | "status">): SQL[] {
+	const conditions: SQL[] = [];
+
+	if (audience === "admins") {
+		conditions.push(eq(user.role, "admin"));
+		return conditions;
+	}
+
+	if (audience === "influencers") {
+		conditions.push(sql`${creatorProfile.id} is not null`);
+
+		if (status === "PUBLISHED") {
+			conditions.push(eq(creatorProfile.isPublished, true));
+		}
+		if (status === "DRAFT") {
+			conditions.push(eq(creatorProfile.isPublished, false));
+		}
+		if (status === "BANNED") {
+			const now = new Date();
+			conditions.push(eq(user.banned, true));
+			conditions.push(or(isNull(user.banExpires), gt(user.banExpires, now))!);
+		}
+		if (categorySlug) {
+			conditions.push(eq(creatorCategory.slug, categorySlug));
+		}
+	}
+
+	return conditions;
+}
 
 export async function getUsers({
 	limit,
 	offset,
 	query,
-}: {
-	limit: number;
-	offset: number;
-	query?: string;
-}) {
+	audience,
+	categorySlug,
+	status = "ALL",
+}: AdminUsersListOptions) {
+	const searchCondition = buildSearchCondition(query);
+	const audienceConditions = buildAudienceConditions({ audience, categorySlug, status });
+	const where = and(searchCondition, ...audienceConditions);
+
+	if (audience === "influencers") {
+		const rows = await db
+			.select({
+				id: user.id,
+				name: user.name,
+				email: user.email,
+				emailVerified: user.emailVerified,
+				image: user.image,
+				username: user.username,
+				bio: user.bio,
+				businessEmail: user.businessEmail,
+				socialLinks: user.socialLinks,
+				createdAt: user.createdAt,
+				updatedAt: user.updatedAt,
+				role: user.role,
+				banned: user.banned,
+				banReason: user.banReason,
+				banExpires: user.banExpires,
+				onboardingComplete: user.onboardingComplete,
+				paymentsCustomerId: user.paymentsCustomerId,
+				locale: user.locale,
+				twoFactorEnabled: user.twoFactorEnabled,
+				lastActiveOrganizationId: user.lastActiveOrganizationId,
+				joinedAt: creatorProfile.joinedAt,
+				isPublished: creatorProfile.isPublished,
+				categoryName: creatorCategory.name,
+				categorySlug: creatorCategory.slug,
+			})
+			.from(user)
+			.innerJoin(creatorProfile, eq(creatorProfile.userId, user.id))
+			.innerJoin(creatorCategory, eq(creatorCategory.id, creatorProfile.categoryId))
+			.where(where)
+			.orderBy(desc(user.createdAt))
+			.limit(limit)
+			.offset(offset);
+
+		return rows.map((row) => ({
+			id: row.id,
+			name: row.name,
+			email: row.email,
+			emailVerified: row.emailVerified,
+			image: row.image,
+			username: row.username,
+			bio: row.bio,
+			businessEmail: row.businessEmail,
+			socialLinks: row.socialLinks,
+			createdAt: row.createdAt,
+			updatedAt: row.updatedAt,
+			role: row.role,
+			banned: row.banned,
+			banReason: row.banReason,
+			banExpires: row.banExpires,
+			onboardingComplete: row.onboardingComplete,
+			paymentsCustomerId: row.paymentsCustomerId,
+			locale: row.locale,
+			twoFactorEnabled: row.twoFactorEnabled,
+			lastActiveOrganizationId: row.lastActiveOrganizationId,
+			creatorProfile: {
+				joinedAt: row.joinedAt,
+				isPublished: row.isPublished,
+				category: {
+					name: row.categoryName,
+					slug: row.categorySlug,
+				},
+			},
+		}));
+	}
+
 	return await db.query.user.findMany({
-		where: query
-			? (user, { ilike, or }) => or(ilike(user.name, `%${query}%`), ilike(user.email, `%${query}%`))
-			: undefined,
+		where: () => where,
 		limit,
 		offset,
+		orderBy: [desc(user.createdAt)],
 	});
 }
 
-export async function countAllUsers({ query }: { query?: string }) {
-	const result = await db
-		.select({ count: sql<number>`count(*)` })
-		.from(user)
-		.where(query ? or(ilike(user.name, `%${query}%`), ilike(user.email, `%${query}%`)) : undefined);
-	return Number(result[0]?.count ?? 0);
+export async function countAllUsers({
+	query,
+	audience,
+	categorySlug,
+	status = "ALL",
+}: Omit<AdminUsersListOptions, "limit" | "offset">) {
+	const searchCondition = buildSearchCondition(query);
+	const audienceConditions = buildAudienceConditions({ audience, categorySlug, status });
+	const where = and(searchCondition, ...audienceConditions);
+
+	if (audience === "influencers") {
+		const result = await db
+			.select({ value: count() })
+			.from(user)
+			.innerJoin(creatorProfile, eq(creatorProfile.userId, user.id))
+			.innerJoin(creatorCategory, eq(creatorCategory.id, creatorProfile.categoryId))
+			.where(where);
+		return Number(result[0]?.value ?? 0);
+	}
+
+	const result = await db.select({ value: count() }).from(user).where(where);
+	return Number(result[0]?.value ?? 0);
 }
 
 export async function getUserById(id: string) {
@@ -137,6 +281,7 @@ export async function isUsernameTaken(username: string, excludeUserId?: string) 
 		"rules",
 		"settings",
 		"signup",
+		"success",
 		"u",
 		"user",
 	]);

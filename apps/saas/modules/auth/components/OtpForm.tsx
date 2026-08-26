@@ -21,7 +21,7 @@ import {
 	InputOTPSlot,
 } from "@repo/ui/components/input-otp";
 import { useRouter } from "@shared/hooks/router";
-import { getSafeRedirectPath } from "@shared/lib/redirect";
+import { getPostAuthRedirectPath } from "@shared/lib/admin-routing";
 import { AlertTriangleIcon, ArrowLeftIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
@@ -42,10 +42,6 @@ export function OtpForm() {
 	const invitationId = searchParams.get("invitationId");
 	const redirectTo = searchParams.get("redirectTo");
 
-	const redirectPath = invitationId
-		? `/organization-invitation/${invitationId}`
-		: getSafeRedirectPath(redirectTo, config.redirectAfterSignIn);
-
 	const form = useForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -62,6 +58,11 @@ export function OtpForm() {
 			if (error) {
 				throw error;
 			}
+
+			const session = await authClient.getSession();
+			const redirectPath = invitationId
+				? `/organization-invitation/${invitationId}`
+				: getPostAuthRedirectPath(session.data?.user, redirectTo, config.redirectAfterSignIn);
 
 			router.replace(redirectPath);
 		} catch (e) {

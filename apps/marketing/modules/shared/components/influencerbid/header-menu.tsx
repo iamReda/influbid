@@ -3,15 +3,7 @@
 import { config } from "@config";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
 import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
-import {
-	Globe,
-	LayoutDashboard,
-	Lightbulb,
-	LogOut,
-	Receipt,
-	Settings,
-	type LucideIcon,
-} from "lucide-react";
+import { Globe, Lightbulb, LogOut, Receipt, Settings, type LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 
@@ -32,11 +24,6 @@ const UserMenu = ({ name, email, image, username, onLogout }: Props) => {
 		icon: LucideIcon;
 		url: string;
 	}[] = [
-		{
-			title: "Dashboard",
-			icon: LayoutDashboard,
-			url: `${saasBase}/dashboard`,
-		},
 		{
 			title: "My Public profile",
 			icon: Globe,

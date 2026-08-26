@@ -3,6 +3,7 @@ import { listPurchases } from "@repo/api/modules/payments/procedures/list-purcha
 import { config as authConfig } from "@repo/auth/config";
 import { config as paymentsConfig } from "@repo/payments/config";
 import { createPurchasesHelper } from "@repo/payments/lib/helper";
+import { isAdminRestrictedPath, isPlatformAdmin } from "@shared/lib/admin-routing";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { PropsWithChildren } from "react";
@@ -14,7 +15,18 @@ export default async function MainLayout({ children }: PropsWithChildren) {
 		redirect("/login");
 	}
 
-	if (authConfig.users.enableOnboarding && !session.user.onboardingComplete) {
+	const headerStore = await headers();
+	const pathname = headerStore.get("x-pathname") ?? "";
+
+	if (isPlatformAdmin(session.user) && isAdminRestrictedPath(pathname)) {
+		redirect("/admin/users");
+	}
+
+	if (
+		authConfig.users.enableOnboarding &&
+		!session.user.onboardingComplete &&
+		!isPlatformAdmin(session.user)
+	) {
 		redirect("/onboarding");
 	}
 
@@ -30,13 +42,13 @@ export default async function MainLayout({ children }: PropsWithChildren) {
 		}
 	}
 
-	if (paymentsConfig.requireActiveSubscription) {
+	if (paymentsConfig.requireActiveSubscription && !isPlatformAdmin(session.user)) {
 		const organizationId = authConfig.organizations.enable
 			? session?.session.activeOrganizationId || organizations?.at(0)?.id
 			: undefined;
 
 		const purchases = await listPurchases.callable({
-			context: { headers: await headers() },
+			context: { headers: headerStore },
 		})({
 			organizationId,
 		});

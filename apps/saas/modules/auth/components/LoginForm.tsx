@@ -9,7 +9,7 @@ import { authClient } from "@repo/auth/client";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import { useRouter } from "@shared/hooks/router";
-import { getSafeRedirectPath } from "@shared/lib/redirect";
+import { getPostAuthRedirectPath } from "@shared/lib/admin-routing";
 import { useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -54,13 +54,14 @@ export function LoginForm() {
 		},
 	});
 
-	const redirectPath = invitationId
-		? `/organization-invitation/${invitationId}`
-		: getSafeRedirectPath(redirectTo, config.redirectAfterSignIn);
+	const resolveRedirectPath = (signedInUser?: { role?: string | null } | null) =>
+		invitationId
+			? `/organization-invitation/${invitationId}`
+			: getPostAuthRedirectPath(signedInUser, redirectTo, config.redirectAfterSignIn);
 
 	useEffect(() => {
 		if (sessionLoaded && user) {
-			router.replace(redirectPath);
+			router.replace(resolveRedirectPath(user));
 		}
 	}, [user, sessionLoaded]); // oxlint-disable-line eslint-plugin-react-hooks/exhaustive-deps
 
@@ -85,7 +86,12 @@ export function LoginForm() {
 				queryKey: sessionQueryKey,
 			});
 
-			router.replace(redirectPath);
+			const signedInUser =
+				data && typeof data === "object" && "user" in data
+					? (data.user as { role?: string | null })
+					: null;
+
+			router.replace(resolveRedirectPath(signedInUser));
 		} catch (e) {
 			form.setError("root", {
 				message: getAuthErrorMessage(

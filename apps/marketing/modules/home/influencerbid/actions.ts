@@ -32,6 +32,7 @@ export type CategoryOptionDto = {
 	name: string;
 	slug: string;
 	icon: string | null;
+	color: string | null;
 	order: number;
 };
 
@@ -56,6 +57,7 @@ export type CategoryCardDto = {
 	name: string;
 	slug: string;
 	icon: string | null;
+	color: string | null;
 	order: number;
 	influencerCount: number;
 	topCreators: Array<{
@@ -79,6 +81,7 @@ export async function fetchActiveCategoriesAction(): Promise<CategoryOptionDto[]
 		name: category.name,
 		slug: category.slug,
 		icon: category.icon,
+		color: category.color,
 		order: category.order,
 	}));
 }

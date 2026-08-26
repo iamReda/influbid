@@ -1,8 +1,10 @@
 "use client";
 
+import { useSession } from "@auth/hooks/use-session";
 import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Image from "@repo/ui/components/influencerbid/image";
+import { isPlatformAdmin } from "@shared/lib/admin-routing";
 import { LayoutDashboard, Rocket } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -28,6 +30,8 @@ type HeaderProps = {
 };
 
 const Header = ({ isFixed, login, isVisiblePlan, isMinimal, onLogout }: HeaderProps) => {
+	const { user } = useSession();
+	const isAdmin = isPlatformAdmin(user);
 	const [isScrolled, setIsScrolled] = useState(false);
 
 	useEffect(() => {
@@ -79,14 +83,28 @@ const Header = ({ isFixed, login, isVisiblePlan, isMinimal, onLogout }: HeaderPr
 						{isVisiblePlan && <Plan />}
 						{login ? (
 							<>
-								<Button isSecondary as="link" href="/rank-higher" aria-label="Rank higher">
-									<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
-									<span>Rank higher</span>
-								</Button>
-								<Button isSecondary isCircle as="link" href="/dashboard" aria-label="Dashboard">
-									<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
-								</Button>
-								<Menu onLogout={onLogout} />
+								{isAdmin ? (
+									<Button
+										isSecondary
+										isCircle
+										as="link"
+										href="/admin/dashboard"
+										aria-label="Dashboard"
+									>
+										<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+									</Button>
+								) : (
+									<>
+										<Button isSecondary as="link" href="/rank-higher" aria-label="Rank higher">
+											<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
+											<span>Rank higher</span>
+										</Button>
+										<Button isSecondary isCircle as="link" href="/dashboard" aria-label="Dashboard">
+											<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+										</Button>
+										<Menu onLogout={onLogout} />
+									</>
+								)}
 							</>
 						) : (
 							<Button isPrimary as="link" href="/login">

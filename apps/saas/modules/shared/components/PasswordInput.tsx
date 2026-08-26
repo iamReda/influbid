@@ -1,7 +1,14 @@
 "use client";
 
 import { cn, Input } from "@repo/ui";
-import { CircleCheckIcon, CircleXIcon, EyeIcon, EyeOffIcon, RefreshCw } from "lucide-react";
+import {
+	CircleCheckIcon,
+	CircleXIcon,
+	CopyIcon,
+	EyeIcon,
+	EyeOffIcon,
+	RefreshCw,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import React from "react";
 
@@ -65,6 +72,7 @@ export function PasswordInput({
 	autoComplete,
 	name = "password",
 	showGenerateButton = false,
+	showCopyButton = false,
 	showPasswordCriteria = false,
 }: {
 	value?: string;
@@ -74,10 +82,12 @@ export function PasswordInput({
 	autoComplete?: string;
 	name?: string;
 	showGenerateButton?: boolean;
+	showCopyButton?: boolean;
 	showPasswordCriteria?: boolean;
 }) {
 	const t = useTranslations();
 	const [showPassword, setShowPassword] = React.useState(false);
+	const [copied, setCopied] = React.useState(false);
 
 	const generateRandomPassword = () => {
 		const password = generateValidPassword();
@@ -85,7 +95,22 @@ export function PasswordInput({
 		setShowPassword(true);
 	};
 
-	const rightPadding = showGenerateButton ? "pr-20" : "pr-10";
+	const copyPassword = async () => {
+		if (!value) {
+			return;
+		}
+
+		try {
+			await navigator.clipboard.writeText(value);
+			setCopied(true);
+			window.setTimeout(() => setCopied(false), 1500);
+		} catch {
+			setCopied(false);
+		}
+	};
+
+	const actionCount = 1 + (showGenerateButton ? 1 : 0) + (showCopyButton ? 1 : 0);
+	const rightPadding = actionCount >= 3 ? "pr-28" : actionCount === 2 ? "pr-20" : "pr-10";
 	const password = value || "";
 
 	return (
@@ -108,6 +133,17 @@ export function PasswordInput({
 							title="Generate random password"
 						>
 							<RefreshCw className="size-4" />
+						</button>
+					)}
+					{showCopyButton && (
+						<button
+							type="button"
+							onClick={() => void copyPassword()}
+							disabled={!value}
+							className="p-2 flex cursor-pointer items-center justify-center text-primary transition-colors hover:text-primary/80 disabled:opacity-40"
+							title={copied ? "Copied" : "Copy password"}
+						>
+							<CopyIcon className="size-4" />
 						</button>
 					)}
 					<button

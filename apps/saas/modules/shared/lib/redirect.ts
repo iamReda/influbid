@@ -4,7 +4,7 @@ export function getSafeRedirectPath(redirectTo: string | null | undefined, fallb
 	return normalizeInternalPath(redirectTo) ?? normalizeInternalPath(fallback) ?? "/";
 }
 
-function normalizeInternalPath(path: string | null | undefined): string | null {
+export function normalizeInternalPath(path: string | null | undefined): string | null {
 	if (!path?.startsWith("/")) {
 		return null;
 	}

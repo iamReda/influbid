@@ -3,64 +3,121 @@ import type { z } from "zod";
 
 import { toPublicProfile, type PublicProfile } from "../../lib/profile";
 import { db } from "../client";
+import type { Prisma } from "../generated/client";
 import type { UserSchema } from "../zod";
 
 export type { PublicProfile };
 export { parseSocialLinks, toPublicProfile } from "../../lib/profile";
 
+export type AdminUsersAudience = "admins" | "influencers";
+export type AdminUsersStatus = "ALL" | "PUBLISHED" | "DRAFT" | "BANNED";
+
+type AdminUsersListOptions = {
+	limit: number;
+	offset: number;
+	query?: string;
+	audience?: AdminUsersAudience;
+	categorySlug?: string;
+	status?: AdminUsersStatus;
+};
+
+function buildAdminUsersWhere({
+	query,
+	audience,
+	categorySlug,
+	status = "ALL",
+}: Omit<AdminUsersListOptions, "limit" | "offset">): Prisma.UserWhereInput | undefined {
+	const and: Prisma.UserWhereInput[] = [];
+
+	if (query) {
+		and.push({
+			OR: [
+				{ name: { contains: query, mode: "insensitive" } },
+				{ email: { contains: query, mode: "insensitive" } },
+				{ username: { contains: query, mode: "insensitive" } },
+			],
+		});
+	}
+
+	if (audience === "admins") {
+		and.push({ role: "admin" });
+		return and.length > 0 ? { AND: and } : undefined;
+	}
+
+	if (audience === "influencers") {
+		const now = new Date();
+		and.push({
+			creatorProfile: {
+				is: {
+					...(status === "PUBLISHED" ? { isPublished: true } : {}),
+					...(status === "DRAFT" ? { isPublished: false } : {}),
+					...(categorySlug ? { category: { slug: categorySlug } } : {}),
+				},
+			},
+		});
+
+		if (status === "BANNED") {
+			and.push({
+				banned: true,
+				OR: [{ banExpires: null }, { banExpires: { gt: now } }],
+			});
+		}
+
+		return { AND: and };
+	}
+
+	return and.length > 0 ? { AND: and } : undefined;
+}
+
 export async function getUsers({
 	limit,
 	offset,
 	query,
-}: {
-	limit: number;
-	offset: number;
-	query?: string;
-}) {
+	audience,
+	categorySlug,
+	status = "ALL",
+}: AdminUsersListOptions) {
+	const where = buildAdminUsersWhere({ query, audience, categorySlug, status });
+
+	if (audience === "influencers") {
+		return await db.user.findMany({
+			where,
+			take: limit,
+			skip: offset,
+			orderBy: { createdAt: "desc" },
+			include: {
+				creatorProfile: {
+					select: {
+						joinedAt: true,
+						isPublished: true,
+						category: {
+							select: {
+								name: true,
+								slug: true,
+							},
+						},
+					},
+				},
+			},
+		});
+	}
+
 	return await db.user.findMany({
-		where: query
-			? {
-					OR: [
-						{
-							name: {
-								contains: query,
-								mode: "insensitive",
-							},
-						},
-						{
-							email: {
-								contains: query,
-								mode: "insensitive",
-							},
-						},
-					],
-				}
-			: undefined,
+		where,
 		take: limit,
 		skip: offset,
+		orderBy: { createdAt: "desc" },
 	});
 }
 
-export async function countAllUsers({ query }: { query?: string }) {
+export async function countAllUsers({
+	query,
+	audience,
+	categorySlug,
+	status = "ALL",
+}: Omit<AdminUsersListOptions, "limit" | "offset">) {
 	return await db.user.count({
-		where: query
-			? {
-					OR: [
-						{
-							name: {
-								contains: query,
-								mode: "insensitive",
-							},
-						},
-						{
-							email: {
-								contains: query,
-								mode: "insensitive",
-							},
-						},
-					],
-				}
-			: undefined,
+		where: buildAdminUsersWhere({ query, audience, categorySlug, status }),
 	});
 }
 

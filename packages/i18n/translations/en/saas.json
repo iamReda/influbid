@@ -2,7 +2,149 @@
 	"admin": {
 		"menu": {
 			"organizations": "Organizations",
-			"users": "Users"
+			"users": "Users",
+			"categories": "Categories",
+			"paymentHistory": "Payments History"
+		},
+		"dashboard": {
+			"title": "Dashboard",
+			"description": "Platform overview from live creator, bid, and activity data.",
+			"empty": "No data for this period.",
+			"ranges": {
+				"today": "Today",
+				"7d": "Last 7 days",
+				"30d": "Last 30 days",
+				"all": "All time"
+			},
+			"kpis": {
+				"totalCreators": "Published creators",
+				"totalBidRevenue": "Paid bid revenue",
+				"bidTransactions": "Paid transactions",
+				"averageBid": "Average paid bid",
+				"newCreators": "New creators"
+			},
+			"revenue": {
+				"title": "Bid revenue",
+				"description": "Sum of PAID bids by day."
+			},
+			"activity": {
+				"title": "Platform activity",
+				"description": "Profile views and social clicks in the selected range.",
+				"profileViews": "Profile views",
+				"socialClicks": "Social clicks",
+				"ctr": "Social CTR"
+			},
+			"latestBids": {
+				"title": "Latest paid bids",
+				"description": "Most recent successful ranking bids.",
+				"showPaymentHistory": "Show Payments History",
+				"columns": {
+					"creator": "Creator",
+					"type": "Type",
+					"amount": "Amount"
+				}
+			},
+			"topCreators": {
+				"title": "Top creators",
+				"description": "Top 10 creators by total bid.",
+				"columns": {
+					"rank": "Rank",
+					"creator": "Creator",
+					"totalBid": "Total bid"
+				}
+			},
+			"categories": {
+				"title": "Category performance",
+				"description": "Top 5 categories by paid revenue in the selected range.",
+				"manageCategories": "Manage Categories",
+				"columns": {
+					"category": "Category",
+					"creators": "Creators",
+					"revenue": "Revenue"
+				}
+			}
+		},
+		"leaderboard": {
+			"title": "Leaderboard",
+			"description": "Published creators ranked by total bid. Filter by category to see category standings.",
+			"empty": "No creators in this ranking yet.",
+			"filters": {
+				"all": "All categories"
+			},
+			"columns": {
+				"rank": "Rank",
+				"creator": "Creator",
+				"category": "Category",
+				"totalBid": "Total bid",
+				"socialClicks": "Social clicks"
+			}
+		},
+		"categories": {
+			"title": "Manage categories",
+			"description": "Create, edit, reorder, and style creator categories shown on the home page.",
+			"add": "Add category",
+			"edit": "Edit",
+			"delete": "Delete",
+			"empty": "No categories yet.",
+			"inactive": "Inactive",
+			"creators": "{count, plural, one {creator} other {creators}}",
+			"dragHandle": "Drag to reorder",
+			"confirmDelete": {
+				"title": "Delete category",
+				"message": "Are you sure you want to delete {name}? Categories in use cannot be deleted.",
+				"confirm": "Delete"
+			},
+			"form": {
+				"createTitle": "Create category",
+				"updateTitle": "Edit category",
+				"name": "Name",
+				"slug": "Slug",
+				"description": "Description",
+				"icon": "Icon",
+				"color": "Color",
+				"active": "Active",
+				"cancel": "Cancel",
+				"save": "Save"
+			},
+			"validation": {
+				"nameRequired": "Enter a category name."
+			},
+			"notifications": {
+				"saved": "Category has been saved.",
+				"saveError": "Could not save the category. Please try again.",
+				"deleted": "Category has been deleted.",
+				"deleteError": "Could not delete the category. It may still be in use.",
+				"reorderError": "Could not reorder categories. Please try again."
+			}
+		},
+		"paymentHistory": {
+			"title": "Payments History",
+			"description": "All influencer bid payments across the platform.",
+			"search": "Search influencer name, email, or username...",
+			"empty": "No payments found.",
+			"filters": {
+				"all": "All statuses",
+				"success": "Success",
+				"failed": "Failed",
+				"pending": "Pending"
+			},
+			"columns": {
+				"influencer": "Influencer",
+				"datetime": "Date & time",
+				"type": "Type",
+				"amount": "Bid value",
+				"status": "Status",
+				"source": "Source"
+			},
+			"status": {
+				"success": "Success",
+				"failed": "Failed",
+				"pending": "Pending"
+			},
+			"type": {
+				"initial": "Ranking bid",
+				"increase": "Bid increase"
+			}
 		},
 		"organizations": {
 			"backToList": "Back to organizations",
@@ -85,10 +227,12 @@
 				"waiting": "Email waiting for verification"
 			},
 			"impersonate": "Impersonate",
+			"viewProfile": "View profile",
 			"impersonation": {
 				"impersonating": "Impersonating as {name}..."
 			},
 			"loading": "Loading users...",
+			"empty": "No users found.",
 			"resendVerificationMail": {
 				"error": "Could not resend verification mail. Please try again.",
 				"submitting": "Resending verification mail...",
@@ -97,8 +241,89 @@
 			},
 			"search": "Search for name or email...",
 			"title": "Manage users",
+			"description": "View, ban, and manage platform users.",
 			"assignAdminRole": "Assign admin role",
-			"removeAdminRole": "Remove admin role"
+			"removeAdminRole": "Remove admin role",
+			"createAdmin": {
+				"trigger": "Add admin",
+				"title": "Create admin",
+				"description": "Create a new admin account immediately. No verification email is sent.",
+				"fields": {
+					"name": "Name",
+					"email": "Email",
+					"password": "Password"
+				},
+				"cancel": "Cancel",
+				"submit": "Create Admin",
+				"validation": {
+					"nameRequired": "Enter a name.",
+					"emailInvalid": "Enter a valid email."
+				},
+				"notifications": {
+					"success": "Admin account created.",
+					"error": "Could not create the admin account. Please try again.",
+					"emailExists": "A user with this email already exists."
+				}
+			},
+			"tabs": {
+				"influencers": "Influencers",
+				"admins": "Admins"
+			},
+			"columns": {
+				"user": "User",
+				"category": "Category",
+				"joined": "Joined",
+				"status": "Status"
+			},
+			"filters": {
+				"allCategories": "All categories",
+				"allStatuses": "All statuses",
+				"published": "Active",
+				"draft": "Draft",
+				"banned": "Banned"
+			},
+			"status": {
+				"published": "Active",
+				"draft": "Draft",
+				"banned": "Banned"
+			}
+		},
+		"influencerProfile": {
+			"title": "Influencer profile",
+			"backToUsers": "Back to users",
+			"notFound": "Influencer profile not found.",
+			"totalBid": "Total bid",
+			"status": {
+				"active": "Active",
+				"draft": "Draft",
+				"banned": "Banned"
+			},
+			"fields": {
+				"email": "Email",
+				"businessEmail": "Business email",
+				"joined": "Joined",
+				"ranks": "Ranks",
+				"description": "Description",
+				"socials": "Social profiles"
+			},
+			"stats": {
+				"title": "Statistics",
+				"description": "Profile views and social clicks for the selected period.",
+				"views": "Profile views",
+				"clicks": "Social clicks",
+				"ctr": "CTR",
+				"byPlatform": "Clicks by platform",
+				"periods": {
+					"week": "This week",
+					"month": "This month",
+					"all": "All time"
+				}
+			},
+			"payments": {
+				"title": "Payment history",
+				"description": "All bid payments for this influencer.",
+				"empty": "No payments yet."
+			}
 		},
 		"description": "Manage your application."
 	},
@@ -107,6 +332,11 @@
 			"accountSettings": "Account settings",
 			"admin": "Admin",
 			"aiChatbot": "AI Chatbot",
+			"dashboard": "Dashboard",
+			"leaderboard": "Leaderboard",
+			"users": "Users",
+			"categories": "Categories",
+			"paymentHistory": "Payments History",
 			"collapseSidebar": "Collapse sidebar",
 			"expandSidebar": "Expand sidebar",
 			"navigationTitle": "Menu",

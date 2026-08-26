@@ -68,6 +68,61 @@ export async function listPaidCreatorBids(creatorId: string) {
 	});
 }
 
+export async function listCreatorBidsByCreatorId(creatorId: string) {
+	return db.query.creatorBid.findMany({
+		where: (bid, { eq }) => eq(bid.creatorId, creatorId),
+		orderBy: (bid, { desc }) => [desc(bid.createdAt)],
+	});
+}
+
+export async function listAllCreatorBids(options?: {
+	limit?: number;
+	offset?: number;
+	status?: CreatorBidStatus;
+	query?: string;
+}) {
+	const limit = options?.limit ?? 50;
+	const offset = options?.offset ?? 0;
+	const query = options?.query?.trim().toLowerCase();
+
+	const bids = await db.query.creatorBid.findMany({
+		where: options?.status ? (bid, { eq }) => eq(bid.status, options.status!) : undefined,
+		orderBy: (bid, { desc }) => [desc(bid.createdAt)],
+		with: {
+			creator: {
+				columns: {
+					id: true,
+					publicName: true,
+					avatarUrl: true,
+				},
+				with: {
+					user: {
+						columns: {
+							id: true,
+							email: true,
+							username: true,
+						},
+					},
+				},
+			},
+		},
+	});
+
+	const filtered = query
+		? bids.filter((bid) => {
+				const name = bid.creator.publicName.toLowerCase();
+				const email = bid.creator.user.email.toLowerCase();
+				const username = (bid.creator.user.username ?? "").toLowerCase();
+				return name.includes(query) || email.includes(query) || username.includes(query);
+			})
+		: bids;
+
+	return {
+		bids: filtered.slice(offset, offset + limit),
+		total: filtered.length,
+	};
+}
+
 /**
  * Atomically apply a paid bid increase.
  * Idempotent when called with an existing idempotencyKey that is already PAID.
