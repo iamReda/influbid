@@ -5,6 +5,8 @@ import { Card } from "@repo/ui/components/card";
 import {
 	type ChartConfig,
 	ChartContainer,
+	ChartLegend,
+	ChartLegendContent,
 	ChartTooltip,
 	ChartTooltipContent,
 } from "@repo/ui/components/chart";
@@ -19,6 +21,7 @@ import {
 import { UserAvatar } from "@shared/components/UserAvatar";
 import { orpc } from "@shared/lib/orpc-query-utils";
 import { useQuery } from "@tanstack/react-query";
+import { EyeIcon, MousePointerClickIcon, PercentIcon } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
 import Link from "next/link";
 import { parseAsStringEnum, useQueryState } from "nuqs";
@@ -32,6 +35,17 @@ const chartConfig = {
 	revenue: {
 		label: "Revenue",
 		color: "var(--primary)",
+	},
+} satisfies ChartConfig;
+
+const activityChartConfig = {
+	profileViews: {
+		label: "Profile views",
+		color: "var(--primary)",
+	},
+	socialClicks: {
+		label: "Social clicks",
+		color: "var(--chart-2, #0ea5e9)",
 	},
 } satisfies ChartConfig;
 
@@ -74,12 +88,19 @@ export function AdminDashboard() {
 
 		return [...data.topCreators]
 			.sort((a, b) => b.totalBidCents - a.totalBidCents)
-			.slice(0, 10)
+			.slice(0, 5)
 			.map((creator, index) => ({
 				...creator,
 				rank: index + 1,
 			}));
 	}, [data?.topCreators]);
+
+	const activitySeries =
+		data?.activitySeries.map((point) => ({
+			date: point.date,
+			profileViews: point.profileViews,
+			socialClicks: point.socialClicks,
+		})) ?? [];
 
 	if (isLoading && !data) {
 		return (
@@ -121,6 +142,32 @@ export function AdminDashboard() {
 			key: "newCreators",
 			label: t("kpis.newCreators"),
 			value: overview ? formatter.number(overview.newCreators) : "—",
+		},
+	] as const;
+
+	const activityKpis = [
+		{
+			key: "profileViews",
+			label: t("activity.profileViews"),
+			value: overview ? formatter.number(overview.profileViews) : "—",
+			icon: EyeIcon,
+		},
+		{
+			key: "socialClicks",
+			label: t("activity.socialClicks"),
+			value: overview ? formatter.number(overview.socialClicks) : "—",
+			icon: MousePointerClickIcon,
+		},
+		{
+			key: "ctr",
+			label: t("activity.ctr"),
+			value: overview
+				? formatter.number(overview.socialCtrPercent / 100, {
+						style: "percent",
+						maximumFractionDigits: 1,
+					})
+				: "—",
+			icon: PercentIcon,
 		},
 	] as const;
 
@@ -212,31 +259,70 @@ export function AdminDashboard() {
 						<h2 className="font-semibold text-base">{t("activity.title")}</h2>
 						<p className="text-sm text-muted-foreground">{t("activity.description")}</p>
 					</div>
-					<div className="gap-3 sm:grid-cols-3 grid">
-						<div>
-							<p className="text-sm text-muted-foreground">{t("activity.profileViews")}</p>
-							<p className="mt-1 text-xl font-semibold">
-								{overview ? formatter.number(overview.profileViews) : "—"}
-							</p>
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">{t("activity.socialClicks")}</p>
-							<p className="mt-1 text-xl font-semibold">
-								{overview ? formatter.number(overview.socialClicks) : "—"}
-							</p>
-						</div>
-						<div>
-							<p className="text-sm text-muted-foreground">{t("activity.ctr")}</p>
-							<p className="mt-1 text-xl font-semibold">
-								{overview
-									? formatter.number(overview.socialCtrPercent / 100, {
-											style: "percent",
-											maximumFractionDigits: 1,
-										})
-									: "—"}
-							</p>
-						</div>
+
+					<div className="gap-2 sm:grid-cols-3 mb-4 grid">
+						{activityKpis.map((kpi) => {
+							const Icon = kpi.icon;
+							return (
+								<div
+									key={kpi.key}
+									className="gap-1.5 px-2.5 py-2 flex items-center rounded-xl bg-muted/40"
+								>
+									<div className="size-7 flex shrink-0 items-center justify-center rounded-full bg-background text-primary">
+										<Icon className="size-3.5" aria-hidden />
+									</div>
+									<div className="min-w-0">
+										<p className="text-xs leading-tight text-muted-foreground">{kpi.label}</p>
+										<p className="text-sm font-semibold tracking-tight leading-tight tabular-nums">
+											{kpi.value}
+										</p>
+									</div>
+								</div>
+							);
+						})}
 					</div>
+
+					{activitySeries.length === 0 ? (
+						<p className="py-8 text-sm text-center text-muted-foreground">{t("empty")}</p>
+					) : (
+						<ChartContainer config={activityChartConfig} className="h-56 w-full">
+							<AreaChart
+								accessibilityLayer
+								data={activitySeries}
+								margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+							>
+								<defs>
+									<linearGradient id="adminProfileViews" x1="0" y1="0" x2="0" y2="1">
+										<stop offset="0%" stopColor="var(--color-profileViews)" stopOpacity={0.3} />
+										<stop offset="100%" stopColor="var(--color-profileViews)" stopOpacity={0} />
+									</linearGradient>
+									<linearGradient id="adminSocialClicks" x1="0" y1="0" x2="0" y2="1">
+										<stop offset="0%" stopColor="var(--color-socialClicks)" stopOpacity={0.3} />
+										<stop offset="100%" stopColor="var(--color-socialClicks)" stopOpacity={0} />
+									</linearGradient>
+								</defs>
+								<CartesianGrid vertical={false} />
+								<XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+								<YAxis tickLine={false} axisLine={false} tickMargin={8} allowDecimals={false} />
+								<ChartTooltip content={<ChartTooltipContent />} />
+								<ChartLegend content={<ChartLegendContent />} />
+								<Area
+									dataKey="profileViews"
+									type="monotone"
+									fill="url(#adminProfileViews)"
+									stroke="var(--color-profileViews)"
+									strokeWidth={2}
+								/>
+								<Area
+									dataKey="socialClicks"
+									type="monotone"
+									fill="url(#adminSocialClicks)"
+									stroke="var(--color-socialClicks)"
+									strokeWidth={2}
+								/>
+							</AreaChart>
+						</ChartContainer>
+					)}
 				</Card>
 
 				<Card className="p-0 overflow-hidden">
@@ -259,7 +345,10 @@ export function AdminDashboard() {
 								{data?.latestBids.map((bid) => (
 									<TableRow key={bid.id}>
 										<TableCell>
-											<div className="gap-2 flex items-center">
+											<Link
+												href={`/admin/users/${bid.userId}`}
+												className="gap-2 flex items-center transition-opacity hover:opacity-80"
+											>
 												<UserAvatar
 													name={bid.publicName}
 													avatarUrl={bid.avatarUrl}
@@ -271,7 +360,7 @@ export function AdminDashboard() {
 														{bid.categoryName}
 													</p>
 												</div>
-											</div>
+											</Link>
 										</TableCell>
 										<TableCell>
 											{bid.type === "INITIAL"
@@ -289,7 +378,7 @@ export function AdminDashboard() {
 					<div className="p-4 pt-2">
 						<Button
 							variant="outline"
-							size="sm"
+							size="md"
 							className="w-full"
 							render={(props) => (
 								<Link {...props} href="/admin/payment-history">
@@ -320,31 +409,48 @@ export function AdminDashboard() {
 							</TableHeader>
 							<TableBody>
 								{topCreators.map((creator) => (
-									<TableRow key={creator.id}>
-										<TableCell className="font-medium">#{creator.rank}</TableCell>
-										<TableCell>
-											<div className="gap-2 flex items-center">
-												<UserAvatar
-													name={creator.publicName}
-													avatarUrl={creator.avatarUrl}
-													className="size-8"
-												/>
-												<div className="min-w-0">
-													<p className="font-medium truncate">{creator.publicName}</p>
-													<p className="text-xs truncate text-muted-foreground">
-														{creator.categoryName}
-													</p>
-												</div>
-											</div>
-										</TableCell>
-										<TableCell className="font-medium text-right">
-											{formatUsd(creator.totalBidCents, formatter)}
+									<TableRow key={creator.id} className="hover:bg-muted/50">
+										<TableCell className="p-0" colSpan={3}>
+											<Link
+												href={`/admin/users/${creator.userId}`}
+												className="gap-4 px-4 py-3 grid grid-cols-[auto_1fr_auto] items-center"
+											>
+												<span className="font-medium">#{creator.rank}</span>
+												<span className="gap-2 min-w-0 flex items-center">
+													<UserAvatar
+														name={creator.publicName}
+														avatarUrl={creator.avatarUrl}
+														className="size-8"
+													/>
+													<span className="min-w-0">
+														<span className="font-medium block truncate">{creator.publicName}</span>
+														<span className="text-xs block truncate text-muted-foreground">
+															{creator.categoryName}
+														</span>
+													</span>
+												</span>
+												<span className="font-medium text-right">
+													{formatUsd(creator.totalBidCents, formatter)}
+												</span>
+											</Link>
 										</TableCell>
 									</TableRow>
 								))}
 							</TableBody>
 						</Table>
 					)}
+					<div className="p-4 pt-2">
+						<Button
+							variant="outline"
+							size="md"
+							className="w-full"
+							render={(props) => (
+								<Link {...props} href="/admin/leaderboard">
+									{t("topCreators.openLeaderboard")}
+								</Link>
+							)}
+						/>
+					</div>
 				</Card>
 
 				<Card className="p-0 overflow-hidden">
@@ -391,7 +497,7 @@ export function AdminDashboard() {
 					<div className="p-4 pt-2">
 						<Button
 							variant="outline"
-							size="sm"
+							size="md"
 							className="w-full"
 							render={(props) => (
 								<Link {...props} href="/admin/categories">

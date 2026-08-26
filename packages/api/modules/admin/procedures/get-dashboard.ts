@@ -37,6 +37,13 @@ export const getDashboard = adminProcedure
 					transactions: z.number().int().nonnegative(),
 				}),
 			),
+			activitySeries: z.array(
+				z.object({
+					date: z.string(),
+					profileViews: z.number().int().nonnegative(),
+					socialClicks: z.number().int().nonnegative(),
+				}),
+			),
 			latestBids: z.array(
 				z.object({
 					id: z.string(),
@@ -46,6 +53,7 @@ export const getDashboard = adminProcedure
 					totalAfterCents: z.number().int().nullish(),
 					paidAt: z.coerce.date().nullish(),
 					creatorId: z.string(),
+					userId: z.string(),
 					publicName: z.string(),
 					avatarUrl: z.string(),
 					username: z.string().nullish(),
@@ -68,6 +76,7 @@ export const getDashboard = adminProcedure
 			topCreators: z.array(
 				z.object({
 					id: z.string(),
+					userId: z.string(),
 					rank: z.number().int().positive(),
 					publicName: z.string(),
 					avatarUrl: z.string(),

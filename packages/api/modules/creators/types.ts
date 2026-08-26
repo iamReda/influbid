@@ -28,6 +28,7 @@ export const categoryCardSchema = z.object({
 
 export const leaderboardItemSchema = z.object({
 	id: z.string(),
+	userId: z.string(),
 	rank: z.number().int(),
 	publicName: z.string(),
 	avatarUrl: z.string(),
@@ -40,6 +41,7 @@ export const leaderboardItemSchema = z.object({
 	categorySlug: z.string(),
 	username: z.string().nullable(),
 	platforms: z.array(z.string()),
+	profileViewCount: z.number().int(),
 	socialClickCount: z.number().int(),
 });
 

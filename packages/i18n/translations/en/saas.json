@@ -32,7 +32,8 @@
 				"description": "Profile views and social clicks in the selected range.",
 				"profileViews": "Profile views",
 				"socialClicks": "Social clicks",
-				"ctr": "Social CTR"
+				"ctr": "Social CTR",
+				"chartTitle": "Views & clicks"
 			},
 			"latestBids": {
 				"title": "Latest paid bids",
@@ -46,7 +47,8 @@
 			},
 			"topCreators": {
 				"title": "Top creators",
-				"description": "Top 10 creators by total bid.",
+				"description": "Top 5 creators by total bid.",
+				"openLeaderboard": "Open Leaderboard",
 				"columns": {
 					"rank": "Rank",
 					"creator": "Creator",
@@ -76,6 +78,7 @@
 				"creator": "Creator",
 				"category": "Category",
 				"totalBid": "Total bid",
+				"profileViews": "Profile views",
 				"socialClicks": "Social clicks"
 			}
 		},

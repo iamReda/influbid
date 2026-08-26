@@ -64,6 +64,7 @@ export async function getCreatorRank(options: {
 
 export type LeaderboardRow = {
 	id: string;
+	userId: string;
 	rank: number;
 	publicName: string;
 	avatarUrl: string;
@@ -76,6 +77,7 @@ export type LeaderboardRow = {
 	categorySlug: string;
 	username: string | null;
 	platforms: string[];
+	profileViewCount: number;
 	socialClickCount: number;
 };
 
@@ -112,7 +114,7 @@ export async function listLeaderboard(options: {
 			take: pageSize,
 			include: {
 				category: { select: { id: true, name: true, slug: true } },
-				user: { select: { username: true } },
+				user: { select: { id: true, username: true } },
 				socialProfiles: {
 					where: { deletedAt: null },
 					orderBy: { position: "asc" },
@@ -123,24 +125,31 @@ export async function listLeaderboard(options: {
 	]);
 
 	const creatorIds = rows.map((row) => row.id);
-	const clickCounts =
+	const eventCounts =
 		creatorIds.length === 0
 			? []
 			: await db.creatorAnalyticsEvent.groupBy({
-					by: ["creatorId"],
+					by: ["creatorId", "type"],
 					where: {
 						creatorId: { in: creatorIds },
-						type: "SOCIAL_CLICK",
+						type: { in: ["PROFILE_VIEW", "SOCIAL_CLICK"] },
 					},
 					_count: { _all: true },
 				});
 
-	const clicksByCreator = new Map(
-		clickCounts.map((row) => [row.creatorId, row._count._all] as const),
-	);
+	const viewsByCreator = new Map<string, number>();
+	const clicksByCreator = new Map<string, number>();
+	for (const row of eventCounts) {
+		if (row.type === "PROFILE_VIEW") {
+			viewsByCreator.set(row.creatorId, row._count._all);
+		} else if (row.type === "SOCIAL_CLICK") {
+			clicksByCreator.set(row.creatorId, row._count._all);
+		}
+	}
 
 	const items: LeaderboardRow[] = rows.map((row, index) => ({
 		id: row.id,
+		userId: row.userId,
 		rank: skip + index + 1,
 		publicName: row.publicName,
 		avatarUrl: row.avatarUrl,
@@ -153,6 +162,7 @@ export async function listLeaderboard(options: {
 		categorySlug: row.category.slug,
 		username: row.user.username,
 		platforms: row.socialProfiles.map((social) => social.platform),
+		profileViewCount: viewsByCreator.get(row.id) ?? 0,
 		socialClickCount: clicksByCreator.get(row.id) ?? 0,
 	}));
 
