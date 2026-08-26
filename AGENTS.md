@@ -145,7 +145,14 @@ pnpm --filter @repo/database generate
 pnpm --filter @repo/database push
 pnpm --filter @repo/database migrate
 pnpm --filter @repo/database studio
+pnpm --filter @repo/database seed:categories
+pnpm --filter @repo/database seed:mock-creators
 ```
+
+`seed:categories` upserts the approved creator categories. `seed:mock-creators` is
+development-only: it replaces prior `@example.com` mock creators (never admins or
+categories) with ~100 realistic creators, bids, socials, analytics, and local
+avatar files under `apps/saas/.local-storage/avatars/`.
 
 Edit `packages/database/prisma/schema.prisma` for Prisma schema changes, then use
 the appropriate database command. Do not hand-edit generated Prisma client output
