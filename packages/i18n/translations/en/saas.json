@@ -307,7 +307,15 @@
 				"joined": "Joined",
 				"ranks": "Ranks",
 				"description": "Description",
-				"socials": "Social profiles"
+				"socials": "Social profiles",
+				"country": "Country",
+				"languages": "Languages",
+				"gender": "Gender",
+				"genderValues": {
+					"MAN": "Man",
+					"WOMAN": "Woman",
+					"PREFER_NOT_TO_SAY": "Prefer not to say"
+				}
 			},
 			"stats": {
 				"title": "Statistics",
@@ -496,6 +504,34 @@
 		},
 		"step": "Step {step} / {total}",
 		"title": "Set up your account"
+	},
+	"completeAccount": {
+		"title": "Complete your account",
+		"message": "Tell us a bit more about yourself, then set a password for future logins.",
+		"step": "Step {step} / {total}",
+		"continue": "Continue",
+		"back": "Back",
+		"submit": "Finish and go to dashboard",
+		"languages": {
+			"label": "Languages",
+			"placeholder": "Add at least one language you speak.",
+			"search": "Search languages…"
+		},
+		"gender": {
+			"label": "Gender",
+			"man": "Man",
+			"woman": "Woman",
+			"preferNotToSay": "Prefer not to say"
+		},
+		"password": {
+			"description": "Create a password so you can sign in with email and password next time.",
+			"label": "Password",
+			"confirm": "Confirm password"
+		},
+		"notifications": {
+			"success": "Your account is ready.",
+			"error": "Could not complete account setup. Please try again."
+		}
 	},
 	"organizations": {
 		"createForm": {

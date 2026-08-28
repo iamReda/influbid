@@ -6,6 +6,7 @@ import {
 	getCreatorRank,
 	listAnalyticsTimelineEvents,
 	listCreatorBidsByCreatorId,
+	parseCreatorLanguages,
 } from "@repo/database";
 import { z } from "zod";
 
@@ -54,6 +55,9 @@ export const getInfluencer = adminProcedure
 				joinedAt: z.coerce.date(),
 				isPublished: z.boolean(),
 				accountClaimedAt: z.coerce.date().nullish(),
+				countryCode: z.string().nullish(),
+				gender: z.enum(["MAN", "WOMAN", "PREFER_NOT_TO_SAY"]).nullish(),
+				languages: z.array(z.string()).nullish(),
 				category: z.object({
 					id: z.string(),
 					name: z.string(),
@@ -195,6 +199,9 @@ export const getInfluencer = adminProcedure
 				joinedAt: profile.joinedAt,
 				isPublished: profile.isPublished,
 				accountClaimedAt: profile.accountClaimedAt,
+				countryCode: profile.countryCode,
+				gender: profile.gender,
+				languages: parseCreatorLanguages(profile.languages),
 				category: profile.category,
 				socialProfiles: profile.socialProfiles,
 				generalRank,

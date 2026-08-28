@@ -66,6 +66,7 @@ export type LeaderboardRow = {
 	publicName: string;
 	avatarUrl: string;
 	description: string | null;
+	countryCode: string | null;
 	totalBidCents: number;
 	joinedAt: Date;
 	bidReachedAt: Date;
@@ -169,6 +170,7 @@ export async function listLeaderboard(options: {
 		publicName: row.publicName,
 		avatarUrl: row.avatarUrl,
 		description: row.description,
+		countryCode: row.countryCode ?? null,
 		totalBidCents: row.totalBidCents,
 		joinedAt: row.joinedAt,
 		bidReachedAt: row.bidReachedAt,

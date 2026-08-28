@@ -1,17 +1,25 @@
+import { inferMockDemographics } from "./demographics";
+
 export type MockGender = "male" | "female";
 
-export type MockIdentity = {
+export type MockIdentityBase = {
 	publicName: string;
 	gender: MockGender;
 	/** Short bio ≤ 160 chars */
 	description: string;
 };
 
+export type MockIdentity = MockIdentityBase & {
+	countryCode: string;
+	languages: string[];
+};
+
 /**
  * 100 fictional creators — no real celebrities.
  * Gender is explicit so avatar portraits can be matched.
+ * Country/languages inferred from name origin with deterministic variety.
  */
-export const MOCK_IDENTITIES: readonly MockIdentity[] = [
+const MOCK_IDENTITY_BASE: readonly MockIdentityBase[] = [
 	{
 		publicName: "Maya Chen",
 		gender: "female",
@@ -513,6 +521,13 @@ export const MOCK_IDENTITIES: readonly MockIdentity[] = [
 		description: "Business creator covering creator brand deals.",
 	},
 ] as const;
+
+export const MOCK_IDENTITIES: readonly MockIdentity[] = MOCK_IDENTITY_BASE.map(
+	(identity, index) => ({
+		...identity,
+		...inferMockDemographics(identity, index),
+	}),
+);
 
 if (MOCK_IDENTITIES.length !== 100) {
 	throw new Error(`Expected 100 mock identities, got ${MOCK_IDENTITIES.length}`);

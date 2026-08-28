@@ -6,6 +6,7 @@ import { config as loadEnv } from "dotenv";
 
 import { prepareMockAvatars } from "../lib/mock-creators/avatars";
 import { cleanupMockCreators } from "../lib/mock-creators/cleanup";
+import { mapMockGenderToCreatorGender } from "../lib/mock-creators/demographics";
 import {
 	buildMockCreatorPlans,
 	distributeClicksAcrossSocials,
@@ -82,6 +83,9 @@ async function main() {
 		publicNames: MOCK_IDENTITIES.map((i) => i.publicName),
 		descriptions: MOCK_IDENTITIES.map((i) => i.description),
 		avatarFilenames,
+		countryCodes: MOCK_IDENTITIES.map((i) => i.countryCode),
+		genders: MOCK_IDENTITIES.map((i) => mapMockGenderToCreatorGender(i.gender)),
+		languages: MOCK_IDENTITIES.map((i) => [...i.languages]),
 		categories: categories.map((c) => ({ id: c.id, slug: c.slug, name: c.name })),
 		now,
 		rng,
@@ -126,6 +130,9 @@ async function main() {
 				publicName: plan.publicName,
 				avatarUrl: plan.avatarFilename,
 				description: plan.description,
+				countryCode: plan.countryCode,
+				gender: plan.gender,
+				languages: plan.languages,
 				categoryId: plan.categoryId,
 				totalBidCents: plan.totalBidCents,
 				currency: "USD",

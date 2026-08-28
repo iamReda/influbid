@@ -5,7 +5,7 @@ import SocialPlatformIcon, {
 	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
 import { getPublicAvatarUrl } from "@home/influencerbid/lib/format";
-import Icon from "@repo/ui/components/influencerbid/icon";
+import { CountryFlag } from "@repo/ui/components/influencerbid/country-flag";
 import Image from "@repo/ui/components/influencerbid/image";
 import Layout from "@shared/components/influencerbid/layout";
 import { Mail } from "lucide-react";
@@ -17,6 +17,7 @@ export type PublicCreatorView = {
 	username: string;
 	avatarUrl: string;
 	description: string | null;
+	countryCode: string | null;
 	businessEmail: string | null;
 	categoryName: string;
 	generalRank: number;
@@ -94,9 +95,10 @@ const PublicCreatorProfile = ({ creator }: { creator: PublicCreatorView }) => {
 								<h1 className="text-h3 max-md:text-h5 truncate leading-none">
 									{creator.publicName}
 								</h1>
-								<Icon
-									className="size-6! fill-t-blue max-md:size-5! shrink-0 self-center"
-									name="verification"
+								<CountryFlag
+									countryCode={creator.countryCode}
+									size="md"
+									className="shrink-0 self-center"
 								/>
 							</div>
 						</div>

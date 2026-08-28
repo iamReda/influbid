@@ -263,6 +263,34 @@
 		"step": "Schritt {step} / {total}",
 		"title": "Richte dein Konto ein"
 	},
+	"completeAccount": {
+		"title": "Konto vervollständigen",
+		"message": "Erzähle uns etwas mehr über dich und lege dann ein Passwort für zukünftige Anmeldungen fest.",
+		"step": "Schritt {step} / {total}",
+		"continue": "Weiter",
+		"back": "Zurück",
+		"submit": "Fertig und zum Dashboard",
+		"languages": {
+			"label": "Sprachen",
+			"placeholder": "Füge mindestens eine Sprache hinzu, die du sprichst.",
+			"search": "Sprachen suchen…"
+		},
+		"gender": {
+			"label": "Geschlecht",
+			"man": "Mann",
+			"woman": "Frau",
+			"preferNotToSay": "Keine Angabe"
+		},
+		"password": {
+			"description": "Erstelle ein Passwort, damit du dich beim nächsten Mal mit E-Mail und Passwort anmelden kannst.",
+			"label": "Passwort",
+			"confirm": "Passwort bestätigen"
+		},
+		"notifications": {
+			"success": "Dein Konto ist bereit.",
+			"error": "Kontoeinrichtung fehlgeschlagen. Bitte versuche es erneut."
+		}
+	},
 	"organizations": {
 		"createForm": {
 			"name": "Name der Organisation",

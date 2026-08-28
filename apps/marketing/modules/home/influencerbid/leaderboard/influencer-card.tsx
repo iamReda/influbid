@@ -2,7 +2,7 @@
 
 import SocialPlatformIcon from "@home/influencerbid/bid-form/social-platform-icon";
 import Button from "@repo/ui/components/influencerbid/button";
-import Icon from "@repo/ui/components/influencerbid/icon";
+import { CountryFlag } from "@repo/ui/components/influencerbid/country-flag";
 import Image from "@repo/ui/components/influencerbid/image";
 import { Armchair, MousePointerClick } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -82,9 +82,11 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 					<div className="mb-1.5 gap-2 flex flex-wrap items-center">
 						<div className="min-w-0 gap-1.5 flex items-center">
 							<span className="text-body-bold text-t-primary truncate">{item.name}</span>
-							{item.verified && (
-								<Icon className="size-4! fill-t-blue shrink-0" name="verification" />
-							)}
+							<CountryFlag
+								countryCode={item.countryCode}
+								size="sm"
+								className="shrink-0 self-center"
+							/>
 						</div>
 					</div>
 

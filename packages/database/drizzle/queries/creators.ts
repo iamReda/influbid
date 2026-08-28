@@ -92,6 +92,7 @@ export type CreateCreatorProfileInput = {
 	publicName: string;
 	avatarUrl: string;
 	description?: string | null;
+	countryCode?: string | null;
 	categoryId: string;
 	totalBidCents: number;
 	currency?: string;
@@ -116,6 +117,7 @@ export async function createCreatorProfileWithSocials(
 			publicName: input.publicName,
 			avatarUrl: input.avatarUrl,
 			description: input.description ?? null,
+			countryCode: input.countryCode?.trim().toUpperCase() || null,
 			categoryId: input.categoryId,
 			totalBidCents: input.totalBidCents,
 			currency: input.currency ?? "USD",
@@ -175,10 +177,44 @@ export async function markCreatorAccountClaimed(creatorId: string, claimedAt = n
 	return updated;
 }
 
+export type CompleteCreatorFirstAccessInput = {
+	creatorId: string;
+	gender: "MAN" | "WOMAN" | "PREFER_NOT_TO_SAY";
+	languages: string[];
+};
+
+export async function completeCreatorFirstAccessDemographics(
+	input: CompleteCreatorFirstAccessInput,
+) {
+	const [updated] = await db
+		.update(creatorProfile)
+		.set({
+			gender: input.gender,
+			languages: input.languages,
+			updatedAt: new Date(),
+		})
+		.where(eq(creatorProfile.id, input.creatorId))
+		.returning();
+
+	if (!updated) {
+		throw new Error("Record to update not found.");
+	}
+
+	return updated;
+}
+
+export function parseCreatorLanguages(value: unknown): string[] {
+	if (!Array.isArray(value)) {
+		return [];
+	}
+	return value.filter((item): item is string => typeof item === "string" && item.trim().length > 0);
+}
+
 export type UpdateCreatorProfileInput = {
 	userId: string;
 	publicName?: string;
 	description?: string | null;
+	countryCode?: string | null;
 	avatarUrl?: string;
 	businessEmail?: string | null;
 	socialUrls?: string[];
@@ -284,6 +320,9 @@ export async function updateCreatorProfile(input: UpdateCreatorProfileInput) {
 		if (input.description !== undefined) {
 			profileUpdates.description = input.description;
 		}
+		if (input.countryCode !== undefined) {
+			profileUpdates.countryCode = input.countryCode;
+		}
 		if (input.avatarUrl !== undefined) {
 			profileUpdates.avatarUrl = input.avatarUrl;
 		}
@@ -291,6 +330,7 @@ export async function updateCreatorProfile(input: UpdateCreatorProfileInput) {
 		if (
 			input.publicName !== undefined ||
 			input.description !== undefined ||
+			input.countryCode !== undefined ||
 			input.avatarUrl !== undefined
 		) {
 			await tx.update(creatorProfile).set(profileUpdates).where(eq(creatorProfile.id, creator.id));
@@ -331,6 +371,7 @@ export function toCreatorEditProfile(
 		publicName: creator.publicName,
 		avatarUrl: creator.avatarUrl,
 		description: creator.description,
+		countryCode: creator.countryCode,
 		businessEmail: creator.user.businessEmail,
 		socialProfiles: creator.socialProfiles.map((social) => ({
 			id: social.id,

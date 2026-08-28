@@ -40,6 +40,7 @@ export default async function UsernameProfilePage({ params }: Props) {
 		bio: creator.description,
 		businessEmail: creator.user.businessEmail ?? null,
 		socialLinks: creator.socialProfiles.map((social) => social.url),
+		countryCode: creator.countryCode,
 	};
 
 	const socials = creator.socialProfiles.map((social) => ({

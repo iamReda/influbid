@@ -264,6 +264,34 @@
 		"step": "Étape {step} / {total}",
 		"title": "Configurez votre compte"
 	},
+	"completeAccount": {
+		"title": "Finalisez votre compte",
+		"message": "Dites-nous en un peu plus sur vous, puis définissez un mot de passe pour vos prochaines connexions.",
+		"step": "Étape {step} / {total}",
+		"continue": "Continuer",
+		"back": "Retour",
+		"submit": "Terminer et aller au tableau de bord",
+		"languages": {
+			"label": "Langues",
+			"placeholder": "Ajoutez au moins une langue que vous parlez.",
+			"search": "Rechercher des langues…"
+		},
+		"gender": {
+			"label": "Genre",
+			"man": "Homme",
+			"woman": "Femme",
+			"preferNotToSay": "Préfère ne pas dire"
+		},
+		"password": {
+			"description": "Créez un mot de passe pour vous connecter avec e-mail et mot de passe la prochaine fois.",
+			"label": "Mot de passe",
+			"confirm": "Confirmer le mot de passe"
+		},
+		"notifications": {
+			"success": "Votre compte est prêt.",
+			"error": "Impossible de finaliser le compte. Veuillez réessayer."
+		}
+	},
 	"organizations": {
 		"createForm": {
 			"name": "Nom de l'organisation",

@@ -1,5 +1,6 @@
 "use client";
 
+import { config } from "@config";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -16,7 +17,9 @@ const Footer = () => {
 					isHomeRoute(pathname) ? "max-md:hidden" : ""
 				}`}
 			>
-				<div className="text-small text-t-tertiary">© 2026 influencerbid</div>
+				<div className="text-small text-t-tertiary">
+					© {new Date().getFullYear()} {config.appName}
+				</div>
 				<div className="w-0.25 h-1 mx-4 bg-t-tertiary max-md:mx-auto"></div>
 				<Link
 					className="text-small text-t-secondary hover:text-t-primary transition-colors"

@@ -22,6 +22,7 @@ import {
 	normalizeSocialUrl,
 } from "@repo/database";
 import { getSignedUploadUrl } from "@repo/storage";
+import { countryCodeSchema } from "@repo/utils";
 
 import type { Platform } from "./bid-form/social-platform-icon";
 import { formatRelativeJoinedAt, getPublicAvatarUrl } from "./lib/format";
@@ -49,7 +50,7 @@ export type LeaderboardItemDto = {
 	bid: number;
 	addedAgo: string;
 	clicks: number;
-	verified: boolean;
+	countryCode: string | null;
 };
 
 export type CategoryCardDto = {
@@ -133,7 +134,7 @@ export async function fetchLeaderboardAction(input?: {
 			bid: Math.round(item.totalBidCents / 100),
 			addedAgo: formatRelativeJoinedAt(item.joinedAt),
 			clicks: item.socialClickCount,
-			verified: true,
+			countryCode: item.countryCode,
 		})),
 	};
 }
@@ -208,6 +209,7 @@ export async function submitCompleteProfileAction(input: {
 	publicName: string;
 	avatarPath: string;
 	description?: string | null;
+	countryCode: string;
 	categoryId: string;
 	bidAmountCents: number;
 	estimatedRank?: number | null;
@@ -216,10 +218,17 @@ export async function submitCompleteProfileAction(input: {
 	const email = input.email.trim().toLowerCase();
 	const publicName = input.publicName.trim();
 	const socialUrls = input.socialUrls.map((url) => url.trim()).filter(Boolean);
+	const countryParsed = countryCodeSchema.safeParse(input.countryCode);
 
 	if (!email || !publicName || !input.avatarPath) {
 		return { ok: false as const, error: "Avatar, public name, and email are required." };
 	}
+
+	if (!countryParsed.success) {
+		return { ok: false as const, error: "Country is required." };
+	}
+
+	const countryCode = countryParsed.data;
 
 	if (input.bidAmountCents < MIN_BID_CENTS) {
 		return { ok: false as const, error: `Minimum bid is $${MIN_BID_CENTS / 100}.` };
@@ -281,6 +290,7 @@ export async function submitCompleteProfileAction(input: {
 		publicName,
 		avatarUrl: input.avatarPath,
 		description: input.description?.trim() || null,
+		countryCode,
 		categoryId: input.categoryId,
 		socialProfiles,
 		bidAmountCents: input.bidAmountCents,

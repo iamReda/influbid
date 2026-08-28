@@ -264,6 +264,34 @@
 		"step": "Paso {step} / {total}",
 		"title": "Configura tu cuenta"
 	},
+	"completeAccount": {
+		"title": "Completa tu cuenta",
+		"message": "Cuéntanos un poco más sobre ti y luego crea una contraseña para futuros inicios de sesión.",
+		"step": "Paso {step} / {total}",
+		"continue": "Continuar",
+		"back": "Atrás",
+		"submit": "Terminar e ir al panel",
+		"languages": {
+			"label": "Idiomas",
+			"placeholder": "Añade al menos un idioma que hables.",
+			"search": "Buscar idiomas…"
+		},
+		"gender": {
+			"label": "Género",
+			"man": "Hombre",
+			"woman": "Mujer",
+			"preferNotToSay": "Prefiero no decirlo"
+		},
+		"password": {
+			"description": "Crea una contraseña para poder iniciar sesión con correo y contraseña la próxima vez.",
+			"label": "Contraseña",
+			"confirm": "Confirmar contraseña"
+		},
+		"notifications": {
+			"success": "Tu cuenta está lista.",
+			"error": "No se pudo completar la configuración. Inténtalo de nuevo."
+		}
+	},
 	"organizations": {
 		"createForm": {
 			"name": "Nombre de la organización",

@@ -68,6 +68,7 @@ async function main() {
 		publicName: `Mock Flow ${stamp}`,
 		avatarUrl: `avatars/mockflow-${stamp}.png`,
 		description: "E2E mock flow creator",
+		countryCode: "FR",
 		categoryId: category.id,
 		socialProfiles: [
 			{ platform: "instagram", url: instagramUrl, position: 0 },
@@ -97,8 +98,9 @@ async function main() {
 	assert(creator.totalBidCents === bidAmountCents, "totalBidCents matches initial bid");
 	assert(creator.joinedAt instanceof Date, "joinedAt set");
 	assert(creator.accountClaimedAt === null, "accountClaimedAt starts null");
+	assert(creator.countryCode === "FR", "countryCode copied from pending");
 	const joinedAtMs = creator.joinedAt.getTime();
-	console.log("✓ joinedAt set, accountClaimedAt null");
+	console.log("✓ joinedAt set, accountClaimedAt null, countryCode FR");
 
 	const second = await finalizeCreatorPayment({
 		pendingCreatorId: pending.id,
@@ -259,6 +261,7 @@ async function main() {
 		email,
 		publicName: "Duplicate Email Attempt",
 		avatarUrl: `avatars/dup-${stamp}.png`,
+		countryCode: "US",
 		categoryId: category.id,
 		socialProfiles: [
 			{

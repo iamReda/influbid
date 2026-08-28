@@ -56,14 +56,14 @@ const Header = ({ isFixed, login, isVisiblePlan, isMinimal, onLogout }: HeaderPr
 					src="/images/logo-dark.svg"
 					width={135}
 					height={36}
-					alt="Logo"
+					alt="CreatorLand"
 				/>
 				<Image
 					className="hidden! w-full opacity-100 dark:block!"
 					src="/images/logo-light.svg"
 					width={135}
 					height={36}
-					alt="Logo"
+					alt="CreatorLand"
 				/>
 			</Link>
 			{!isMinimal && (

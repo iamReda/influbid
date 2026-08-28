@@ -11,6 +11,9 @@ export type MockCreatorPlan = {
 	publicName: string;
 	description: string;
 	avatarFilename: string;
+	countryCode: string;
+	gender: "MAN" | "WOMAN";
+	languages: string[];
 	categoryId: string;
 	categorySlug: string;
 	joinedAt: Date;
@@ -305,6 +308,9 @@ export function buildMockCreatorPlans(options: {
 	publicNames: string[];
 	descriptions: string[];
 	avatarFilenames: string[];
+	countryCodes: string[];
+	genders: Array<"MAN" | "WOMAN">;
+	languages: string[][];
 	categories: CategoryRef[];
 	now: Date;
 	rng: Rng;
@@ -391,6 +397,9 @@ export function buildMockCreatorPlans(options: {
 			publicName: options.publicNames[i]!,
 			description: options.descriptions[i]!,
 			avatarFilename: options.avatarFilenames[i]!,
+			countryCode: options.countryCodes[i]!,
+			gender: options.genders[i]!,
+			languages: options.languages[i]!,
 			categoryId: category.id,
 			categorySlug: category.slug,
 			joinedAt,

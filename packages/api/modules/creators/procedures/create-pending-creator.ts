@@ -9,6 +9,7 @@ import {
 	MIN_BID_CENTS,
 	normalizeSocialUrl,
 } from "@repo/database";
+import { countryCodeSchema } from "@repo/utils";
 import { z } from "zod";
 
 import { publicProcedure } from "../../../orpc/procedures";
@@ -28,6 +29,7 @@ export const createPendingCreatorProcedure = publicProcedure
 			publicName: z.string().trim().min(1).max(120),
 			avatarUrl: z.string().url().max(2048),
 			description: z.string().trim().max(160).optional().nullable(),
+			countryCode: countryCodeSchema,
 			categoryId: z.string().min(1),
 			socialProfiles: z.array(pendingSocialProfileSchema).min(1).max(10),
 			bidAmountCents: z.number().int().min(MIN_BID_CENTS),
@@ -87,6 +89,7 @@ export const createPendingCreatorProcedure = publicProcedure
 			publicName: input.publicName,
 			avatarUrl: input.avatarUrl,
 			description: input.description,
+			countryCode: input.countryCode,
 			categoryId: input.categoryId,
 			socialProfiles,
 			bidAmountCents: input.bidAmountCents,

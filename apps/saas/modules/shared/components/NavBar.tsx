@@ -1,5 +1,6 @@
 "use client";
 
+import { config } from "@config";
 import { useActiveOrganization } from "@organizations/hooks/use-active-organization";
 import { config as authConfig } from "@repo/auth/config";
 import { config as paymentsConfig } from "@repo/payments/config";
@@ -13,13 +14,13 @@ import {
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuTrigger,
-	Logo,
 	Sheet,
 	SheetContent,
 	SheetHeader,
 	SheetTitle,
 	SheetTrigger,
 } from "@repo/ui";
+import Image from "@repo/ui/components/influencerbid/image";
 import {
 	Tooltip,
 	TooltipContent,
@@ -51,6 +52,8 @@ import { type MouseEvent, type PointerEvent, useMemo, useRef, useState } from "r
 import { OrganzationSelect } from "../../organizations/components/OrganizationSelect";
 import { useIsMobile } from "../hooks/use-media-query";
 import { useSidebar } from "../lib/sidebar-context";
+
+const marketingBase = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
 
 interface NavSubItem {
 	label: string;
@@ -519,8 +522,27 @@ export function NavBar() {
 										</div>
 									</SheetContent>
 								</Sheet>
-								<Link href="/" className="block shrink-0">
-									<Logo withLabel={false} />
+								<Link
+									href={`${marketingBase}/`}
+									className={cn(
+										"block shrink-0",
+										isCollapsedEffective ? "w-14 overflow-hidden" : "w-28",
+									)}
+								>
+									<Image
+										className="w-full opacity-100 dark:hidden!"
+										src="/images/logo-dark.svg"
+										width={112}
+										height={36}
+										alt="CreatorLand"
+									/>
+									<Image
+										className="hidden! w-full opacity-100 dark:block!"
+										src="/images/logo-light.svg"
+										width={112}
+										height={36}
+										alt="CreatorLand"
+									/>
 								</Link>
 							</div>
 

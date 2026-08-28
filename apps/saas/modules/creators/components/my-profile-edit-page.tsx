@@ -8,12 +8,14 @@ import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
 import Switch from "@repo/ui/components/influencerbid/switch";
 import { toast } from "@repo/ui/components/toast";
+import { isIsoCountryCode, type IsoCountryCode } from "@repo/utils";
 import Layout from "@shared/components/influencerbid/layout";
 import { useRouter } from "@shared/hooks/router";
 import { orpc } from "@shared/lib/orpc-query-utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import CountryCombobox from "./country-combobox";
 import { ProfileAvatarUpload } from "./profile-avatar-upload";
 import { SocialUrlField } from "./social-url-field";
 
@@ -34,6 +36,9 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 	const { user } = useSession();
 	const [publicName, setPublicName] = useState(profile.publicName);
 	const [description, setDescription] = useState(profile.description ?? "");
+	const [countryCode, setCountryCode] = useState<IsoCountryCode | null>(() =>
+		profile.countryCode && isIsoCountryCode(profile.countryCode) ? profile.countryCode : null,
+	);
 	const [contactEnabled, setContactEnabled] = useState(Boolean(profile.businessEmail));
 	const [businessEmail, setBusinessEmail] = useState(profile.businessEmail ?? "");
 	const [socials, setSocials] = useState<SocialEntry[]>(() => {
@@ -153,6 +158,14 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 			return;
 		}
 
+		if (!countryCode) {
+			toast.add({
+				title: "Country is required",
+				type: "error",
+			});
+			return;
+		}
+
 		if (socialLinks.length < MIN_SOCIAL_LINKS) {
 			toast.add({
 				title: "Add at least one social profile link",
@@ -212,6 +225,7 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 			await updateCreatorMutation.mutateAsync({
 				publicName: trimmedName,
 				description: description.trim() ? description.trim() : null,
+				countryCode,
 				businessEmail: contactEnabled ? trimmedEmail : null,
 				socialUrls: socialLinks,
 				...(avatarUrl ? { avatarUrl } : {}),
@@ -292,6 +306,13 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 										</span>
 									</div>
 								</div>
+								<CountryCombobox
+									id="edit-country"
+									value={countryCode}
+									onChange={setCountryCode}
+									required
+									classLabel="bg-b-surface1"
+								/>
 							</div>
 						</div>
 

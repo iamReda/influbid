@@ -1,10 +1,10 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("login page", () => {
-	test("should load email/password sign-in with Influbid design", async ({ page }) => {
+	test("should load email/password sign-in with CreatorLand design", async ({ page }) => {
 		await page.goto("/login");
 
-		await expect(page.getByText("Sign in to Influbid")).toBeVisible();
+		await expect(page.getByText("Sign in to CreatorLand")).toBeVisible();
 		await expect(page.getByPlaceholder("Enter email")).toBeVisible();
 		await expect(page.getByPlaceholder("Enter password")).toBeVisible();
 		await expect(page.getByRole("button", { name: "Sign in" })).toBeVisible();

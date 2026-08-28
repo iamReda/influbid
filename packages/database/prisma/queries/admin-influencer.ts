@@ -27,6 +27,9 @@ export async function getAdminInfluencerByUserId(userId: string) {
 					bidReachedAt: true,
 					isPublished: true,
 					accountClaimedAt: true,
+					countryCode: true,
+					gender: true,
+					languages: true,
 					category: {
 						select: {
 							id: true,

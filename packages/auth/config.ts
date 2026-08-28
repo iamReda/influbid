@@ -35,6 +35,7 @@ export const config = {
 			"manage-plan",
 			"categories",
 			"complete-your-profile",
+			"complete-account",
 			"about",
 			"contact",
 			"rules",

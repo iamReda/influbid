@@ -90,7 +90,7 @@ export type CreatorCategoryScalarFieldEnum = z.infer<typeof CreatorCategoryScala
 
 // File: CreatorProfileScalarFieldEnum.schema.ts
 
-export const CreatorProfileScalarFieldEnumSchema = z.enum(['id', 'userId', 'publicName', 'avatarUrl', 'description', 'categoryId', 'totalBidCents', 'currency', 'joinedAt', 'bidReachedAt', 'accountClaimedAt', 'isPublished', 'createdAt', 'updatedAt'])
+export const CreatorProfileScalarFieldEnumSchema = z.enum(['id', 'userId', 'publicName', 'avatarUrl', 'description', 'categoryId', 'totalBidCents', 'currency', 'joinedAt', 'bidReachedAt', 'accountClaimedAt', 'countryCode', 'gender', 'languages', 'isPublished', 'createdAt', 'updatedAt'])
 
 export type CreatorProfileScalarFieldEnum = z.infer<typeof CreatorProfileScalarFieldEnumSchema>;
 
@@ -102,7 +102,7 @@ export type SocialProfileScalarFieldEnum = z.infer<typeof SocialProfileScalarFie
 
 // File: PendingCreatorScalarFieldEnum.schema.ts
 
-export const PendingCreatorScalarFieldEnumSchema = z.enum(['id', 'email', 'publicName', 'avatarUrl', 'description', 'categoryId', 'socialProfiles', 'bidAmountCents', 'currency', 'estimatedRank', 'status', 'paymentReference', 'createdAt', 'updatedAt', 'expiresAt'])
+export const PendingCreatorScalarFieldEnumSchema = z.enum(['id', 'email', 'publicName', 'avatarUrl', 'description', 'categoryId', 'socialProfiles', 'countryCode', 'bidAmountCents', 'currency', 'estimatedRank', 'status', 'paymentReference', 'createdAt', 'updatedAt', 'expiresAt'])
 
 export type PendingCreatorScalarFieldEnum = z.infer<typeof PendingCreatorScalarFieldEnumSchema>;
 
@@ -177,6 +177,12 @@ export type NotificationType = z.infer<typeof NotificationTypeSchema>;
 export const NotificationTargetSchema = z.enum(['IN_APP', 'EMAIL'])
 
 export type NotificationTarget = z.infer<typeof NotificationTargetSchema>;
+
+// File: CreatorGender.schema.ts
+
+export const CreatorGenderSchema = z.enum(['MAN', 'WOMAN', 'PREFER_NOT_TO_SAY'])
+
+export type CreatorGender = z.infer<typeof CreatorGenderSchema>;
 
 // File: PendingCreatorStatus.schema.ts
 
@@ -457,6 +463,9 @@ export const CreatorProfileSchema = z.object({
   joinedAt: z.date(),
   bidReachedAt: z.date(),
   accountClaimedAt: z.date().nullish(),
+  countryCode: z.string().nullish(),
+  gender: CreatorGenderSchema.nullish(),
+  languages: z.unknown().refine((val) => { const getDepth = (obj: unknown, depth: number = 0): number => { if (depth > 10) return depth; if (obj === null || typeof obj !== 'object') return depth; const values = Object.values(obj as Record<string, unknown>); if (values.length === 0) return depth; return Math.max(...values.map(v => getDepth(v, depth + 1))); }; return getDepth(val) <= 10; }, "JSON nesting depth exceeds maximum of 10").nullish(),
   isPublished: z.boolean(),
   createdAt: z.date(),
   updatedAt: z.date(),
@@ -492,6 +501,7 @@ export const PendingCreatorSchema = z.object({
   description: z.string().nullish(),
   categoryId: z.string(),
   socialProfiles: z.unknown().refine((val) => { const getDepth = (obj: unknown, depth: number = 0): number => { if (depth > 10) return depth; if (obj === null || typeof obj !== 'object') return depth; const values = Object.values(obj as Record<string, unknown>); if (values.length === 0) return depth; return Math.max(...values.map(v => getDepth(v, depth + 1))); }; return getDepth(val) <= 10; }, "JSON nesting depth exceeds maximum of 10"),
+  countryCode: z.string().nullish(),
   bidAmountCents: z.number().int(),
   currency: z.string().default("USD"),
   estimatedRank: z.number().int().nullish(),

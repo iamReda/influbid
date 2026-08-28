@@ -12,6 +12,7 @@ const EXTRA_RESERVED = [
 	"onboarding",
 	"choose-plan",
 	"checkout-return",
+	"complete-account",
 	"new-organization",
 	"organization-invitation",
 	"quiz",

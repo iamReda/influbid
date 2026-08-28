@@ -1,4 +1,5 @@
 import { estimateMyBidIncrease, mockConfirmBidIncrease } from "./procedures/bid-increase";
+import { completeFirstAccess } from "./procedures/complete-first-access";
 import { createPendingCreatorProcedure } from "./procedures/create-pending-creator";
 import { estimateCreatorRank, listCategories } from "./procedures/list-categories";
 import { listCategoryCardsProcedure, listCreatorLeaderboard } from "./procedures/list-leaderboard";
@@ -23,6 +24,7 @@ export const creatorsRouter = {
 	getMyAnalytics,
 	listMyBids,
 	markAccountClaimed,
+	completeFirstAccess,
 	estimateMyBidIncrease,
 	mockConfirmBidIncrease,
 };

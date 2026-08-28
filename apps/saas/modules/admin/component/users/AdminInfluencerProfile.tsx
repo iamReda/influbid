@@ -10,6 +10,7 @@ import {
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@repo/ui/components/dropdown-menu";
+import { CountryFlag } from "@repo/ui/components/influencerbid/country-flag";
 import {
 	Table,
 	TableBody,
@@ -19,6 +20,7 @@ import {
 	TableRow,
 } from "@repo/ui/components/table";
 import { toast } from "@repo/ui/components/toast";
+import { getCountryName, getLanguageName } from "@repo/utils";
 import { useConfirmationAlert } from "@shared/components/ConfirmationAlertProvider";
 import { UserAvatar } from "@shared/components/UserAvatar";
 import { orpc } from "@shared/lib/orpc-query-utils";
@@ -266,6 +268,40 @@ export function AdminInfluencerProfile({ userId }: { userId: string }) {
 						<p className="mt-1 text-sm font-medium">
 							#{profile.generalRank} · #{profile.categoryRank} {profile.category.name}
 						</p>
+					</div>
+					<div>
+						<p className="text-sm text-muted-foreground">{t("fields.country")}</p>
+						{profile.countryCode ? (
+							<p className="mt-1 gap-2 text-sm font-medium flex items-center">
+								<CountryFlag countryCode={profile.countryCode} size="sm" />
+								<span>{getCountryName(profile.countryCode)}</span>
+							</p>
+						) : (
+							<p className="mt-1 text-sm font-medium">—</p>
+						)}
+					</div>
+					<div>
+						<p className="text-sm text-muted-foreground">{t("fields.gender")}</p>
+						<p className="mt-1 text-sm font-medium">
+							{profile.gender ? t(`fields.genderValues.${profile.gender}`) : "—"}
+						</p>
+					</div>
+					<div className="sm:col-span-2">
+						<p className="mb-2 text-sm text-muted-foreground">{t("fields.languages")}</p>
+						{profile.languages && profile.languages.length > 0 ? (
+							<div className="gap-2 flex flex-wrap">
+								{profile.languages.map((code) => (
+									<span
+										key={code}
+										className="h-8 px-3 text-sm inline-flex items-center rounded-full border"
+									>
+										{getLanguageName(code)}
+									</span>
+								))}
+							</div>
+						) : (
+							<p className="text-sm font-medium">—</p>
+						)}
 					</div>
 				</div>
 

@@ -11,6 +11,7 @@
 		"studio": "dotenv -c -e ../../.env -- prisma studio",
 		"seed:categories": "dotenv -c -e ../../.env -- tsx scripts/seed-categories.ts",
 		"seed:mock-creators": "dotenv -c -e ../../.env.local -e ../../.env -- tsx scripts/seed-mock-creators.ts",
+		"update:mock-demographics": "dotenv -c -e ../../.env.local -e ../../.env -- tsx scripts/update-mock-creator-demographics.ts",
 		"type-check": "tsc --noEmit"
 	},
 	"dependencies": {

@@ -1,6 +1,7 @@
 import { getOrganizationList, getSession } from "@auth/lib/server";
 import { listPurchases } from "@repo/api/modules/payments/procedures/list-purchases";
 import { config as authConfig } from "@repo/auth/config";
+import { getCreatorProfileByUserId } from "@repo/database";
 import { config as paymentsConfig } from "@repo/payments/config";
 import { createPurchasesHelper } from "@repo/payments/lib/helper";
 import { isAdminRestrictedPath, isPlatformAdmin } from "@shared/lib/admin-routing";
@@ -28,6 +29,15 @@ export default async function MainLayout({ children }: PropsWithChildren) {
 		!isPlatformAdmin(session.user)
 	) {
 		redirect("/onboarding");
+	}
+
+	const creatorProfile = await getCreatorProfileByUserId(session.user.id);
+	if (
+		creatorProfile &&
+		creatorProfile.accountClaimedAt === null &&
+		!isPlatformAdmin(session.user)
+	) {
+		redirect("/complete-account");
 	}
 
 	const organizations = await getOrganizationList();

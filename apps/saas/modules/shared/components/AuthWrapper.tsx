@@ -28,14 +28,14 @@ export async function AuthWrapper({
 							src="/images/logo-dark.svg"
 							width={135}
 							height={36}
-							alt="Influbid"
+							alt="CreatorLand"
 						/>
 						<Image
 							className="hidden! w-full opacity-100 dark:block!"
 							src="/images/logo-light.svg"
 							width={135}
 							height={36}
-							alt="Influbid"
+							alt="CreatorLand"
 						/>
 					</Link>
 				</div>

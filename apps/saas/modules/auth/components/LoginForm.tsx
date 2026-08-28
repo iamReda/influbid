@@ -109,7 +109,7 @@ export function LoginForm() {
 
 	return (
 		<div className="">
-			<div className="mb-10 text-h3 text-center">Sign in to Influbid</div>
+			<div className="mb-10 text-h3 text-center">Sign in to {config.appName}</div>
 
 			{invitationId && <OrganizationInvitationAlert className="mb-6" />}
 

@@ -160,6 +160,7 @@ export async function finalizeCreatorPayment(input: FinalizeCreatorPaymentInput)
 			publicName: pending.publicName,
 			avatarUrl: pending.avatarUrl,
 			description: pending.description,
+			countryCode: pending.countryCode,
 			categoryId: pending.categoryId,
 			totalBidCents: pending.bidAmountCents,
 			currency: pending.currency,

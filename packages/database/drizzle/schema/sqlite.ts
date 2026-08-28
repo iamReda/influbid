@@ -298,6 +298,9 @@ export const creatorProfile = sqliteTable(
 		joinedAt: integer("joinedAt", { mode: "timestamp" }).notNull(),
 		bidReachedAt: integer("bidReachedAt", { mode: "timestamp" }).notNull(),
 		accountClaimedAt: integer("accountClaimedAt", { mode: "timestamp" }),
+		countryCode: text("countryCode"),
+		gender: text({ enum: ["MAN", "WOMAN", "PREFER_NOT_TO_SAY"] }),
+		languages: text("languages", { mode: "json" }).$type<string[]>(),
 		isPublished: integer("isPublished", { mode: "boolean" }).notNull().default(false),
 		createdAt: integer("createdAt", { mode: "timestamp" })
 			.notNull()
@@ -373,6 +376,7 @@ export const pendingCreator = sqliteTable(
 			.notNull()
 			.references(() => creatorCategory.id),
 		socialProfiles: text("socialProfiles", { mode: "json" }).notNull(),
+		countryCode: text("countryCode"),
 		bidAmountCents: integer("bidAmountCents").notNull(),
 		currency: text("currency").notNull().default("USD"),
 		estimatedRank: integer("estimatedRank"),

@@ -13,6 +13,7 @@ export type CreatePendingCreatorInput = {
 	publicName: string;
 	avatarUrl: string;
 	description?: string | null;
+	countryCode?: string | null;
 	categoryId: string;
 	socialProfiles: PendingSocialProfileInput[];
 	bidAmountCents: number;
@@ -31,6 +32,7 @@ export async function createPendingCreator(input: CreatePendingCreatorInput) {
 			publicName: input.publicName.trim(),
 			avatarUrl: input.avatarUrl,
 			description: input.description?.trim() || null,
+			countryCode: input.countryCode?.trim().toUpperCase() || null,
 			categoryId: input.categoryId,
 			socialProfiles: input.socialProfiles,
 			bidAmountCents: input.bidAmountCents,

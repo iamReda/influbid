@@ -54,6 +54,8 @@ export const creatorReportStatusEnum = mysqlEnum("CreatorReportStatus", [
 	"ACTIONED",
 ]);
 
+export const creatorGenderEnum = mysqlEnum("CreatorGender", ["MAN", "WOMAN", "PREFER_NOT_TO_SAY"]);
+
 // Tables
 export const user = mysqlTable("user", {
 	id: varchar("id", { length: 255 })
@@ -322,6 +324,9 @@ export const creatorProfile = mysqlTable(
 		joinedAt: timestamp("joinedAt").notNull(),
 		bidReachedAt: timestamp("bidReachedAt").notNull(),
 		accountClaimedAt: timestamp("accountClaimedAt"),
+		countryCode: text("countryCode"),
+		gender: creatorGenderEnum,
+		languages: json("languages").$type<string[]>(),
 		isPublished: boolean("isPublished").notNull().default(false),
 		createdAt: timestamp("createdAt").defaultNow().notNull(),
 		updatedAt: timestamp("updatedAt").notNull().defaultNow().onUpdateNow(),
@@ -387,6 +392,7 @@ export const pendingCreator = mysqlTable(
 			.notNull()
 			.references(() => creatorCategory.id),
 		socialProfiles: json("socialProfiles").notNull(),
+		countryCode: text("countryCode"),
 		bidAmountCents: int("bidAmountCents").notNull(),
 		currency: text("currency").notNull().default("USD"),
 		estimatedRank: int("estimatedRank"),

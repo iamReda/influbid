@@ -7,13 +7,17 @@ import {
 import SocialPlatformIcon, {
 	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
+import { detectCountryFromIpAction } from "@home/influencerbid/lib/detect-country";
 import { formatBidDollars } from "@home/influencerbid/lib/format";
 import { clearSignupDraft, type SignupDraft } from "@home/influencerbid/lib/signup-draft";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
+import { isIsoCountryCode, type IsoCountryCode } from "@repo/utils";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type ChangeEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
+
+import CountryCombobox from "./country-combobox";
 
 type ExtraSocial = {
 	id: number;
@@ -120,12 +124,14 @@ const Form = ({ draft }: FormProps) => {
 	const [avatarFile, setAvatarFile] = useState<File | null>(null);
 	const [publicName, setPublicName] = useState("");
 	const [description, setDescription] = useState("");
+	const [countryCode, setCountryCode] = useState<IsoCountryCode | null>(null);
 	const [primaryUrl, setPrimaryUrl] = useState("");
 	const [email, setEmail] = useState("");
 	const [extraSocials, setExtraSocials] = useState<ExtraSocial[]>([]);
 	const [nextSocialId, setNextSocialId] = useState(1);
 	const [submitting, setSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const countryTouchedRef = useRef(false);
 
 	useEffect(() => {
 		if (!draft) {
@@ -134,6 +140,47 @@ const Form = ({ draft }: FormProps) => {
 
 		setPrimaryUrl(draft.primarySocialUrl);
 	}, [draft]);
+
+	useEffect(() => {
+		let cancelled = false;
+
+		const detectCountryClient = async (): Promise<IsoCountryCode | null> => {
+			try {
+				const response = await fetch("https://ipwho.is/", {
+					headers: { accept: "application/json" },
+					signal: AbortSignal.timeout(3000),
+					cache: "no-store",
+				});
+				if (!response.ok) {
+					return null;
+				}
+				const data = (await response.json()) as {
+					success?: boolean;
+					country_code?: string;
+				};
+				if (!data.success || !data.country_code) {
+					return null;
+				}
+				const code = data.country_code.trim().toUpperCase();
+				return isIsoCountryCode(code) ? code : null;
+			} catch {
+				return null;
+			}
+		};
+
+		(async () => {
+			const fromServer = await detectCountryFromIpAction().catch(() => null);
+			const code = fromServer ?? (await detectCountryClient());
+			if (cancelled || countryTouchedRef.current || !code) {
+				return;
+			}
+			setCountryCode((current) => current ?? code);
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	useEffect(() => {
 		return () => {
@@ -220,6 +267,11 @@ const Form = ({ draft }: FormProps) => {
 			return;
 		}
 
+		if (!countryCode) {
+			setError("Country is required.");
+			return;
+		}
+
 		if (!email.trim()) {
 			setError("Email is required.");
 			return;
@@ -253,6 +305,7 @@ const Form = ({ draft }: FormProps) => {
 				publicName,
 				avatarPath: uploadedPath,
 				description,
+				countryCode,
 				categoryId: draft.categoryId,
 				bidAmountCents: draft.bidAmountCents,
 				estimatedRank: draft.estimatedGeneralRank,
@@ -359,6 +412,15 @@ const Form = ({ draft }: FormProps) => {
 								</span>
 							</div>
 						</div>
+						<CountryCombobox
+							id="country"
+							value={countryCode}
+							onChange={(next) => {
+								countryTouchedRef.current = true;
+								setCountryCode(next);
+							}}
+							required
+						/>
 					</div>
 				</div>
 			</section>

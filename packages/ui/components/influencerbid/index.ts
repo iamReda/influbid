@@ -1,4 +1,5 @@
 export { default as InfluencerBidButton } from "./button";
+export { CountryFlag } from "./country-flag";
 export { default as InfluencerBidField } from "./field";
 export { default as InfluencerBidIcon } from "./icon";
 export { default as InfluencerBidImage } from "./image";

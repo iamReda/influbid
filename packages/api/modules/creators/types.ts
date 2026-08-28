@@ -1,3 +1,4 @@
+import { countryCodeSchema } from "@repo/utils";
 import { z } from "zod";
 
 export const categorySchema = z.object({
@@ -33,6 +34,7 @@ export const leaderboardItemSchema = z.object({
 	publicName: z.string(),
 	avatarUrl: z.string(),
 	description: z.string().nullable(),
+	countryCode: z.string().nullable(),
 	totalBidCents: z.number().int(),
 	joinedAt: z.date(),
 	bidReachedAt: z.date(),
@@ -56,6 +58,7 @@ export const creatorEditProfileSchema = z.object({
 	publicName: z.string(),
 	avatarUrl: z.string(),
 	description: z.string().nullable(),
+	countryCode: countryCodeSchema.nullable(),
 	businessEmail: z.email().nullable(),
 	socialProfiles: z.array(
 		z.object({
@@ -68,6 +71,7 @@ export const creatorEditProfileSchema = z.object({
 export const updateMyCreatorInputSchema = z.object({
 	publicName: z.string().trim().min(1).max(120).optional(),
 	description: z.string().max(160).nullable().optional(),
+	countryCode: countryCodeSchema.nullable().optional(),
 	avatarUrl: z.string().min(1).optional(),
 	businessEmail: z.email().nullable().optional(),
 	socialUrls: z.array(z.url()).min(1).max(10).optional(),

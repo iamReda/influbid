@@ -72,3 +72,11 @@ export const CreatorReportStatus = {
 } as const;
 
 export type CreatorReportStatus = (typeof CreatorReportStatus)[keyof typeof CreatorReportStatus];
+
+export const CreatorGender = {
+	MAN: "MAN",
+	WOMAN: "WOMAN",
+	PREFER_NOT_TO_SAY: "PREFER_NOT_TO_SAY",
+} as const;
+
+export type CreatorGender = (typeof CreatorGender)[keyof typeof CreatorGender];

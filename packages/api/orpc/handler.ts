@@ -34,7 +34,7 @@ export const openApiHandler = new OpenAPIHandler(router, {
 				return {
 					...(authSchema as any),
 					info: {
-						title: "Influbid API",
+						title: "CreatorLand API",
 						version: "1.0.0",
 					},
 					servers: [

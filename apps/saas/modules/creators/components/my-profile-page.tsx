@@ -2,7 +2,7 @@
 
 import { detectPlatform, getAvatarSrc, getInitials } from "@creators/lib/profile";
 import type { PublicProfile } from "@repo/database";
-import Icon from "@repo/ui/components/influencerbid/icon";
+import { CountryFlag } from "@repo/ui/components/influencerbid/country-flag";
 import Image from "@repo/ui/components/influencerbid/image";
 import Layout from "@shared/components/influencerbid/layout";
 import SocialPlatformIcon, { type Platform } from "@shared/components/social-platform-icon";
@@ -41,7 +41,7 @@ const contactActionClass =
 	"h-14 gap-3 bg-b-dark1 px-5 text-button text-t-light fill-t-light hover:bg-b-dark2 flex w-full items-center justify-center rounded-full transition-colors";
 
 type MyProfilePageProps = {
-	profile: PublicProfile;
+	profile: PublicProfile & { countryCode?: string | null };
 	socials?: ProfileSocialLink[];
 	mode?: "view" | "preview";
 	/** Owner-only floating actions (copy / preview / edit). Guests never see them. */
@@ -89,9 +89,10 @@ const MyProfilePage = ({
 						<div className="flex w-full justify-center">
 							<div className="gap-2.5 inline-flex max-w-full items-center justify-center">
 								<h1 className="text-h3 max-md:text-h5 truncate leading-none">{profile.name}</h1>
-								<Icon
-									className="size-6! fill-t-blue max-md:size-5! shrink-0 self-center"
-									name="verification"
+								<CountryFlag
+									countryCode={profile.countryCode}
+									size="md"
+									className="shrink-0 self-center"
 								/>
 							</div>
 						</div>

@@ -63,6 +63,17 @@ export async function verifyMockSeed(): Promise<void> {
 			errors.push(`${user.username ?? user.email}: missing businessEmail for Contact for Business`);
 		}
 
+		if (!profile.countryCode?.trim()) {
+			errors.push(`${user.username}: missing countryCode`);
+		}
+		if (!profile.gender) {
+			errors.push(`${user.username}: missing gender`);
+		}
+		const languages = Array.isArray(profile.languages) ? profile.languages : [];
+		if (languages.length < 1) {
+			errors.push(`${user.username}: needs ≥1 language`);
+		}
+
 		if (emails.has(user.email)) {
 			errors.push(`Duplicate email ${user.email}`);
 		} else {

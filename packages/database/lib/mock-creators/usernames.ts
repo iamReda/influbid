@@ -9,6 +9,7 @@ const RESERVED_USERNAMES = new Set([
 	"categories",
 	"changelog",
 	"complete-your-profile",
+	"complete-account",
 	"contact",
 	"dashboard",
 	"docs",

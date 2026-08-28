@@ -52,6 +52,8 @@ export const creatorReportStatusEnum = pgEnum("CreatorReportStatus", [
 	"ACTIONED",
 ]);
 
+export const creatorGenderEnum = pgEnum("CreatorGender", ["MAN", "WOMAN", "PREFER_NOT_TO_SAY"]);
+
 export const user = pgTable("user", {
 	id: text("id")
 		.$defaultFn(() => cuid())
@@ -361,6 +363,9 @@ export const creatorProfile = pgTable(
 		joinedAt: timestamp("joinedAt").notNull(),
 		bidReachedAt: timestamp("bidReachedAt").notNull(),
 		accountClaimedAt: timestamp("accountClaimedAt"),
+		countryCode: text("countryCode"),
+		gender: creatorGenderEnum("gender"),
+		languages: jsonb("languages").$type<string[]>(),
 		isPublished: boolean("isPublished").notNull().default(false),
 		createdAt: timestamp("createdAt").defaultNow().notNull(),
 		updatedAt: timestamp("updatedAt")
@@ -432,6 +437,7 @@ export const pendingCreator = pgTable(
 			.notNull()
 			.references(() => creatorCategory.id),
 		socialProfiles: jsonb("socialProfiles").notNull(),
+		countryCode: text("countryCode"),
 		bidAmountCents: integer("bidAmountCents").notNull(),
 		currency: text("currency").notNull().default("USD"),
 		estimatedRank: integer("estimatedRank"),

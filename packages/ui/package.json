@@ -17,6 +17,7 @@
 		"next": "catalog:",
 		"next-themes": "catalog:",
 		"react": "catalog:",
+		"react-country-flag": "^3.1.0",
 		"react-dom": "catalog:",
 		"react-hook-form": "catalog:",
 		"recharts": "catalog:",

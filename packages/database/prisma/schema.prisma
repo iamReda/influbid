@@ -296,6 +296,12 @@ enum CreatorReportStatus {
   ACTIONED
 }
 
+enum CreatorGender {
+  MAN
+  WOMAN
+  PREFER_NOT_TO_SAY
+}
+
 model CreatorCategory {
   id          String  @id @default(cuid())
   name        String
@@ -335,6 +341,12 @@ model CreatorProfile {
   joinedAt         DateTime
   bidReachedAt     DateTime
   accountClaimedAt DateTime?
+
+  /// ISO 3166-1 alpha-2 country code (e.g. FR, MA, US)
+  countryCode String?
+  gender      CreatorGender?
+  /// ISO 639-1 language codes as JSON array (e.g. ["fr","en"])
+  languages   Json?
 
   isPublished Boolean @default(false)
 
@@ -390,6 +402,9 @@ model PendingCreator {
   category   CreatorCategory @relation(fields: [categoryId], references: [id])
 
   socialProfiles Json
+
+  /// ISO 3166-1 alpha-2 country code collected at signup Step 2
+  countryCode String?
 
   bidAmountCents Int
   currency       String @default("USD")

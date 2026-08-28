@@ -1,5 +1,6 @@
 "use client";
 
+import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import { useState } from "react";
@@ -15,7 +16,7 @@ const SignIn = ({ onResetPassword, onLogin }: Props) => {
 
 	return (
 		<div className="">
-			<div className="mb-10 text-h3 text-center">Sign in to Influbid</div>
+			<div className="mb-10 text-h3 text-center">Sign in to {config.appName}</div>
 			<Field
 				className="mb-4"
 				label="Email"
