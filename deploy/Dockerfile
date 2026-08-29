@@ -14,8 +14,6 @@ FROM base AS deps
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY apps/saas/package.json apps/saas/
 COPY apps/marketing/package.json apps/marketing/
-COPY apps/docs/package.json apps/docs/
-COPY apps/mail-preview/package.json apps/mail-preview/
 COPY packages/ai/package.json packages/ai/
 COPY packages/api/package.json packages/api/
 COPY packages/auth/package.json packages/auth/
@@ -41,7 +39,7 @@ ARG NEXT_PUBLIC_MARKETING_URL
 ENV NEXT_PUBLIC_SAAS_URL=$NEXT_PUBLIC_SAAS_URL
 ENV NEXT_PUBLIC_MARKETING_URL=$NEXT_PUBLIC_MARKETING_URL
 ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app ./
 COPY . .
 RUN pnpm --filter @repo/database generate
 RUN if [ "$APP_NAME" = "marketing" ]; then pnpm --filter marketing generate; fi
@@ -63,8 +61,7 @@ CMD ["sh", "-c", "node apps/$APP_NAME/server.js"]
 
 FROM base AS migrator
 ENV NODE_ENV=production
-COPY --from=deps /app/node_modules ./node_modules
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY --from=deps /app ./
 COPY packages/database ./packages/database
 COPY tooling/typescript ./tooling/typescript
 COPY packages/utils ./packages/utils
