@@ -70,4 +70,4 @@ COPY packages/database ./packages/database
 COPY tooling/typescript ./tooling/typescript
 COPY packages/utils ./packages/utils
 WORKDIR /app/packages/database
-CMD ["pnpm", "exec", "prisma", "db", "push", "--skip-generate"]
+CMD ["pnpm", "exec", "prisma", "db", "push"]
