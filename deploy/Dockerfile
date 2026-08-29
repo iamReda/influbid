@@ -71,5 +71,7 @@ ENV NODE_ENV=production
 COPY --from=deps /app ./
 COPY packages ./packages
 COPY tooling ./tooling
+RUN DATABASE_URL=postgresql://postgres:postgres@localhost:5432/supastarter \
+	pnpm --filter @repo/database generate
 WORKDIR /app/packages/database
 CMD ["pnpm", "exec", "prisma", "db", "push"]
