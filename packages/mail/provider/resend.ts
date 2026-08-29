@@ -3,7 +3,21 @@ import { Resend } from "resend";
 import { config } from "../config";
 import type { SendEmailHandler } from "../types";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+	if (resendClient) {
+		return resendClient;
+	}
+
+	const apiKey = process.env.RESEND_API_KEY;
+	if (!apiKey) {
+		throw new Error("Missing env variable RESEND_API_KEY");
+	}
+
+	resendClient = new Resend(apiKey);
+	return resendClient;
+}
 
 export const send: SendEmailHandler = async ({
 	to,
@@ -15,7 +29,7 @@ export const send: SendEmailHandler = async ({
 	html,
 	text,
 }) => {
-	await resend.emails.send({
+	await getResendClient().emails.send({
 		from: from ?? config.mailFrom,
 		to: [to],
 		cc,

@@ -1,3 +1,4 @@
+import { isIsoCountryCode } from "@repo/utils";
 import { eq } from "drizzle-orm";
 
 import { detectSocialPlatform, normalizeSocialUrl } from "../../lib/social-url";
@@ -371,7 +372,8 @@ export function toCreatorEditProfile(
 		publicName: creator.publicName,
 		avatarUrl: creator.avatarUrl,
 		description: creator.description,
-		countryCode: creator.countryCode,
+		countryCode:
+			creator.countryCode && isIsoCountryCode(creator.countryCode) ? creator.countryCode : null,
 		businessEmail: creator.user.businessEmail,
 		socialProfiles: creator.socialProfiles.map((social) => ({
 			id: social.id,
