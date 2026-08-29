@@ -1,0 +1,115 @@
+LOCAL-TO-PRODUCTION DATA MIGRATION
+==================================
+
+This workflow transfers the local PostgreSQL data and local avatar files to the
+production VPS without requiring an interactive VPS session.
+
+Security model
+--------------
+
+- The workflow can only be started manually.
+- The export runs on a one-job, self-hosted Windows runner.
+- The plaintext dump never leaves the runner except through the encrypted
+  GitHub artifact and the SSH transfer performed by the hosted import job.
+- The encrypted artifact expires after one day.
+- Production is backed up before import.
+- The production admin email and password hash are compared before and after.
+- Database data is imported in one transaction.
+- Local sessions and verification tokens are excluded.
+- A failed post-import health check triggers automatic database/avatar rollback.
+
+One-time GitHub configuration
+-----------------------------
+
+1. In Settings > Environments > prod > Environment secrets, add:
+
+   MIGRATION_ENCRYPTION_KEY
+
+   Generate a value in Windows PowerShell:
+
+   $bytes = New-Object byte[] 32
+   $rng = [Security.Cryptography.RandomNumberGenerator]::Create()
+   $rng.GetBytes($bytes)
+   [BitConverter]::ToString($bytes).Replace("-", "")
+
+2. Optional but strongly recommended: add VPS_SSH_FINGERPRINT to the same
+   environment. It must be the SHA256 host-key fingerprint of the VPS.
+
+3. Keep the existing prod secrets:
+
+   VPS_HOST
+   VPS_USER
+   VPS_SSH_PRIVATE_KEY
+   VPS_SSH_PORT
+   DEPLOY_PATH
+
+Windows prerequisites
+---------------------
+
+Install PostgreSQL 16 or 17 command-line tools (pg_dump and psql). The client
+major version should match the local PostgreSQL server. Use the official
+PostgreSQL/EDB Windows installer and select "Command Line Tools", or use the
+official portable binaries.
+
+The export script also discovers standard installations under:
+
+  C:\Program Files\PostgreSQL\<version>\bin
+  C:\Program Files\pgAdmin 4\runtime
+
+The local project must contain:
+
+  .env.local
+  apps\saas\.local-storage\avatars
+
+If the avatar directory is absent, database data is still migrated.
+
+Create the temporary runner
+---------------------------
+
+1. Open GitHub > Settings > Actions > Runners > New self-hosted runner.
+2. Select Windows x64.
+3. Download the runner into a directory outside the repository, for example:
+
+   C:\actions-runner-influbid
+
+4. Use GitHub's generated URL and short-lived registration token:
+
+   .\config.cmd --url https://github.com/iamReda/influbid --token <TOKEN> --labels migration-local --ephemeral
+
+5. Start it:
+
+   .\run.cmd
+
+The runner unregisters itself after the export job.
+
+Run the migration
+-----------------
+
+1. Open Actions > Migrate Local Data to Production > Run workflow.
+2. Use branch main.
+3. Enter exactly:
+
+   IMPORT_LOCAL_TO_PRODUCTION
+
+4. Keep or update the local project path:
+
+   D:\DEVELOPPEMENT\influbid
+
+5. Keep the protected admin:
+
+   hello@minuit.studio
+
+6. Start the workflow and keep run.cmd open until the export job finishes.
+
+Results
+-------
+
+The hosted import job transfers the archive by SSH, validates it in a temporary
+database, imports it, uploads avatars to MinIO, verifies the protected admin,
+starts the applications, and checks the SaaS health endpoint.
+
+The production backup is retained on the VPS under:
+
+  <DEPLOY_PATH>/backups/local-import-<GITHUB_RUN_ID>
+
+The temporary import directory is removed after success.

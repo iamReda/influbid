@@ -1,0 +1,153 @@
+name: Migrate Local Data to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type IMPORT_LOCAL_TO_PRODUCTION to continue
+        required: true
+        type: string
+      local_project_path:
+        description: Absolute project path on the self-hosted Windows runner
+        required: true
+        default: D:\DEVELOPPEMENT\influbid
+        type: string
+      protected_admin_email:
+        description: Production administrator that must remain unchanged
+        required: true
+        default: hello@minuit.studio
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-data-migration
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Export and encrypt local data
+    runs-on: [self-hosted, Windows, X64, migration-local]
+    environment: prod
+    timeout-minutes: 30
+    steps:
+      - name: Validate explicit confirmation
+        shell: powershell
+        env:
+          MIGRATION_CONFIRMATION: ${{ inputs.confirmation }}
+        run: |
+          if ($env:MIGRATION_CONFIRMATION -cne "IMPORT_LOCAL_TO_PRODUCTION") {
+            throw "Confirmation must exactly match IMPORT_LOCAL_TO_PRODUCTION"
+          }
+
+      - name: Checkout migration scripts
+        uses: actions/checkout@v4
+
+      - name: Export local PostgreSQL and avatars
+        id: export
+        shell: powershell
+        env:
+          LOCAL_PROJECT_PATH: ${{ inputs.local_project_path }}
+          PROTECTED_ADMIN_EMAIL: ${{ inputs.protected_admin_email }}
+        run: |
+          & "$env:GITHUB_WORKSPACE\deploy\migration\export-local.ps1" `
+            -ProjectRoot $env:LOCAL_PROJECT_PATH `
+            -OutputDirectory "$env:RUNNER_TEMP\influbid-migration-${{ github.run_id }}" `
+            -ProtectedAdminEmail $env:PROTECTED_ADMIN_EMAIL
+
+      - name: Encrypt migration archive
+        shell: powershell
+        env:
+          ARCHIVE_PATH: ${{ steps.export.outputs.archive_path }}
+          MIGRATION_ENCRYPTION_KEY: ${{ secrets.MIGRATION_ENCRYPTION_KEY }}
+        run: |
+          $encryptedPath = "$env:RUNNER_TEMP\influbid-migration-${{ github.run_id }}\influbid-local-migration.enc"
+          node "$env:GITHUB_WORKSPACE\deploy\migration\crypt.mjs" encrypt $env:ARCHIVE_PATH $encryptedPath
+          if ($LASTEXITCODE -ne 0) {
+            throw "Migration archive encryption failed."
+          }
+          Remove-Item -LiteralPath $env:ARCHIVE_PATH -Force
+
+      - name: Upload encrypted migration artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: influbid-local-migration-${{ github.run_id }}
+          path: ${{ runner.temp }}\influbid-migration-${{ github.run_id }}\influbid-local-migration.enc
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+      - name: Remove local migration files
+        if: always()
+        shell: powershell
+        run: |
+          Remove-Item -LiteralPath "$env:RUNNER_TEMP\influbid-migration-${{ github.run_id }}" -Recurse -Force -ErrorAction SilentlyContinue
+
+  import:
+    name: Backup and import on VPS
+    needs: export
+    runs-on: ubuntu-latest
+    environment: prod
+    timeout-minutes: 60
+    steps:
+      - name: Checkout migration scripts
+        uses: actions/checkout@v4
+
+      - name: Download encrypted migration artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: influbid-local-migration-${{ github.run_id }}
+          path: migration-artifact
+
+      - name: Decrypt and stage migration files
+        env:
+          MIGRATION_ENCRYPTION_KEY: ${{ secrets.MIGRATION_ENCRYPTION_KEY }}
+        run: |
+          set -euo pipefail
+          mkdir -p transfer
+          node deploy/migration/crypt.mjs decrypt \
+            migration-artifact/influbid-local-migration.enc \
+            transfer/influbid-local-migration.zip
+          cp deploy/migration/import-production.sh transfer/import-production.sh
+          chmod 644 transfer/influbid-local-migration.zip transfer/import-production.sh
+
+      - name: Transfer migration to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
+          fingerprint: ${{ secrets.VPS_SSH_FINGERPRINT }}
+          source: "transfer/influbid-local-migration.zip,transfer/import-production.sh"
+          target: "${{ secrets.DEPLOY_PATH }}/imports/${{ github.run_id }}"
+          strip_components: 1
+          overwrite: true
+
+      - name: Run protected production import
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          MIGRATION_DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PROTECTED_ADMIN_EMAIL: ${{ inputs.protected_admin_email }}
+          MIGRATION_RUN_ID: ${{ github.run_id }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
+          fingerprint: ${{ secrets.VPS_SSH_FINGERPRINT }}
+          command_timeout: 45m
+          envs: MIGRATION_DEPLOY_PATH,PROTECTED_ADMIN_EMAIL,MIGRATION_RUN_ID
+          script: |
+            set -euo pipefail
+            bash \
+              "$MIGRATION_DEPLOY_PATH/imports/$MIGRATION_RUN_ID/import-production.sh" \
+              "$MIGRATION_DEPLOY_PATH" \
+              "$MIGRATION_DEPLOY_PATH/imports/$MIGRATION_RUN_ID/influbid-local-migration.zip" \
+              "$PROTECTED_ADMIN_EMAIL" \
+              "$MIGRATION_RUN_ID"
+
+      - name: Remove decrypted runner files
+        if: always()
+        run: rm -rf transfer migration-artifact
