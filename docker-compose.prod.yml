@@ -1,23 +1,6 @@
 name: influbid
 
 services:
-  traefik:
-    image: traefik:v3.3
-    container_name: influbid-traefik
-    restart: unless-stopped
-    command:
-      - --configFile=/etc/traefik/traefik.yml
-      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - traefik_certs:/letsencrypt
-      - ./deploy/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-    networks:
-      - web
-
   postgres:
     image: postgres:16-alpine
     container_name: influbid-postgres
@@ -74,21 +57,14 @@ services:
     environment:
       PORT: "3000"
       HOSTNAME: "0.0.0.0"
+    ports:
+      - "127.0.0.1:${SAAS_HOST_PORT:-3100}:3000"
     depends_on:
       postgres:
         condition: service_healthy
       minio-setup:
         condition: service_completed_successfully
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=influbid_web
-      - traefik.http.routers.saas.rule=Host(`${DOMAIN_SAAS}`)
-      - traefik.http.routers.saas.entrypoints=websecure
-      - traefik.http.routers.saas.tls=true
-      - traefik.http.routers.saas.tls.certresolver=letsencrypt
-      - traefik.http.services.saas.loadbalancer.server.port=3000
     networks:
-      - web
       - internal
 
   marketing:
@@ -99,21 +75,14 @@ services:
     environment:
       PORT: "3001"
       HOSTNAME: "0.0.0.0"
+    ports:
+      - "127.0.0.1:${MARKETING_HOST_PORT:-3101}:3001"
     depends_on:
       postgres:
         condition: service_healthy
       saas:
         condition: service_started
-    labels:
-      - traefik.enable=true
-      - traefik.docker.network=influbid_web
-      - traefik.http.routers.marketing.rule=Host(`${DOMAIN_MARKETING}`)
-      - traefik.http.routers.marketing.entrypoints=websecure
-      - traefik.http.routers.marketing.tls=true
-      - traefik.http.routers.marketing.tls.certresolver=letsencrypt
-      - traefik.http.services.marketing.loadbalancer.server.port=3001
     networks:
-      - web
       - internal
 
   migrate:
@@ -130,12 +99,9 @@ services:
     restart: "no"
 
 networks:
-  web:
-    name: influbid_web
   internal:
     name: influbid_internal
 
 volumes:
   postgres_data:
   minio_data:
-  traefik_certs:
