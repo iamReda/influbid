@@ -75,14 +75,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Copy compose files to VPS
+      - name: Render production .env from PRODUCTION_ENV secret
+        env:
+          PRODUCTION_ENV: ${{ secrets.PRODUCTION_ENV }}
+          NEXT_PUBLIC_SAAS_URL: ${{ secrets.NEXT_PUBLIC_SAAS_URL }}
+          NEXT_PUBLIC_MARKETING_URL: ${{ secrets.NEXT_PUBLIC_MARKETING_URL }}
+          GHCR_OWNER: ${{ env.GHCR_OWNER }}
+        run: |
+          if [ -z "$PRODUCTION_ENV" ]; then
+            echo "PRODUCTION_ENV secret is required" >&2
+            exit 1
+          fi
+          umask 077
+          bash deploy/append-production-env.sh > .env.production
+
+      - name: Copy compose files and .env to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
-          source: "docker-compose.prod.yml,deploy/traefik/traefik.yml"
+          source: "docker-compose.prod.yml,deploy/traefik/traefik.yml,.env.production"
           target: ${{ secrets.DEPLOY_PATH }}
 
       - name: Deploy via SSH
@@ -90,21 +104,23 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           GHCR_USER: ${{ github.actor }}
-          DOMAIN_SAAS: ${{ secrets.DOMAIN_SAAS }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
           port: ${{ secrets.VPS_SSH_PORT != '' && secrets.VPS_SSH_PORT || 22 }}
-          envs: GHCR_TOKEN,GHCR_USER,DOMAIN_SAAS
+          envs: GHCR_TOKEN,GHCR_USER
           script: |
             set -euo pipefail
             cd "${{ secrets.DEPLOY_PATH }}"
+            mv -f .env.production .env
+            chmod 600 .env
             echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
             docker compose -f docker-compose.prod.yml pull
             docker compose -f docker-compose.prod.yml up -d --remove-orphans
             docker compose -f docker-compose.prod.yml --profile tools run --rm migrate
             docker image prune -f
+            DOMAIN_SAAS=$(grep -E '^DOMAIN_SAAS=' .env | cut -d= -f2- | tr -d "\"'")
             if [ -n "$DOMAIN_SAAS" ]; then
               curl -sf "https://${DOMAIN_SAAS}/api/health"
             fi

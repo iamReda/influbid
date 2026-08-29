@@ -9,8 +9,9 @@
 - **`deploy/Dockerfile`**: Multi-stage build for `saas`, `marketing`, and database migrations (`migrator` target) with Next.js standalone output.
 - **`docker-compose.prod.yml`**: Production stack with Traefik (Let's Encrypt HTTPS), PostgreSQL, MinIO, SaaS, and Marketing apps.
 - **`deploy/traefik/traefik.yml`**: Traefik static config (HTTP→HTTPS redirect, ACME HTTP-01 challenge).
-- **`deploy/.env.production.example`**: Template for server-side production environment variables.
-- **`.github/workflows/build-deploy.yml`**: Build & Deploy workflow — builds images, pushes to GHCR, deploys to VPS via SSH, runs DB schema sync, and smoke-tests `/api/health`.
+- **`deploy/.env.production.example`**: Minimal template for the `PRODUCTION_ENV` GitHub secret.
+- **`deploy/append-production-env.sh`**: Expands minimal `PRODUCTION_ENV` with `DATABASE_URL`, MinIO/S3, and registry defaults.
+- **`.github/workflows/build-deploy.yml`**: Build & Deploy workflow (manual trigger) — GHCR build, `PRODUCTION_ENV` → `.env`, VPS deploy, DB sync, health check.
 
 ### Changed
 
