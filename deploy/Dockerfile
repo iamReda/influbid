@@ -40,6 +40,9 @@ ARG NEXT_PUBLIC_MARKETING_URL
 ENV NEXT_PUBLIC_SAAS_URL=$NEXT_PUBLIC_SAAS_URL
 ENV NEXT_PUBLIC_MARKETING_URL=$NEXT_PUBLIC_MARKETING_URL
 ENV NODE_ENV=production
+# Prisma 7 loads prisma.config.ts during client generation and requires a
+# syntactically valid URL. No database connection is made by `prisma generate`.
+ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/supastarter
 COPY --from=deps /app ./
 COPY . .
 RUN pnpm --filter @repo/database generate

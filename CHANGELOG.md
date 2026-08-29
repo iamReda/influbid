@@ -16,6 +16,7 @@
 ### Changed
 
 - **`apps/saas/next.config.ts`** and **`apps/marketing/next.config.ts`**: Added `output: "standalone"` for Docker deployment.
+- Mock payments can be enabled temporarily in production only when both `MOCK_PAYMENTS` and `ALLOW_MOCK_PAYMENTS_IN_PRODUCTION` are `true`.
 
 ## 2026-08-25
 

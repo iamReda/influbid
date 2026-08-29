@@ -1,16 +1,13 @@
-/**
- * Dev-only mock payment gate.
- * Must never succeed in production regardless of env flags.
- */
-export function assertMockPaymentsAllowed() {
+export function isMockPaymentsEnabled() {
 	const enabled = process.env.MOCK_PAYMENTS === "true";
 	const isProduction = process.env.NODE_ENV === "production";
+	const productionOverride = process.env.ALLOW_MOCK_PAYMENTS_IN_PRODUCTION === "true";
 
-	if (isProduction || !enabled) {
-		throw new Error("Mock payments are disabled");
-	}
+	return enabled && (!isProduction || productionOverride);
 }
 
-export function isMockPaymentsEnabled() {
-	return process.env.NODE_ENV !== "production" && process.env.MOCK_PAYMENTS === "true";
+export function assertMockPaymentsAllowed() {
+	if (!isMockPaymentsEnabled()) {
+		throw new Error("Mock payments are disabled");
+	}
 }

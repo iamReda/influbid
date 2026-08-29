@@ -15,6 +15,7 @@ jobs:
   build:
     name: Build ${{ matrix.image }}
     runs-on: ubuntu-latest
+    environment: prod
     strategy:
       fail-fast: false
       matrix:
@@ -70,6 +71,7 @@ jobs:
   deploy:
     name: Deploy to VPS
     runs-on: ubuntu-latest
+    environment: prod
     needs: build
     steps:
       - name: Checkout
