@@ -90,6 +90,9 @@ jobs:
           fi
           umask 077
           bash deploy/append-production-env.sh > .env.production
+          # scp-action runs in a separate container and must be able to read
+          # the bind-mounted file. It is restored to 600 on the VPS.
+          chmod 644 .env.production
 
       - name: Copy compose files and .env to VPS
         uses: appleboy/scp-action@v0.1.7
