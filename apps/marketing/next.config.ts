@@ -7,6 +7,7 @@ const withNextIntl = nextIntlPlugin("./modules/i18n/request.ts");
 const saasBase = (process.env.NEXT_PUBLIC_SAAS_URL ?? "http://localhost:3000").replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
+	output: "standalone",
 	experimental: {
 		useTypeScriptCli: true,
 	},
