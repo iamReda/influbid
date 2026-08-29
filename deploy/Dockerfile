@@ -69,8 +69,7 @@ CMD ["sh", "-c", "node apps/$APP_NAME/server.js"]
 FROM base AS migrator
 ENV NODE_ENV=production
 COPY --from=deps /app ./
-COPY packages/database ./packages/database
-COPY tooling/typescript ./tooling/typescript
-COPY packages/utils ./packages/utils
+COPY packages ./packages
+COPY tooling ./tooling
 WORKDIR /app/packages/database
 CMD ["pnpm", "exec", "prisma", "db", "push"]
