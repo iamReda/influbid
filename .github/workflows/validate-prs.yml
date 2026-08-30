@@ -5,7 +5,7 @@ on:
     branches: [main]
 
 env:
-  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  DATABASE_URL: "postgresql://postgres:postgres@127.0.0.1:5432/influbid_ci"
   BETTER_AUTH_SECRET: "better-auth-e2e-secret-1234567890"
   RESEND_API_KEY: "resend-api-key-1234567890"
 
@@ -49,12 +49,28 @@ jobs:
       - uses: pnpm/action-setup@v4
       - name: Install dependencies
         run: pnpm install
+      - name: Generate database client
+        run: pnpm --filter @repo/database generate
       - name: Run unit tests
         run: pnpm --filter @repo/api --filter saas --filter marketing test
   e2e:
     name: Run e2e tests
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: influbid_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d influbid_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -62,7 +78,11 @@ jobs:
           node-version: lts/*
       - uses: pnpm/action-setup@v4
       - name: Install dependencies
-        run: pnpm install && pnpm --filter database generate
+        run: pnpm install
+      - name: Prepare test database
+        run: |
+          pnpm --filter @repo/database generate
+          pnpm --filter @repo/database push
       - name: Run Playwright tests for SaaS app
         run: pnpm --filter saas e2e:ci
       - name: Run Playwright tests for Marketing app
