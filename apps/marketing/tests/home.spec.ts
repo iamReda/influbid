@@ -6,11 +6,11 @@ test.describe("home page", () => {
 
 		await expect(
 			page.getByRole("heading", {
-				name: "Build your SaaS without rebuilding the foundations",
+				name: "Claim the #1 spot in the influencer rankings.",
 			}),
 		).toBeVisible();
 
-		await expect(page.locator('[data-test="navigation"]')).toBeVisible();
-		await expect(page.locator('[data-test="color-mode-toggle"]')).toBeVisible();
+		await expect(page.getByRole("navigation")).toBeVisible();
+		await expect(page.getByRole("link", { name: /CreatorLand/ }).first()).toBeVisible();
 	});
 });

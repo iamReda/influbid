@@ -33,7 +33,8 @@ export default defineConfig({
 		},
 	],
 	webServer: {
-		command: "pnpm --filter marketing run build && PORT=3001 pnpm --filter marketing run start",
+		command:
+			"pnpm --filter marketing run build && pnpm --filter marketing exec next start --port 3001",
 		url: "http://localhost:3001",
 		reuseExistingServer: !process.env.CI,
 		stdout: "pipe",
