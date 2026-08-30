@@ -62,6 +62,7 @@ docker run --rm \
 
 DUMP_PATH="$PAYLOAD_DIRECTORY/database.dump"
 AVATARS_PATH="$PAYLOAD_DIRECTORY/avatars"
+RESTORE_LIST="$PAYLOAD_DIRECTORY/data-restore.list"
 if [[ ! -s "$DUMP_PATH" ]]; then
 	echo "The migration archive does not contain a valid database.dump." >&2
 	exit 2
@@ -95,12 +96,12 @@ restore_local_dump() {
 	docker run --rm \
 		--network "$MINIO_NETWORK" \
 		--env PGPASSWORD="$DB_PASSWORD" \
-		-v "$DUMP_PATH:/imports/local.dump:ro" \
+		-v "$PAYLOAD_DIRECTORY:/imports:ro" \
 		"$PG_CLIENT_IMAGE" \
 		pg_restore \
 		"$@" \
 		--file=- \
-		/imports/local.dump |
+		/imports/database.dump |
 		sed '/^SET transaction_timeout = 0;$/d' |
 		docker run --rm -i \
 			--network "$MINIO_NETWORK" \
@@ -127,7 +128,9 @@ restore_avatar_backup() {
 		-c 'mc alias set production http://minio:9000 "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD" >/dev/null &&
 			mc rm --recursive --force "production/$MIGRATION_BUCKET" >/dev/null 2>&1 || true
 			mc mb "production/$MIGRATION_BUCKET" --ignore-existing >/dev/null &&
-			mc cp --recursive /backup/ "production/$MIGRATION_BUCKET/" >/dev/null'
+			if [ -n "$(ls -A /backup 2>/dev/null)" ]; then
+				mc cp --recursive /backup/ "production/$MIGRATION_BUCKET/" >/dev/null
+			fi'
 }
 
 restore_database_backup() {
@@ -229,6 +232,22 @@ if [[ "$LOCAL_ADMIN_COLLISION" != "0" ]]; then
 	exit 1
 fi
 
+echo "Preparing a restore list without local sessions or verification tokens..."
+docker run --rm \
+	-v "$PAYLOAD_DIRECTORY:/imports:ro" \
+	"$PG_CLIENT_IMAGE" \
+	pg_restore \
+	--list \
+	/imports/database.dump |
+	sed \
+		-e '/ TABLE DATA public session /d' \
+		-e '/ TABLE DATA public verification /d' \
+		>"$RESTORE_LIST"
+if grep -Eq ' TABLE DATA public (session|verification) ' "$RESTORE_LIST"; then
+	echo "Unable to exclude local session data from the restore list." >&2
+	exit 1
+fi
+
 echo "Backing up the production avatar bucket..."
 docker run --rm \
 	--network "$MINIO_NETWORK" \
@@ -267,8 +286,7 @@ restore_local_dump "$DB_NAME" \
 	--no-acl \
 	--disable-triggers \
 	--exit-on-error \
-	--exclude-table=public.session \
-	--exclude-table=public.verification
+	--use-list=/imports/data-restore.list
 DB_IMPORTED=1
 
 ADMIN_AFTER="$(
