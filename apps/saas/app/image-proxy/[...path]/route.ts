@@ -1,8 +1,8 @@
 import {
 	assertSafeStoragePath,
-	getSignedUrl,
 	isLocalStorageProvider,
 	readLocalObject,
+	readS3Object,
 } from "@repo/storage";
 import { NextResponse } from "next/server";
 
@@ -40,12 +40,15 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ path: s
 		}
 	}
 
-	const signedUrl = await getSignedUrl(filePath, {
-		bucket: "avatars",
-		expiresIn: 60 * 60,
-	});
-
-	return NextResponse.redirect(signedUrl, {
-		headers: { "Cache-Control": "max-age=3600" },
-	});
+	try {
+		const object = await readS3Object(filePath, { bucket: "avatars" });
+		return new NextResponse(new Uint8Array(object.body), {
+			headers: {
+				"Content-Type": object.contentType,
+				"Cache-Control": "public, max-age=3600",
+			},
+		});
+	} catch {
+		return new Response("Not found", { status: 404 });
+	}
 };
