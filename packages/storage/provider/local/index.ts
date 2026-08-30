@@ -18,7 +18,7 @@ const getSigningSecret = () =>
 	process.env.BETTER_AUTH_SECRET ||
 	"local-dev-storage-secret";
 
-const getSaasBaseUrl = () =>
+export const getSaasBaseUrl = () =>
 	(process.env.NEXT_PUBLIC_SAAS_URL || "http://localhost:3000").replace(/\/$/, "");
 
 export const getLocalStorageRoot = () => {

@@ -10,7 +10,7 @@ import {
 } from "@repo/database";
 import { logger } from "@repo/logs";
 import { webhookHandler as paymentsWebhookHandler } from "@repo/payments";
-import { handleLocalUpload, isLocalStorageProvider } from "@repo/storage";
+import { handleLocalUpload, handleS3Upload, isLocalStorageProvider } from "@repo/storage";
 import { getBaseUrl } from "@repo/utils";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -170,12 +170,8 @@ export const app = new Hono()
 	})
 	// Payments webhook handler
 	.post("/webhooks/payments", (c) => paymentsWebhookHandler(c.req.raw))
-	// Local filesystem avatar/logo uploads (when STORAGE_PROVIDER=local)
+	// Avatar/logo uploads proxied through SaaS (local disk or internal MinIO)
 	.put("/storage/upload/:bucket/:path", async (c) => {
-		if (!isLocalStorageProvider()) {
-			return c.text("Local storage is not enabled", 404);
-		}
-
 		const bucketName = c.req.param("bucket");
 		const filePath = decodeURIComponent(c.req.param("path"));
 		const expires = Number(c.req.query("expires"));
@@ -187,13 +183,23 @@ export const app = new Hono()
 
 		try {
 			const body = Buffer.from(await c.req.arrayBuffer());
-			await handleLocalUpload({
-				bucketName,
-				filePath,
-				expiresAt: expires,
-				signature,
-				body,
-			});
+			if (isLocalStorageProvider()) {
+				await handleLocalUpload({
+					bucketName,
+					filePath,
+					expiresAt: expires,
+					signature,
+					body,
+				});
+			} else {
+				await handleS3Upload({
+					bucketName,
+					filePath,
+					expiresAt: expires,
+					signature,
+					body,
+				});
+			}
 			return c.body(null, 200);
 		} catch (error) {
 			logger.error(error);

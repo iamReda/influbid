@@ -37,4 +37,7 @@ export {
 	writeLocalObject,
 	assertSafeStoragePath,
 	getLocalStorageRoot,
+	getSaasBaseUrl,
 } from "./local";
+
+export { handleS3Upload, readS3Object, writeS3Object } from "./s3";
