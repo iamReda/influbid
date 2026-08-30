@@ -89,16 +89,30 @@ DB_IMPORTED=0
 SUCCESS=0
 
 restore_local_dump() {
+	local target_database="$1"
+	shift
+
 	docker run --rm \
 		--network "$MINIO_NETWORK" \
 		--env PGPASSWORD="$DB_PASSWORD" \
 		-v "$DUMP_PATH:/imports/local.dump:ro" \
 		"$PG_CLIENT_IMAGE" \
 		pg_restore \
-		-h postgres \
-		-U "$DB_USER" \
 		"$@" \
-		/imports/local.dump
+		--file=- \
+		/imports/local.dump |
+		sed '/^SET transaction_timeout = 0;$/d' |
+		docker run --rm -i \
+			--network "$MINIO_NETWORK" \
+			--env PGPASSWORD="$DB_PASSWORD" \
+			"$PG_CLIENT_IMAGE" \
+			psql \
+			-X \
+			-v ON_ERROR_STOP=1 \
+			--single-transaction \
+			-h postgres \
+			-U "$DB_USER" \
+			-d "$target_database"
 }
 
 restore_avatar_backup() {
@@ -197,8 +211,7 @@ chmod 600 "$BACKUP_DIRECTORY/database.dump"
 echo "Validating the local dump in an isolated database..."
 docker exec "$POSTGRES_CONTAINER" dropdb -U "$DB_USER" --if-exists "$TEMP_DATABASE"
 docker exec "$POSTGRES_CONTAINER" createdb -U "$DB_USER" "$TEMP_DATABASE"
-restore_local_dump \
-	-d "$TEMP_DATABASE" \
+restore_local_dump "$TEMP_DATABASE" \
 	--no-owner \
 	--no-acl \
 	--exit-on-error
@@ -248,13 +261,11 @@ if [[ -d "$AVATARS_PATH" && -n "$(ls -A "$AVATARS_PATH" 2>/dev/null)" ]]; then
 fi
 
 echo "Importing database data in one transaction..."
-restore_local_dump \
-	-d "$DB_NAME" \
+restore_local_dump "$DB_NAME" \
 	--data-only \
 	--no-owner \
 	--no-acl \
 	--disable-triggers \
-	--single-transaction \
 	--exit-on-error \
 	--exclude-table=public.session \
 	--exclude-table=public.verification
