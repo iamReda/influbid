@@ -46,6 +46,11 @@ dist/
 # local filesystem storage (avatars, uploads)
 .local-storage/
 
+# database migration payloads
+.migration/
+influbid-local-migration.*
+*.dump
+
 
 
 # tasks MD

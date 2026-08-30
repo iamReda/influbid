@@ -21,7 +21,7 @@ test.describe("login page", () => {
 		await page.goto("/login");
 		await page.getByRole("link", { name: "Reset it" }).click();
 		await expect(page).toHaveURL(/\/forgot-password/);
-		await expect(page.getByText("Reset password")).toBeVisible();
+		await expect(page.getByRole("heading", { name: "Reset password" })).toBeVisible();
 		await expect(page.getByRole("button", { name: "Reset password" })).toBeVisible();
 	});
 });

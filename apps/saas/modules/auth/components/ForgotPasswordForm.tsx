@@ -78,7 +78,7 @@ export function ForgotPasswordForm() {
 
 	return (
 		<div className="">
-			<div className="mb-10 text-h3 text-center">Reset password</div>
+			<h1 className="mb-10 text-h3 text-center">Reset password</h1>
 			<p className="text-small text-t-secondary mb-6 leading-relaxed text-center">
 				{t("auth.forgotPassword.message")}
 			</p>

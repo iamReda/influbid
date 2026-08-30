@@ -11,6 +11,7 @@
 - **`deploy/.env.production.example`**: Minimal template for the `PRODUCTION_ENV` GitHub secret.
 - **`deploy/append-production-env.sh`**: Expands minimal `PRODUCTION_ENV` with `DATABASE_URL`, MinIO/S3, and registry defaults.
 - **`.github/workflows/build-deploy.yml`**: Build & Deploy workflow (manual trigger) — GHCR build, `PRODUCTION_ENV` → `.env`, VPS deploy, DB sync, health check.
+- **`.github/workflows/migrate-local-data.yml`**: Manual, encrypted local-to-production data migration through an ephemeral Windows runner, with production backup, admin collision protection, transactional database import, avatar transfer, and automatic rollback.
 
 ### Changed
 
