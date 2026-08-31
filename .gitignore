@@ -11,6 +11,8 @@ coverage
 # next.js
 .next/
 out/
+!apps/saas/app/(public)/out/
+!apps/saas/app/(public)/out/**
 build
 .swc/
 

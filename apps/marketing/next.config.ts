@@ -44,6 +44,10 @@ const nextConfig: NextConfig = {
 				source: "/image-proxy/:path*",
 				destination: `${saasBase}/image-proxy/:path*`,
 			},
+			{
+				source: "/out/social/:path*",
+				destination: `${saasBase}/out/social/:path*`,
+			},
 		];
 	},
 };
