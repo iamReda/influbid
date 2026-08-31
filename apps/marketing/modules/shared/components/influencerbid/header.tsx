@@ -123,10 +123,7 @@ const Header = ({ isFixed, isVisiblePlan, isMinimal }: HeaderProps) => {
 											aria-label="Dashboard"
 											className="header-action-btn"
 										>
-											<CircleGauge
-												className="size-5 stroke-current stroke-[1.75px]"
-												aria-hidden
-											/>
+											<CircleGauge className="size-5 stroke-current stroke-[1.75px]" aria-hidden />
 										</Button>
 										<Menu
 											name={user.name ?? ""}

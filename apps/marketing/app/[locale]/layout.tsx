@@ -3,14 +3,11 @@ import { config } from "@config";
 import { config as i18nConfig } from "@i18n/config";
 import { cn, Toaster } from "@repo/ui";
 import { ClientProviders } from "@shared/components/ClientProviders";
-import { ConsentBanner } from "@shared/components/ConsentBanner";
-import { ConsentProvider } from "@shared/components/ConsentProvider";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { ThemeProvider } from "next-themes";
 import { DM_Sans, Inter } from "next/font/google";
 import localFont from "next/font/local";
-import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import type { PropsWithChildren } from "react";
 
@@ -70,9 +67,6 @@ export default async function MarketingLayout({
 
 	const messages = await getMessages();
 
-	const cookieStore = await cookies();
-	const consentCookie = cookieStore.get("consent");
-
 	return (
 		<html
 			lang={locale}
@@ -80,25 +74,22 @@ export default async function MarketingLayout({
 			className={cn(sansFont.variable, headingFont.variable, satoshiFont.variable)}
 		>
 			<body className={cn("font-sans min-h-screen bg-background text-foreground antialiased")}>
-				<ConsentProvider initialConsent={consentCookie?.value === "true"}>
-					<NextIntlClientProvider locale={locale} messages={messages}>
-						<ClientProviders>
-							<ThemeProvider
-								attribute="class"
-								disableTransitionOnChange
-								enableSystem
-								defaultTheme={config.defaultTheme}
-								themes={Array.from(config.enabledThemes)}
-							>
-								{children}
+				<NextIntlClientProvider locale={locale} messages={messages}>
+					<ClientProviders>
+						<ThemeProvider
+							attribute="class"
+							disableTransitionOnChange
+							enableSystem
+							defaultTheme={config.defaultTheme}
+							themes={Array.from(config.enabledThemes)}
+						>
+							{children}
 
-								<Toaster position="top-right" closeLabel="Close notification" />
-								<ConsentBanner />
-								<AnalyticsScript />
-							</ThemeProvider>
-						</ClientProviders>
-					</NextIntlClientProvider>
-				</ConsentProvider>
+							<Toaster position="top-right" closeLabel="Close notification" />
+							<AnalyticsScript />
+						</ThemeProvider>
+					</ClientProviders>
+				</NextIntlClientProvider>
 			</body>
 		</html>
 	);

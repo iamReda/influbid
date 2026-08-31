@@ -267,7 +267,7 @@
 		will-change: transform;
 	}
 	.rank-higher-gemini__btn {
-		@apply relative z-1 transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] hover:bg-b-surface2!;
+		@apply hover:bg-b-surface2! relative z-1 transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98];
 	}
 	@keyframes rank-higher-gemini-spin {
 		from {

@@ -9,7 +9,7 @@ const AboutPage = () => {
 			title="About"
 			intro={
 				<>
-					Influencerbid started as a simple idea: <strong>no ads</strong>,{" "}
+					CreatorLand started as a simple idea: <strong>no ads</strong>,{" "}
 					<strong>no API keys</strong>, <strong>no revenue sharing</strong>. Just outbid other
 					influencers to climb the leaderboard — that&apos;s it.
 				</>

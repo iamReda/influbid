@@ -197,7 +197,7 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 			onSubmit={handleSubmit}
 			noValidate
 		>
-			<div className="mb-10 flex items-center justify-center">
+			<div className="mb-4 flex items-center justify-center max-md:mb-3">
 				<div className="gap-2 max-md:gap-1.5 inline-flex items-center">
 					<button
 						type="button"
@@ -242,7 +242,7 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 				</div>
 			</div>
 			{submitted && errors.bid && (
-				<p className="-mt-6 mb-8 text-small text-primary3 text-center">{errors.bid}</p>
+				<p className="-mt-2 mb-4 text-small text-primary3 text-center">{errors.bid}</p>
 			)}
 
 			<div className="gap-3 max-lg:flex-col max-md:w-full flex items-stretch">

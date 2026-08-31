@@ -93,7 +93,10 @@ const PaymentHistoryPage = () => {
 											<div className="text-button font-bold text-t-primary truncate">
 												{payment.description}
 											</div>
-											<time className={`mt-1 block ${paymentMetaClass}`} dateTime={payment.dateTime}>
+											<time
+												className={`mt-1 block ${paymentMetaClass}`}
+												dateTime={payment.dateTime}
+											>
 												{payment.date}
 											</time>
 										</div>

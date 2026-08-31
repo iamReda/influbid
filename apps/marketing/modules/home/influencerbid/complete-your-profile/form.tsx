@@ -463,13 +463,7 @@ const Form = ({ draft }: FormProps) => {
 				</div>
 
 				{canAddSocial && (
-					<Button
-						className="mt-5"
-						isPrimary
-						type="button"
-						icon="plus"
-						onClick={addSocialProfile}
-					>
+					<Button className="mt-5" isPrimary type="button" icon="plus" onClick={addSocialProfile}>
 						Add new
 					</Button>
 				)}

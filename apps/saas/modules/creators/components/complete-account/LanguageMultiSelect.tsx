@@ -72,7 +72,7 @@ export function LanguageMultiSelect({
 				<div className="relative">
 					<ComboboxInput
 						ref={inputRef}
-						className="form-control h-12 px-6 pr-12 text-[0.875rem] font-medium text-t-primary placeholder:text-t-tertiary w-full rounded-3xl"
+						className="form-control h-12 px-6 pr-12 font-medium text-t-primary placeholder:text-t-tertiary w-full rounded-3xl text-[0.875rem]"
 						onChange={(event) => setQuery(event.target.value)}
 						displayValue={() => query}
 						placeholder={searchPlaceholder}

@@ -21,8 +21,8 @@ const RulesPage = () => {
 				<h2>Ranking</h2>
 				<ul>
 					<li>
-						Bids are whole US dollars. A new listing starts at <strong>$3</strong>; the ceiling for
-						any listing is $999,999. Amounts can move in steps of $1.
+						Bids are whole US dollars. A new listing starts at <strong>$5</strong>; the ceiling for
+						any listing is $999,999. Amounts can move in steps of $5.
 					</li>
 					<li>
 						To take any spot — including #1 — you only need to match the amount sitting there.

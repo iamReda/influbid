@@ -1,7 +1,7 @@
 "use client";
 
-import { config } from "@config";
 import { useSession } from "@auth/hooks/use-session";
+import { config } from "@config";
 import { authClient } from "@repo/auth/client";
 import { Button } from "@repo/ui/components/button";
 import { toast } from "@repo/ui/components/toast";
