@@ -1,7 +1,9 @@
 import { config as storageConfig } from "@repo/storage/config";
 import { cn } from "@repo/ui";
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/avatar";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
+
+export const USER_AVATAR_UPDATED_EVENT = "user-avatar-updated";
 
 export const UserAvatar = ({
 	name,
@@ -13,6 +15,7 @@ export const UserAvatar = ({
 	avatarUrl?: string | null;
 	className?: string;
 }) => {
+	const [revision, setRevision] = useState(0);
 	const initials = useMemo(
 		() =>
 			name
@@ -23,15 +26,34 @@ export const UserAvatar = ({
 		[name],
 	);
 
-	const avatarSrc = useMemo(
-		() =>
-			avatarUrl
-				? avatarUrl.startsWith("http")
-					? avatarUrl
-					: `/image-proxy/${storageConfig.bucketNames.avatars}/${avatarUrl}`
-				: undefined,
-		[avatarUrl],
-	);
+	const avatarSrc = useMemo(() => {
+		if (!avatarUrl) {
+			return undefined;
+		}
+
+		const src = avatarUrl.startsWith("http")
+			? avatarUrl
+			: `/image-proxy/${storageConfig.bucketNames.avatars}/${avatarUrl}`;
+
+		if (revision === 0 || avatarUrl.startsWith("http")) {
+			return src;
+		}
+
+		const separator = src.includes("?") ? "&" : "?";
+		return `${src}${separator}v=${revision}`;
+	}, [avatarUrl, revision]);
+
+	useEffect(() => {
+		const refreshAvatar = (event: Event) => {
+			const updatedPath = (event as CustomEvent<string>).detail;
+			if (updatedPath === avatarUrl) {
+				setRevision(Date.now());
+			}
+		};
+
+		window.addEventListener(USER_AVATAR_UPDATED_EVENT, refreshAvatar);
+		return () => window.removeEventListener(USER_AVATAR_UPDATED_EVENT, refreshAvatar);
+	}, [avatarUrl]);
 
 	return (
 		<Avatar ref={ref} className={cn("size-8 rounded-full", className)}>

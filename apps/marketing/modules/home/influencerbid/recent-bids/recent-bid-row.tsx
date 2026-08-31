@@ -26,6 +26,7 @@ const RecentBidRow = ({ item, isScrolling = false }: RecentBidRowProps) => (
 				src={item.avatar}
 				width={44}
 				height={44}
+				unoptimized
 				alt=""
 			/>
 		</div>

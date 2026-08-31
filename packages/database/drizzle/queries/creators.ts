@@ -437,5 +437,6 @@ export async function listRecentPaidBids(
 			avatarUrl: bid.creator.avatarUrl,
 			username: bid.creator.user.username,
 			totalBidCents: bid.totalAfterCents ?? bid.creator.totalBidCents,
+			bidReachedAt: bid.creator.bidReachedAt,
 		}));
 }

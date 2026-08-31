@@ -29,7 +29,9 @@ const formatPaidAt = (value: Date | string | null) => {
 };
 
 const descriptionForType = (type: "INITIAL" | "INCREASE") =>
-	type === "INITIAL" ? "Ranking bid" : "Bid increase";
+	type === "INITIAL" ? "🎉 First bid" : "Bid increase";
+
+const paymentMetaClass = "text-small text-t-secondary";
 
 const PaymentHistoryPage = () => {
 	const { data: bids = [] } = useQuery(orpc.creators.listMyBids.queryOptions());
@@ -58,20 +60,20 @@ const PaymentHistoryPage = () => {
 					</div>
 
 					<article className="bg-b-surface2 p-6 hover:shadow-hover max-md:p-5 rounded-4xl transition-shadow">
-						<div className="mb-5 gap-4 max-md:mb-4 flex items-start justify-between">
+						<div className="mb-6 gap-4 max-md:mb-5 pb-6 max-md:pb-5 border-stroke-subtle flex items-start justify-between border-b">
 							<div className="gap-2.5 flex items-center">
 								<span className="size-9 bg-b-surface1 text-t-secondary flex shrink-0 items-center justify-center rounded-full">
 									<Receipt className="size-4 stroke-[1.75px]" aria-hidden />
 								</span>
 								<div className="min-w-0">
 									<h2 className="text-body-bold text-t-primary">Recent payments</h2>
-									<p className="mt-0.5 text-small text-t-tertiary">
+									<p className={`mt-0.5 ${paymentMetaClass}`}>
 										{payments.length} {payments.length === 1 ? "payment" : "payments"}
 									</p>
 								</div>
 							</div>
 							<div className="shrink-0 text-right">
-								<div className="text-small text-t-tertiary">Spent</div>
+								<div className={paymentMetaClass}>Spent</div>
 								<div className="mt-0.5 text-body-bold text-t-primary">
 									{formatAmount(totalSpent)}
 								</div>
@@ -91,10 +93,7 @@ const PaymentHistoryPage = () => {
 											<div className="text-button font-bold text-t-primary truncate">
 												{payment.description}
 											</div>
-											<time
-												className="mt-1 text-small text-t-tertiary block"
-												dateTime={payment.dateTime}
-											>
+											<time className={`mt-1 block ${paymentMetaClass}`} dateTime={payment.dateTime}>
 												{payment.date}
 											</time>
 										</div>

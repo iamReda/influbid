@@ -3,7 +3,8 @@
 import { useSession } from "@auth/hooks/use-session";
 import { authClient } from "@repo/auth/client";
 import { Spinner } from "@repo/ui";
-import { UserAvatar } from "@shared/components/UserAvatar";
+import { USER_AVATAR_UPDATED_EVENT, UserAvatar } from "@shared/components/UserAvatar";
+import { isPlatformAdmin } from "@shared/lib/admin-routing";
 import { orpc } from "@shared/lib/orpc-query-utils";
 import { useMutation } from "@tanstack/react-query";
 import { type HTMLAttributes, useState } from "react";
@@ -24,6 +25,7 @@ export function UserAvatarUpload({
 	const [image, setImage] = useState<File | null>(null);
 
 	const getSignedUploadUrlMutation = useMutation(orpc.users.avatarUploadUrl.mutationOptions());
+	const updateCreatorAvatarMutation = useMutation(orpc.creators.updateMyCreator.mutationOptions());
 
 	const { getRootProps, getInputProps } = useDropzone({
 		onDrop: (acceptedFiles) => {
@@ -69,7 +71,12 @@ export function UserAvatarUpload({
 				throw error;
 			}
 
+			if (!isPlatformAdmin(user)) {
+				await updateCreatorAvatarMutation.mutateAsync({ avatarUrl: path });
+			}
+
 			await reloadSession();
+			window.dispatchEvent(new CustomEvent(USER_AVATAR_UPDATED_EVENT, { detail: path }));
 
 			onSuccess();
 		} catch {

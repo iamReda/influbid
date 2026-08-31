@@ -3,6 +3,19 @@
 		"openLinkInBrowser": "Si vous souhaitez ouvrir le lien dans un navigateur différent de celui par défaut, copiez et collez ce lien :",
 		"useLink": "ou utilisez le lien suivant :"
 	},
+	"creatorWelcome": {
+		"accessDashboard": "Accéder à mon tableau de bord",
+		"categoryRank": "Classement {categoryName} : #{categoryRank}",
+		"congratulations": "Félicitations 🎉 Vous faites désormais officiellement partie de la communauté CreatorLand.",
+		"dashboardPrompt": "Cliquez sur le bouton ci-dessous pour accéder à votre tableau de bord et gérer votre profil.",
+		"globalRank": "Classement mondial : #{globalRank}",
+		"greeting": "Bonjour {publicName},",
+		"profileReward": "🎁 Vous avez obtenu un profil partageable — GRATUIT pendant 1 an.",
+		"rankingsDisclaimer": "Ces classements reflètent votre position au moment du paiement et peuvent changer lorsqu’un autre créateur place une enchère plus élevée.",
+		"rankingsIntro": "Vos classements actuels :",
+		"subject": "Bienvenue sur CreatorLand 🎉",
+		"welcome": "Bienvenue sur CreatorLand."
+	},
 	"emailVerification": {
 		"body": "Bonjour,\nveuillez cliquer sur le lien ci-dessous pour vérifier cette nouvelle adresse e-mail.",
 		"confirmEmail": "Vérifier l'e-mail",

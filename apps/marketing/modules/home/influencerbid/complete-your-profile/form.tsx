@@ -5,11 +5,13 @@ import {
 	submitCompleteProfileAction,
 } from "@home/influencerbid/actions";
 import SocialPlatformIcon, {
+	PLATFORM_LABEL,
 	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
 import { detectCountryFromIpAction } from "@home/influencerbid/lib/detect-country";
 import { formatBidDollars } from "@home/influencerbid/lib/format";
 import { clearSignupDraft, type SignupDraft } from "@home/influencerbid/lib/signup-draft";
+import { detectPlatform, SOCIAL_PLATFORMS } from "@home/influencerbid/lib/social-url";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
@@ -27,36 +29,7 @@ type ExtraSocial = {
 const DESCRIPTION_MAX = 160;
 const MAX_SOCIAL_PROFILES = 10;
 
-const SOCIAL_PLATFORMS: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
-
-const platformLabels: Record<Platform, string> = {
-	tiktok: "TikTok",
-	instagram: "Instagram",
-	facebook: "Facebook",
-	twitch: "Twitch",
-};
-
-const detectPlatform = (value: string): Platform | null => {
-	const url = value.toLowerCase();
-
-	if (url.includes("tiktok.com")) {
-		return "tiktok";
-	}
-
-	if (url.includes("instagram.com")) {
-		return "instagram";
-	}
-
-	if (url.includes("facebook.com") || url.includes("fb.com")) {
-		return "facebook";
-	}
-
-	if (url.includes("twitch.tv")) {
-		return "twitch";
-	}
-
-	return null;
-};
+const platformLabels = PLATFORM_LABEL;
 
 const SocialUrlField = ({
 	value,
@@ -88,22 +61,17 @@ const SocialUrlField = ({
 
 	return (
 		<div className="relative">
-			<div
-				className={`left-4 size-7 pointer-events-none absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
-					isLocked
-						? "bg-primary1 text-white"
-						: "bg-b-surface1 text-t-secondary shadow-[inset_0_0_0_1.5px_var(--color-stroke1)]"
-				}`}
-			>
+			<div className="left-4.5 pointer-events-none absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center">
 				<SocialPlatformIcon
 					key={activePlatform}
 					platform={activePlatform}
-					className="size-4 shrink-0"
+					className={`size-5 shrink-0 ${isLocked ? "" : "text-t-secondary"}`}
+					colored={isLocked}
 				/>
 			</div>
 			<input
 				type="url"
-				className="h-12 border-stroke1 pl-13 pr-6.5 font-medium text-t-primary placeholder:text-t-tertiary max-md:text-[1rem] w-full rounded-3xl border-[1.5px] bg-transparent text-input outline-0 transition-colors focus:border-[#A8A8A8]/50!"
+				className="form-control h-12 pl-13 pr-6.5 font-medium text-t-primary placeholder:text-t-tertiary max-md:text-[1rem] w-full rounded-3xl text-input"
 				value={value}
 				placeholder={placeholder}
 				aria-label={ariaLabel}
@@ -354,21 +322,34 @@ const Form = ({ draft }: FormProps) => {
 				<h1 className="text-h2 max-md:text-h3">Complete your profile</h1>
 			</div>
 
-			<section className="mb-10 bg-b-surface2 p-5 max-md:mb-8 rounded-3xl">
+			<section className="mb-10 max-md:mb-8">
 				<h2 className="mb-5 text-h5 text-t-primary">Profile details</h2>
-				<div className="gap-5 max-sm:flex-col flex items-start">
-					<div className="shrink-0">
-						<div className="influencer-avatar group size-28 bg-b-surface1 after:inset-0 max-md:size-24 relative overflow-hidden after:absolute after:z-1 after:bg-[#141414]/30 after:opacity-0 after:transition-opacity hover:after:opacity-100">
+				<div className="gap-6 flex flex-col">
+					<div className="flex flex-col items-start">
+						<div
+							className={`influencer-avatar group size-28 max-md:size-24 after:inset-0 after:bg-black/25 dark:after:bg-black/40 relative overflow-hidden after:absolute after:z-1 after:opacity-0 after:transition-opacity hover:after:opacity-100 ${
+								avatarPreview
+									? "bg-b-surface1"
+									: "bg-b-surface2 shadow-[inset_0_0_0_1.5px_var(--color-stroke2)]"
+							}`}
+						>
 							{avatarPreview ? (
 								// oxlint-disable-next-line nextjs/no-img-element -- local preview uses a blob URL
 								<img
-									className="size-full object-cover opacity-100"
+									className="relative z-0 size-full object-cover"
 									src={avatarPreview}
 									width={112}
 									height={112}
 									alt="Profile photo"
 								/>
-							) : null}
+							) : (
+								<div className="gap-1 relative z-0 flex size-full flex-col items-center justify-center">
+									<Icon
+										className="fill-t-secondary size-8 group-hover:fill-t-primary transition-colors"
+										name="camera-stroke"
+									/>
+								</div>
+							)}
 							<input
 								className="inset-0 absolute z-3 cursor-pointer opacity-0"
 								type="file"
@@ -376,16 +357,17 @@ const Form = ({ draft }: FormProps) => {
 								aria-label="Upload profile photo"
 								onChange={handleAvatarChange}
 							/>
-							<Icon
-								className="absolute top-1/2 left-1/2 z-2 -translate-x-1/2 -translate-y-1/2 fill-[#FDFDFD] opacity-0 transition-opacity group-hover:opacity-100"
-								name="camera-stroke"
-							/>
+							{avatarPreview ? (
+								<Icon
+									className="fill-white absolute top-1/2 left-1/2 z-2 -translate-x-1/2 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100"
+									name="camera-stroke"
+								/>
+							) : null}
 						</div>
-						<p className="mt-2 max-w-28 leading-tight text-t-tertiary max-md:max-w-24 text-center text-[0.625rem]">
-							Click to upload image
-						</p>
+						<p className="mt-2 text-small text-t-secondary">Click to upload image</p>
 					</div>
-					<div className="min-w-0 gap-5 flex flex-1 flex-col">
+
+					<div className="gap-5 flex flex-col">
 						<Field
 							label="Public name"
 							value={publicName}
@@ -426,9 +408,13 @@ const Form = ({ draft }: FormProps) => {
 			</section>
 
 			<section className="mb-10 max-md:mb-8">
-				<h2 className="mb-5 text-h5 text-t-primary">Social profiles</h2>
-				<div className="gap-3 flex flex-col">
-					<div className="bg-b-surface2 p-4 rounded-3xl">
+				<div className="mb-3 text-h4">Social profiles</div>
+				<p className="text-body text-t-secondary mb-8 leading-snug">
+					Add at least one social link (up to {MAX_SOCIAL_PROFILES}). Icons update from the URL
+					domain.
+				</p>
+				<div className="gap-5 flex flex-col">
+					<div>
 						<div className="mb-3 gap-2.5 flex items-center">
 							<span className="h-6 border-primary1/15 bg-primary1/5 px-2.5 text-hairline text-t-blue flex items-center rounded-full border-[1.5px]">
 								Primary
@@ -449,7 +435,7 @@ const Form = ({ draft }: FormProps) => {
 						const platform = detectPlatform(item.url.trim());
 
 						return (
-							<div className="bg-b-surface2 p-4 rounded-3xl" key={item.id}>
+							<div key={item.id}>
 								{platform && (
 									<div className="mb-3 text-button text-t-primary">{platformLabels[platform]}</div>
 								)}
@@ -462,16 +448,14 @@ const Form = ({ draft }: FormProps) => {
 											ariaLabel="Additional social profile URL"
 										/>
 									</div>
-									<Button
-										className="shrink-0"
-										isCircle
-										isStroke
+									<button
+										className="size-12 inline-flex shrink-0 items-center justify-center rounded-full transition-opacity hover:opacity-70"
 										type="button"
 										aria-label="Remove social profile"
 										onClick={() => removeExtraSocial(item.id)}
 									>
-										<Icon name="close" />
-									</Button>
+										<Icon className="fill-primary3" name="close" />
+									</button>
 								</div>
 							</div>
 						);
@@ -479,13 +463,19 @@ const Form = ({ draft }: FormProps) => {
 				</div>
 
 				{canAddSocial && (
-					<Button className="mt-4" isPrimary type="button" icon="plus" onClick={addSocialProfile}>
-						Add another social profile
+					<Button
+						className="mt-5"
+						isPrimary
+						type="button"
+						icon="plus"
+						onClick={addSocialProfile}
+					>
+						Add new
 					</Button>
 				)}
 			</section>
 
-			<section className="mb-10 bg-b-surface2 p-5 max-md:mb-8 rounded-3xl">
+			<section className="mb-10 max-md:mb-8">
 				<h2 className="mb-5 text-h5 text-t-primary">Email</h2>
 				<Field
 					label="Email address"
@@ -501,33 +491,35 @@ const Form = ({ draft }: FormProps) => {
 				</p>
 			</section>
 
-			<section className="mb-10 bg-b-surface2 p-5 xl:hidden max-md:mb-8 rounded-3xl">
-				<div className="mb-4 text-h5 text-t-primary">Bid summary</div>
-				<div className="gap-3 text-body flex flex-col">
-					<div className="gap-3 flex items-center justify-between">
-						<span className="text-t-secondary">Your bid</span>
-						<span className="text-body-bold text-t-primary">
-							{formatBidDollars(draft.bidAmountDollars)}
-						</span>
+			<section className="mb-10 xl:hidden max-md:mb-8">
+				<div className="bg-b-surface2 p-5 max-md:p-4 border-stroke-subtle rounded-3xl border-[1.5px]">
+					<h2 className="mb-4 text-h5 text-t-primary">Bid summary</h2>
+					<div className="gap-3 text-body flex flex-col">
+						<div className="gap-3 flex items-center justify-between">
+							<span className="text-t-secondary">Your bid</span>
+							<span className="text-body-bold text-t-primary">
+								{formatBidDollars(draft.bidAmountDollars)}
+							</span>
+						</div>
+						<div className="gap-3 flex items-center justify-between">
+							<span className="text-t-secondary">General Rank</span>
+							<span className="text-body-bold text-t-primary">
+								#{draft.estimatedGeneralRank} General
+							</span>
+						</div>
+						<div className="gap-3 flex items-center justify-between">
+							<span className="text-t-secondary">Category rank</span>
+							<span className="text-body-bold text-t-primary">
+								{draft.estimatedCategoryRank
+									? `#${draft.estimatedCategoryRank} in ${draft.categoryName}`
+									: draft.categoryName}
+							</span>
+						</div>
 					</div>
-					<div className="gap-3 flex items-center justify-between">
-						<span className="text-t-secondary">General Rank</span>
-						<span className="text-body-bold text-t-primary">
-							#{draft.estimatedGeneralRank} General
-						</span>
-					</div>
-					<div className="gap-3 flex items-center justify-between">
-						<span className="text-t-secondary">Category rank</span>
-						<span className="text-body-bold text-t-primary">
-							{draft.estimatedCategoryRank
-								? `#${draft.estimatedCategoryRank} in ${draft.categoryName}`
-								: draft.categoryName}
-						</span>
-					</div>
+					<p className="mt-4 text-small text-t-tertiary">
+						Your final rank is confirmed after payment.
+					</p>
 				</div>
-				<p className="mt-4 text-small text-t-tertiary">
-					Your final rank is confirmed after payment.
-				</p>
 			</section>
 
 			<div>

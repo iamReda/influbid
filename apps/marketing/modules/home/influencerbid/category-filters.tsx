@@ -1,7 +1,7 @@
 "use client";
 
-import { LayoutGrid, type LucideIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight, LayoutGrid, type LucideIcon } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { CategoryOptionDto } from "./actions";
 import { getCategoryUi } from "./lib/category-ui";
@@ -43,38 +43,80 @@ const CategoryFilters = ({
 		[categories],
 	);
 
-	const handleScroll = () => {
-		if (tagsRef.current) {
-			const { scrollLeft, scrollWidth, clientWidth } = tagsRef.current;
-			if (scrollLeft === 0) {
-				setScrollState("start");
-			} else if (scrollLeft + clientWidth >= scrollWidth) {
-				setScrollState("end");
-			} else {
-				setScrollState("middle");
-			}
+	const handleScroll = useCallback(() => {
+		if (!tagsRef.current) {
+			return;
 		}
+
+		const { scrollLeft, scrollWidth, clientWidth } = tagsRef.current;
+
+		if (scrollLeft <= 1) {
+			setScrollState("start");
+		} else if (scrollLeft + clientWidth >= scrollWidth - 1) {
+			setScrollState("end");
+		} else {
+			setScrollState("middle");
+		}
+	}, []);
+
+	const scrollTags = (direction: -1 | 1) => {
+		const container = tagsRef.current;
+		if (!container) {
+			return;
+		}
+
+		container.scrollBy({
+			left: direction * Math.max(container.clientWidth * 0.75, 220),
+			behavior: "smooth",
+		});
 	};
 
 	useEffect(() => {
 		const tagsElement = tagsRef.current;
-		if (tagsElement) {
-			tagsElement.addEventListener("scroll", handleScroll);
+		if (!tagsElement) {
+			return;
 		}
 
+		handleScroll();
+		tagsElement.addEventListener("scroll", handleScroll, { passive: true });
+		window.addEventListener("resize", handleScroll);
+
 		return () => {
-			if (tagsElement) {
-				tagsElement.removeEventListener("scroll", handleScroll);
-			}
+			tagsElement.removeEventListener("scroll", handleScroll);
+			window.removeEventListener("resize", handleScroll);
 		};
-	}, []);
+	}, [filterItems, handleScroll]);
 
 	return (
 		<div className={className || ""}>
 			<div className="mb-4 max-md:block max-md:mb-3 flex justify-between">
 				<div className="relative w-full">
+					{scrollState !== "start" ? (
+						<div className="from-b-surface1 via-b-surface1/95 top-0 bottom-0 left-0 w-12 max-md:hidden pointer-events-none absolute z-10 flex items-center bg-gradient-to-r to-transparent">
+							<button
+								className="header-action-btn ml-0.5 size-8 pointer-events-auto flex shrink-0 items-center justify-center rounded-full transition-all"
+								type="button"
+								aria-label="Scroll categories left"
+								onClick={() => scrollTags(-1)}
+							>
+								<ChevronLeft className="size-4 stroke-2" aria-hidden />
+							</button>
+						</div>
+					) : null}
+					{scrollState !== "end" ? (
+						<div className="from-b-surface1 via-b-surface1/95 top-0 right-0 bottom-0 w-12 max-md:hidden pointer-events-none absolute z-10 flex items-center justify-end bg-gradient-to-l to-transparent">
+							<button
+								className="header-action-btn mr-0.5 size-8 pointer-events-auto flex shrink-0 items-center justify-center rounded-full transition-all"
+								type="button"
+								aria-label="Scroll categories right"
+								onClick={() => scrollTags(1)}
+							>
+								<ChevronRight className="size-4 stroke-2" aria-hidden />
+							</button>
+						</div>
+					) : null}
 					<div
-						className={`gap-3 py-2 max-md:-mx-6 max-md:gap-0 max-md:before:shrink-0 max-md:before:w-6 max-md:after:shrink-0 max-md:after:w-6 flex scrollbar-none overflow-auto ${
+						className={`gap-2 py-2 max-md:-mx-6 max-md:gap-0 max-md:before:shrink-0 max-md:before:w-6 max-md:after:shrink-0 max-md:after:w-6 flex scrollbar-none overflow-auto ${
 							scrollState === "start" ? "mask-right" : ""
 						} ${scrollState === "end" ? "mask-left" : ""} ${
 							scrollState === "middle" ? "mask-middle" : ""
@@ -87,18 +129,18 @@ const CategoryFilters = ({
 
 							return (
 								<button
-									className={`gap-2 h-8 px-4 bg-b-surface1 text-hairline font-medium text-t-secondary hover:bg-b-surface2 hover:shadow-hover hover:text-t-primary max-xl:hover:shadow-none max-md:not-last:mr-3 inline-flex shrink-0 items-center rounded-full shadow-[inset_0_0_0_1.5px_var(--color-stroke1)] transition-all ${
+									className={`gap-2 h-9 px-4 text-button font-medium max-xl:hover:shadow-none max-md:not-last:mr-2 inline-flex shrink-0 items-center rounded-full transition-all ${
 										isActive
 											? "bg-primary1/15! text-t-primary! shadow-[inset_0_0_0_2px_var(--color-primary1)]!"
-											: ""
+											: "bg-b-surface2 text-t-primary/75 hover:bg-white hover:text-t-primary dark:hover:bg-b-surface2 hover:shadow-hover shadow-[inset_0_0_0_1px_var(--color-stroke-subtle)]"
 									}`}
 									key={item.value}
 									type="button"
 									onClick={() => setActiveTag(item.value)}
 								>
 									<ItemIcon
-										className={`size-3.5 shrink-0 stroke-2 ${
-											isActive ? "text-t-primary" : "text-t-secondary"
+										className={`size-4 shrink-0 stroke-2 ${
+											isActive ? "text-t-primary" : "text-t-primary/70"
 										}`}
 										aria-hidden
 									/>

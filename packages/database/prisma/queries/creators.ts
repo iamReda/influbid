@@ -42,7 +42,9 @@ export async function getPublishedCreatorByUsername(username: string) {
 		},
 		include: {
 			category: true,
-			user: { select: { id: true, username: true, email: true, businessEmail: true } },
+			user: {
+				select: { id: true, username: true, email: true, image: true, businessEmail: true },
+			},
 			socialProfiles: {
 				where: { deletedAt: null },
 				orderBy: { position: "asc" },
@@ -361,5 +363,6 @@ export async function listRecentPaidBids(
 		avatarUrl: bid.creator.avatarUrl,
 		username: bid.creator.user.username,
 		totalBidCents: bid.totalAfterCents ?? bid.creator.totalBidCents,
+		bidReachedAt: bid.creator.bidReachedAt,
 	}));
 }

@@ -7,12 +7,13 @@ import { cn } from "../../lib";
 type CountryFlagProps = {
 	countryCode: string | null | undefined;
 	className?: string;
-	/** Visual size matching verified icon footprints: size-4 or size-6 */
-	size?: "sm" | "md";
+	/** Visual size matching verified icon footprints: xs, size-4 (sm), or size-6 (md) */
+	size?: "xs" | "sm" | "md";
 	title?: string;
 };
 
 const SIZE_CLASS = {
+	xs: "size-3",
 	sm: "size-4",
 	md: "size-6 max-md:size-5",
 } as const;

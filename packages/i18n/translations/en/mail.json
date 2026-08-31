@@ -3,6 +3,19 @@
 		"openLinkInBrowser": "If you want to open the link in a different browser than your default one, copy and paste this link:",
 		"useLink": "or use the following link:"
 	},
+	"creatorWelcome": {
+		"accessDashboard": "Access my dashboard",
+		"categoryRank": "{categoryName} rank: #{categoryRank}",
+		"congratulations": "Congratulations 🎉 You’re now officially part of the CreatorLand community.",
+		"dashboardPrompt": "Click the button below to access your dashboard and manage your profile.",
+		"globalRank": "Global rank: #{globalRank}",
+		"greeting": "Hi {publicName},",
+		"profileReward": "🎁 You’ve earned a shareable profile — FREE for 1 year.",
+		"rankingsDisclaimer": "These rankings reflect your position at the time of payment and may change whenever another creator places a higher bid.",
+		"rankingsIntro": "Your current rankings:",
+		"subject": "Welcome to CreatorLand 🎉",
+		"welcome": "Welcome to CreatorLand."
+	},
 	"emailVerification": {
 		"body": "Hey,\nplease click the link below to verify this new email address.",
 		"confirmEmail": "Verify email",

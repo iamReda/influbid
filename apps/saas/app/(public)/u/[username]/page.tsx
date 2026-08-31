@@ -36,7 +36,7 @@ export default async function UsernameProfilePage({ params }: Props) {
 	const profile = {
 		username: creator.user.username,
 		name: creator.publicName,
-		image: creator.avatarUrl,
+		image: creator.user.image ?? creator.avatarUrl,
 		bio: creator.description,
 		businessEmail: creator.user.businessEmail ?? null,
 		socialLinks: creator.socialProfiles.map((social) => social.url),

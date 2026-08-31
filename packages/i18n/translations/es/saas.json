@@ -265,12 +265,20 @@
 		"title": "Configura tu cuenta"
 	},
 	"completeAccount": {
-		"title": "Completa tu cuenta",
-		"message": "Cuéntanos un poco más sobre ti y luego crea una contraseña para futuros inicios de sesión.",
 		"step": "Paso {step} / {total}",
 		"continue": "Continuar",
 		"back": "Atrás",
 		"submit": "Terminar e ir al panel",
+		"steps": {
+			"profile": {
+				"title": "Completa tu perfil",
+				"message": "Añade los idiomas que hablas y selecciona tu género."
+			},
+			"password": {
+				"title": "Establece una contraseña",
+				"message": "Ya casi terminas — te llevaremos directamente al panel. Elige una contraseña para futuros inicios de sesión."
+			}
+		},
 		"languages": {
 			"label": "Idiomas",
 			"placeholder": "Añade al menos un idioma que hables.",
@@ -283,7 +291,6 @@
 			"preferNotToSay": "Prefiero no decirlo"
 		},
 		"password": {
-			"description": "Crea una contraseña para poder iniciar sesión con correo y contraseña la próxima vez.",
 			"label": "Contraseña",
 			"confirm": "Confirmar contraseña"
 		},

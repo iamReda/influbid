@@ -3,7 +3,6 @@
 import { useSession } from "@auth/hooks/use-session";
 import { config } from "@config";
 import { authClient } from "@repo/auth/client";
-import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import UpButton from "@repo/ui/components/influencerbid/up-button";
 import type { ReactNode } from "react";
 
@@ -68,7 +67,6 @@ const Layout = ({
 			/>
 			<div className={`grow ${classContainer || ""}`}>{children}</div>
 			{!isHiddenFooter && <Footer />}
-			<ThemeButton className="left-5 bottom-5 fixed! z-5" />
 			<UpButton />
 		</div>
 	);

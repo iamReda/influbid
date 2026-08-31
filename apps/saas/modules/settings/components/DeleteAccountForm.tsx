@@ -1,5 +1,6 @@
 "use client";
 
+import { config } from "@config";
 import { useSession } from "@auth/hooks/use-session";
 import { authClient } from "@repo/auth/client";
 import { Button } from "@repo/ui/components/button";
@@ -28,6 +29,7 @@ export function DeleteAccountForm() {
 				title: t("settings.account.deleteAccount.notifications.success"),
 				type: "success",
 			});
+			window.location.href = config.redirectAfterLogout;
 		},
 		onError: () => {
 			toast.add({ title: t("settings.account.deleteAccount.notifications.error"), type: "error" });

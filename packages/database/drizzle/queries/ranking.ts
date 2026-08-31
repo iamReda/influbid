@@ -75,6 +75,7 @@ export type LeaderboardRow = {
 	categorySlug: string;
 	username: string | null;
 	platforms: string[];
+	socials: Array<{ id: string; platform: string }>;
 	profileViewCount: number;
 	socialClickCount: number;
 };
@@ -127,7 +128,7 @@ export async function listLeaderboard(options: {
 				socialProfiles: {
 					where: (social, { isNull }) => isNull(social.deletedAt),
 					orderBy: (social, { asc }) => [asc(social.position)],
-					columns: { platform: true },
+					columns: { id: true, platform: true },
 				},
 			},
 		}),
@@ -179,6 +180,10 @@ export async function listLeaderboard(options: {
 		categorySlug: row.category.slug,
 		username: row.user.username,
 		platforms: row.socialProfiles.map((social) => social.platform),
+		socials: row.socialProfiles.map((social) => ({
+			id: social.id,
+			platform: social.platform,
+		})),
 		profileViewCount: viewsByCreator.get(row.id) ?? 0,
 		socialClickCount: clicksByCreator.get(row.id) ?? 0,
 	}));

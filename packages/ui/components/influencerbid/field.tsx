@@ -50,7 +50,7 @@ const Field = ({
 			<div className={`relative ${isTextarea ? "flex" : ""}`}>
 				{isTextarea ? (
 					<textarea
-						className={`px-6.5 py-4 border-stroke1 dark:border-stroke2 text-t-primary font-medium placeholder:text-t-tertiary max-md:text-[1rem] w-full resize-none border-[1.5px] outline-0 transition-colors focus:border-[#A8A8A8]/50! ${
+						className={`form-control px-6.5 py-4 text-t-primary font-medium placeholder:text-t-tertiary max-md:text-[1rem] w-full resize-none ${
 							error ? "border-primary3!" : ""
 						} ${
 							isLarge
@@ -61,7 +61,7 @@ const Field = ({
 					></textarea>
 				) : (
 					<input
-						className={`px-6.5 border-stroke1 dark:border-stroke2 text-t-primary font-medium placeholder:text-t-tertiary max-md:text-[1rem] w-full border-[1.5px] outline-0 transition-colors focus:border-[#A8A8A8]/50! ${
+						className={`form-control px-6.5 text-t-primary font-medium placeholder:text-t-tertiary max-md:text-[1rem] w-full ${
 							error ? "!border-primary3!" : ""
 						} ${onResetPassword || type === "password" ? "pr-12" : ""} ${
 							isLarge

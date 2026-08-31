@@ -3,6 +3,7 @@
 import { useSession } from "@auth/hooks/use-session";
 import { MAX_SOCIAL_LINKS, MIN_SOCIAL_LINKS, detectPlatform } from "@creators/lib/profile";
 import type { CreatorEditProfile } from "@repo/api/modules/creators/types";
+import { authClient } from "@repo/auth/client";
 import Button from "@repo/ui/components/influencerbid/button";
 import Field from "@repo/ui/components/influencerbid/field";
 import Icon from "@repo/ui/components/influencerbid/icon";
@@ -10,6 +11,7 @@ import Switch from "@repo/ui/components/influencerbid/switch";
 import { toast } from "@repo/ui/components/toast";
 import { isIsoCountryCode, type IsoCountryCode } from "@repo/utils";
 import Layout from "@shared/components/influencerbid/layout";
+import { USER_AVATAR_UPDATED_EVENT } from "@shared/components/UserAvatar";
 import { useRouter } from "@shared/hooks/router";
 import { orpc } from "@shared/lib/orpc-query-utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -33,7 +35,7 @@ type MyProfileEditPageProps = {
 const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const { user } = useSession();
+	const { user, reloadSession } = useSession();
 	const [publicName, setPublicName] = useState(profile.publicName);
 	const [description, setDescription] = useState(profile.description ?? "");
 	const [countryCode, setCountryCode] = useState<IsoCountryCode | null>(() =>
@@ -230,6 +232,15 @@ const MyProfileEditPage = ({ profile }: MyProfileEditPageProps) => {
 				socialUrls: socialLinks,
 				...(avatarUrl ? { avatarUrl } : {}),
 			});
+
+			if (avatarUrl) {
+				const { error: avatarError } = await authClient.updateUser({ image: avatarUrl });
+				if (avatarError) {
+					throw avatarError;
+				}
+				await reloadSession();
+				window.dispatchEvent(new CustomEvent(USER_AVATAR_UPDATED_EVENT, { detail: avatarUrl }));
+			}
 
 			await queryClient.invalidateQueries({
 				queryKey: orpc.creators.getMyCreator.key(),

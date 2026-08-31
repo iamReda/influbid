@@ -30,5 +30,6 @@ export {
 	type PendingSocialProfileInput,
 } from "../lib/social-url";
 export { CREATOR_CATEGORY_SEED } from "../lib/categories-seed";
+export { resolveSocialOutboundUrl, visitorKeyFromHeaders } from "../lib/social-outbound";
 export * from "./queries";
 export * from "./zod";

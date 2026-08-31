@@ -11,6 +11,7 @@ import {
 	estimateRank,
 	getCreatorCategoryById,
 	getCreatorProfileByUserId,
+	getCreatorRank,
 	getLeadingTotalBidCents,
 	getUserByEmail,
 	isPrimarySocialUrlTaken,
@@ -26,6 +27,7 @@ import { countryCodeSchema } from "@repo/utils";
 
 import type { Platform } from "./bid-form/social-platform-icon";
 import { formatRelativeJoinedAt, getPublicAvatarUrl } from "./lib/format";
+import { SOCIAL_PLATFORMS } from "./lib/social-url";
 import { RECENT_SIGNUPS_WINDOW_HOURS, type RecentBid } from "./recent-bids/recent-bids";
 
 export type CategoryOptionDto = {
@@ -45,7 +47,7 @@ export type LeaderboardItemDto = {
 	description: string;
 	categorySlug: string;
 	categoryName: string;
-	platforms: Platform[];
+	socials: Array<{ id: string; platform: Platform }>;
 	profileUrl: string;
 	bid: number;
 	addedAgo: string;
@@ -71,8 +73,7 @@ export type CategoryCardDto = {
 };
 
 function toPlatform(value: string): Platform | null {
-	const known: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
-	return known.includes(value as Platform) ? (value as Platform) : null;
+	return SOCIAL_PLATFORMS.includes(value as Platform) ? (value as Platform) : null;
 }
 
 export async function fetchActiveCategoriesAction(): Promise<CategoryOptionDto[]> {
@@ -127,13 +128,16 @@ export async function fetchLeaderboardAction(input?: {
 			description: item.description ?? "",
 			categorySlug: item.categorySlug,
 			categoryName: item.categoryName,
-			platforms: item.platforms
-				.map(toPlatform)
-				.filter((platform): platform is Platform => platform !== null),
+			socials: item.socials
+				.map((social) => {
+					const platform = toPlatform(social.platform);
+					return platform ? { id: social.id, platform } : null;
+				})
+				.filter((social): social is { id: string; platform: Platform } => social !== null),
 			profileUrl: item.username ? `/${item.username}` : "/complete-your-profile",
 			bid: Math.round(item.totalBidCents / 100),
 			addedAgo: formatRelativeJoinedAt(item.joinedAt),
-			clicks: item.socialClickCount,
+			clicks: item.profileViewCount + item.socialClickCount,
 			countryCode: item.countryCode,
 		})),
 	};
@@ -157,9 +161,19 @@ export async function fetchRecentBidsAction(limit = 20): Promise<RecentBid[]> {
 		publishedOnly: true,
 	});
 
+	const ranks = await Promise.all(
+		bids.map((bid) =>
+			getCreatorRank({
+				creatorId: bid.creatorId,
+				totalBidCents: bid.totalBidCents,
+				bidReachedAt: bid.bidReachedAt,
+			}),
+		),
+	);
+
 	return bids.map((bid, index) => ({
 		id: bid.id,
-		rank: index + 1,
+		rank: ranks[index] ?? 1,
 		name: bid.publicName,
 		avatar: getPublicAvatarUrl(bid.avatarUrl),
 		bid: Math.round((bid.totalBidCents ?? bid.amountCents) / 100),

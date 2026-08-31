@@ -22,7 +22,7 @@ export const content = [
 		imageDark: "/images/about-pic-dark-2.png",
 		imageLightTablet: "/images/about-pic-light-tablet-2.png",
 		imageDarkTablet: "/images/about-pic-dark-tablet-2.png",
-		imageLightMobile: "/images/about-pic-light-mobile-2.png",
+		imageLightMobile: "/images/about-pic-light-mobile-2.jpg",
 		imageDarkMobile: "/images/about-pic-dark-mobile-2.png",
 	},
 	{

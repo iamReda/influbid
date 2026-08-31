@@ -32,7 +32,7 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ path: s
 			return new NextResponse(new Uint8Array(object.body), {
 				headers: {
 					"Content-Type": object.contentType,
-					"Cache-Control": "public, max-age=3600",
+					"Cache-Control": "no-store, max-age=0",
 				},
 			});
 		} catch {
@@ -45,7 +45,7 @@ export const GET = async (_req: Request, { params }: { params: Promise<{ path: s
 		return new NextResponse(new Uint8Array(object.body), {
 			headers: {
 				"Content-Type": object.contentType,
-				"Cache-Control": "public, max-age=3600",
+				"Cache-Control": "no-store, max-age=0",
 			},
 		});
 	} catch {

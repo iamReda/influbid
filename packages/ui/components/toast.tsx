@@ -13,8 +13,8 @@ type ToastPosition = "top-right" | "top-center" | "bottom-right" | "bottom-cente
 type ToastSide = "top" | "bottom";
 
 const viewportClassNames: Record<ToastPosition, string> = {
-	"top-right": "top-4 sm:right-4 sm:left-auto sm:mx-0",
-	"top-center": "top-4",
+	"top-right": "top-20 sm:right-4 sm:left-auto sm:mx-0",
+	"top-center": "top-20",
 	"bottom-right": "bottom-4 sm:right-4 sm:left-auto sm:mx-0",
 	"bottom-center": "bottom-4",
 };
@@ -64,7 +64,7 @@ function ToastViewport({ className, ...props }: ToastPrimitive.Viewport.Props) {
 		<ToastPrimitive.Viewport
 			data-slot="toast-viewport"
 			className={cn(
-				"inset-x-4 max-w-sm sm:w-full pointer-events-none fixed z-50 mx-auto w-auto outline-none",
+				"inset-x-4 max-w-sm sm:w-full pointer-events-none fixed z-[100] mx-auto w-auto outline-none",
 				className,
 			)}
 			{...props}

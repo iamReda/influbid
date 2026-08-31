@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Copy, Eye, SquarePen, type LucideIcon } from "lucide-react";
+import { Check, Copy, SquarePen, type LucideIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const Actions = ({ username }: { username: string }) => {
@@ -42,13 +42,6 @@ const Actions = ({ username }: { username: string }) => {
 			title: "Copy link",
 			icon: Copy,
 			onClick: copyProfileLink,
-		},
-		{
-			title: "Preview",
-			icon: Eye,
-			onClick: () => {
-				window.open(`${profilePath}?preview=1`, "_blank", "noopener,noreferrer");
-			},
 		},
 		{
 			title: "Edit profile",

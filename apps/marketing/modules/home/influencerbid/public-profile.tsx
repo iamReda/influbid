@@ -2,6 +2,7 @@
 
 import { config } from "@config";
 import SocialPlatformIcon, {
+	PLATFORM_LABEL,
 	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
 import { getPublicAvatarUrl } from "@home/influencerbid/lib/format";
@@ -30,16 +31,8 @@ export type PublicCreatorView = {
 	}>;
 };
 
-const PLATFORM_LABEL: Record<Platform, string> = {
-	tiktok: "TikTok",
-	instagram: "Instagram",
-	facebook: "Facebook",
-	twitch: "Twitch",
-};
-
 const toPlatform = (value: string): Platform | null => {
-	const known: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
-	return known.includes(value as Platform) ? (value as Platform) : null;
+	return value in PLATFORM_LABEL ? (value as Platform) : null;
 };
 
 const getInitials = (name: string) =>
@@ -82,6 +75,7 @@ const PublicCreatorProfile = ({ creator }: { creator: PublicCreatorView }) => {
 									src={avatarSrc}
 									width={176}
 									height={176}
+									unoptimized
 									alt={`${creator.publicName} profile photo`}
 								/>
 							) : (

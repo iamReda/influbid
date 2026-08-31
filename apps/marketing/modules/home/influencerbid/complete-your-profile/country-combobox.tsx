@@ -63,7 +63,7 @@ export function CountryCombobox({
 			>
 				<div className="relative">
 					<div
-						className={`h-12 border-stroke1 pl-4 pr-10 font-medium text-t-primary gap-2.5 flex w-full items-center rounded-3xl border-[1.5px] bg-transparent transition-colors focus-within:border-[#A8A8A8]/50! ${classInput ?? ""}`}
+						className={`form-control h-12 pl-4 pr-10 font-medium text-t-primary gap-2.5 flex w-full items-center rounded-3xl ${classInput ?? ""}`}
 					>
 						{selected && !query ? (
 							<CountryFlag countryCode={selected.code} size="sm" title={selected.name} />

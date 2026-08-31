@@ -54,8 +54,12 @@ export async function sendEmail<T extends TemplateId>(
 			html,
 		});
 		return true;
-	} catch (e) {
-		logger.error(e);
+	} catch (error) {
+		logger.error(error, {
+			ctx: "sendEmail",
+			to,
+			subject,
+		});
 		return false;
 	}
 }

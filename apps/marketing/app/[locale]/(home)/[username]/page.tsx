@@ -56,7 +56,7 @@ export default async function PublicUsernamePage({ params }: Props) {
 				creator={{
 					publicName: creator.publicName,
 					username: creator.user.username,
-					avatarUrl: creator.avatarUrl,
+					avatarUrl: creator.user.image ?? creator.avatarUrl,
 					description: creator.description,
 					countryCode: creator.countryCode,
 					businessEmail: creator.user.businessEmail ?? null,

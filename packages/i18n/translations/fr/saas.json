@@ -265,12 +265,20 @@
 		"title": "Configurez votre compte"
 	},
 	"completeAccount": {
-		"title": "Finalisez votre compte",
-		"message": "Dites-nous en un peu plus sur vous, puis définissez un mot de passe pour vos prochaines connexions.",
 		"step": "Étape {step} / {total}",
 		"continue": "Continuer",
 		"back": "Retour",
 		"submit": "Terminer et aller au tableau de bord",
+		"steps": {
+			"profile": {
+				"title": "Complétez votre profil",
+				"message": "Ajoutez les langues que vous parlez et sélectionnez votre genre."
+			},
+			"password": {
+				"title": "Définir un mot de passe",
+				"message": "Vous y êtes presque — nous vous emmènerons directement sur votre tableau de bord. Choisissez un mot de passe pour vos prochaines connexions."
+			}
+		},
 		"languages": {
 			"label": "Langues",
 			"placeholder": "Ajoutez au moins une langue que vous parlez.",
@@ -283,7 +291,6 @@
 			"preferNotToSay": "Préfère ne pas dire"
 		},
 		"password": {
-			"description": "Créez un mot de passe pour vous connecter avec e-mail et mot de passe la prochaine fois.",
 			"label": "Mot de passe",
 			"confirm": "Confirmer le mot de passe"
 		},

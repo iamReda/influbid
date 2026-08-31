@@ -12,7 +12,7 @@ export async function generateMetadata() {
 	const t = await getTranslations("completeAccount");
 
 	return {
-		title: t("title"),
+		title: t("steps.profile.title"),
 	};
 }
 
@@ -34,7 +34,7 @@ export default async function CompleteAccountPage() {
 	}
 
 	return (
-		<AuthWrapper>
+		<AuthWrapper contentClass="max-w-140 p-10 max-md:px-6 max-md:pt-16 max-md:pb-12">
 			<CompleteAccountForm />
 		</AuthWrapper>
 	);

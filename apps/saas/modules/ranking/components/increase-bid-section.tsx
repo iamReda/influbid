@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 const centsToDollars = (cents: number) => Math.round(cents / 100);
+const MIN_AMOUNT_DOLLARS = 5;
 
 const opportunityDollars = (amountCents: number, minIncreaseCents: number) => {
 	if (amountCents <= 0) {
@@ -23,7 +24,7 @@ const opportunityDollars = (amountCents: number, minIncreaseCents: number) => {
 const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 	const router = useRouter();
 	const queryClient = useQueryClient();
-	const [addAmount, setAddAmount] = useState("0");
+	const [addAmount, setAddAmount] = useState(String(MIN_AMOUNT_DOLLARS));
 	const [error, setError] = useState<string | null>(null);
 	const [debouncedAddAmount, setDebouncedAddAmount] = useDebounceValue(addAmount, 300);
 
@@ -227,12 +228,19 @@ const IncreaseBidSection = ({ embedded = false }: { embedded?: boolean }) => {
 								setError(null);
 								setAddAmount(next);
 							}}
+							onBlur={() => {
+								const amount = Number(addAmount);
+								if (!addAmount || Number.isNaN(amount) || amount < MIN_AMOUNT_DOLLARS) {
+									setAddAmount(String(MIN_AMOUNT_DOLLARS));
+								}
+							}}
 							name="about-add-amount"
 							type="text"
 							inputMode="numeric"
-							placeholder="0"
+							placeholder={String(MIN_AMOUNT_DOLLARS)}
 							currency="$"
 						/>
+						<p className="-mt-3 text-small text-t-secondary">Minimum amount: $5</p>
 						{error ? (
 							<p className="text-small text-primary3 text-center" role="alert">
 								{error}

@@ -48,7 +48,7 @@ export function SocialUrlField({
 			<input
 				ref={inputRef}
 				type="url"
-				className="h-12 border-stroke1 pl-13 pr-6.5 font-medium text-t-primary placeholder:text-t-tertiary max-md:text-[1rem] w-full rounded-3xl border-[1.5px] bg-transparent text-input outline-0 transition-colors focus:border-[#A8A8A8]/50!"
+				className="form-control h-12 pl-13 pr-6.5 font-medium text-t-primary placeholder:text-t-tertiary max-md:text-[1rem] w-full rounded-3xl text-input"
 				value={value}
 				placeholder={placeholder}
 				aria-label={ariaLabel}

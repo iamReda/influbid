@@ -1,11 +1,11 @@
 "use client";
 
+import { config } from "@config";
 import { authClient } from "@repo/auth/client";
 import Button from "@repo/ui/components/influencerbid/button";
 import { toast } from "@repo/ui/components/toast";
 import { InfluencerBidPasswordField } from "@settings/components/influencerbid/InfluencerBidPasswordField";
 import { useConfirmationAlert } from "@shared/components/ConfirmationAlertProvider";
-import { useRouter } from "@shared/hooks/router";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 
@@ -15,7 +15,6 @@ type AccountDeleteSectionProps = {
 
 export function AccountDeleteSection({ userHasPassword }: AccountDeleteSectionProps) {
 	const t = useTranslations();
-	const router = useRouter();
 	const { confirm } = useConfirmationAlert();
 	const [password, setPassword] = useState("");
 	const [submitting, setSubmitting] = useState(false);
@@ -39,7 +38,7 @@ export function AccountDeleteSection({ userHasPassword }: AccountDeleteSectionPr
 			title: t("settings.account.deleteAccount.notifications.success"),
 			type: "success",
 		});
-		router.replace("/");
+		window.location.href = config.redirectAfterLogout;
 	};
 
 	const onDelete = () => {

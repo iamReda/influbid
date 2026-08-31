@@ -1,25 +1,28 @@
+const shareProfileImage = "/images/infos-share-profile.jpg";
+const profileCardImage = "/images/infos-profile-card.png";
+
 export const content = [
 	{
-		title: "Create your own shareable profile page",
+		title: "Get Your Shareable Profile — Free for 1 Year",
 		content:
 			"Create a dedicated profile page to showcase all your social networks, websites, and important links in one place.",
 		icon: "edit-list",
-		imageLight: "/images/about-pic-light-2.png",
-		imageDark: "/images/about-pic-dark-2.png",
-		imageLightTablet: "/images/about-pic-light-tablet-2.png",
-		imageDarkTablet: "/images/about-pic-dark-tablet-2.png",
-		imageLightMobile: "/images/about-pic-light-mobile-2.png",
-		imageDarkMobile: "/images/about-pic-dark-mobile-2.png",
+		imageLight: shareProfileImage,
+		imageDark: shareProfileImage,
+		imageLightTablet: shareProfileImage,
+		imageDarkTablet: shareProfileImage,
+		imageLightMobile: shareProfileImage,
+		imageDarkMobile: shareProfileImage,
 	},
 	{
 		title: "Recent Bids",
-		content: "Discover the recent bids from the last 24 hours.",
+		content: "Discover the recent bids from the last 7 days.",
 		icon: "clock",
-		imageLight: "/images/about-pic-light-3.png",
-		imageDark: "/images/about-pic-dark-3.png",
-		imageLightTablet: "/images/about-pic-light-tablet-3.png",
-		imageDarkTablet: "/images/about-pic-dark-tablet-3.png",
-		imageLightMobile: "/images/about-pic-light-mobile-3.png",
-		imageDarkMobile: "/images/about-pic-dark-mobile-3.png",
+		imageLight: profileCardImage,
+		imageDark: profileCardImage,
+		imageLightTablet: profileCardImage,
+		imageDarkTablet: profileCardImage,
+		imageLightMobile: profileCardImage,
+		imageDarkMobile: profileCardImage,
 	},
 ];

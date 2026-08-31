@@ -10,31 +10,8 @@ import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from
 import { estimateSignupRankAction, type CategoryOptionDto } from "../actions";
 import { getCategoryUi } from "../lib/category-ui";
 import { saveSignupDraft } from "../lib/signup-draft";
-import SocialPlatformIcon, { type Platform } from "./social-platform-icon";
-
-const SOCIAL_PLATFORMS: Platform[] = ["tiktok", "instagram", "facebook", "twitch"];
-
-const detectPlatform = (value: string): Platform | null => {
-	const url = value.toLowerCase();
-
-	if (url.includes("tiktok.com")) {
-		return "tiktok";
-	}
-
-	if (url.includes("instagram.com")) {
-		return "instagram";
-	}
-
-	if (url.includes("facebook.com") || url.includes("fb.com")) {
-		return "facebook";
-	}
-
-	if (url.includes("twitch.tv")) {
-		return "twitch";
-	}
-
-	return null;
-};
+import { detectPlatform, SOCIAL_PLATFORMS, toHttpsSocialUrl } from "../lib/social-url";
+import SocialPlatformIcon from "./social-platform-icon";
 
 const MIN_BID = 5;
 const BID_STEP = 1;
@@ -52,15 +29,6 @@ const bidControlClass =
 
 const bidAmountClass =
 	"border-0 bg-transparent p-0 text-[4.25rem] leading-none font-black! tracking-[-0.02em] text-t-blue outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none max-lg:text-hero max-md:text-h1";
-
-const isValidUrl = (value: string) => {
-	try {
-		const url = new URL(value);
-		return url.protocol === "http:" || url.protocol === "https:";
-	} catch {
-		return false;
-	}
-};
 
 type BidFormProps = {
 	className?: string;
@@ -194,7 +162,7 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 
 		if (!socialUrl.trim()) {
 			nextErrors.socialUrl = "Social profile URL is required.";
-		} else if (!isValidUrl(socialUrl.trim())) {
+		} else if (!toHttpsSocialUrl(socialUrl)) {
 			nextErrors.socialUrl = "Enter a valid profile URL.";
 		}
 
@@ -205,8 +173,10 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 		setErrors(nextErrors);
 
 		if (Object.keys(nextErrors).length === 0 && category) {
+			const normalizedSocialUrl = toHttpsSocialUrl(socialUrl)!;
+
 			saveSignupDraft({
-				primarySocialUrl: socialUrl.trim(),
+				primarySocialUrl: normalizedSocialUrl,
 				categoryId: category.id,
 				categorySlug: category.slug,
 				categoryName: category.name,
@@ -221,8 +191,8 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 
 	return (
 		<form
-			className={`max-w-200 max-md:max-w-[calc(100%-1.5rem)] mx-auto w-full ${
-				className ?? "mb-12 mt-10 max-md:mb-10 max-md:ml-6 max-md:mt-8"
+			className={`max-w-200 max-md:max-w-none mx-auto w-full ${
+				className ?? "mb-12 mt-10 max-md:mb-0 max-md:mt-8"
 			}`}
 			onSubmit={handleSubmit}
 			noValidate
@@ -275,24 +245,21 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 				<p className="-mt-6 mb-8 text-small text-primary3 text-center">{errors.bid}</p>
 			)}
 
-			<div className="gap-3 max-lg:flex-col flex items-start">
+			<div className="gap-3 max-lg:flex-col max-md:w-full flex items-stretch">
 				<div className="min-w-0 max-lg:w-full flex-1">
 					<div className="relative">
-						<div
-							className={`left-4 size-7 pointer-events-none absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center rounded-full transition-colors ${
-								isPlatformLocked
-									? "bg-primary1 text-white"
-									: "bg-white/60 text-t-secondary backdrop-blur-sm dark:bg-white/10 dark:text-white"
-							}`}
-						>
+						<div className="left-4 pointer-events-none absolute top-1/2 z-10 flex -translate-y-1/2 items-center justify-center">
 							<SocialPlatformIcon
 								key={activePlatform}
 								platform={activePlatform}
-								className="size-4 shrink-0"
+								className={`size-5 shrink-0 ${isPlatformLocked ? "" : "text-t-secondary"}`}
+								colored={isPlatformLocked}
 							/>
 						</div>
 						<input
-							type="url"
+							type="text"
+							inputMode="url"
+							autoComplete="url"
 							className={`liquid-glass-field h-12 px-6.5 pl-13 font-medium text-t-primary placeholder:text-t-secondary max-md:text-[1rem] relative z-0 w-full rounded-3xl text-input ${
 								submitted && errors.socialUrl ? "border-primary3!" : ""
 							}`}
@@ -309,7 +276,7 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 							}}
 						/>
 					</div>
-					<p className="mt-2 text-small text-t-secondary max-md:text-left">
+					<p className="mt-2 text-small text-t-secondary text-left">
 						You can add more social networks in the next step.
 					</p>
 					{submitted && errors.socialUrl && (
@@ -401,6 +368,12 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 							</div>
 						</ListboxOptions>
 					</Listbox>
+					{category && categoryRank !== null && (
+						<p className="mt-2 text-body text-t-secondary text-left">
+							You&apos;ll rank{" "}
+							<span className="font-bold text-t-primary">#{categoryRank} in this category</span>
+						</p>
+					)}
 					{submitted && errors.category && (
 						<p className="mt-2 text-small text-primary3">{errors.category}</p>
 					)}

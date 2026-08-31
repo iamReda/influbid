@@ -1,6 +1,5 @@
 "use client";
 
-import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import UpButton from "@repo/ui/components/influencerbid/up-button";
 import type { ReactNode } from "react";
 
@@ -42,7 +41,6 @@ const Layout = ({
 			<Header isFixed={isFixedHeader} isVisiblePlan={isVisiblePlan} isMinimal={isMinimalHeader} />
 			<div className={`grow ${classContainer || ""}`}>{children}</div>
 			{!isHiddenFooter && <Footer />}
-			<ThemeButton className="left-5 bottom-5 fixed! z-5" />
 			<UpButton />
 		</div>
 	);

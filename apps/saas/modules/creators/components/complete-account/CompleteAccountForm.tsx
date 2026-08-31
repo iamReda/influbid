@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@repo/ui/components/button";
 import {
 	Form,
 	FormControl,
@@ -10,7 +9,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@repo/ui/components/form";
-import { Progress } from "@repo/ui/components/progress";
+import Button from "@repo/ui/components/influencerbid/button";
 import { toast } from "@repo/ui/components/toast";
 import {
 	CREATOR_GENDERS,
@@ -26,9 +25,10 @@ import { useRouter } from "@shared/hooks/router";
 import { clearCache } from "@shared/lib/cache";
 import { orpc } from "@shared/lib/orpc-query-utils";
 import { useMutation } from "@tanstack/react-query";
+import { Mars, Venus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { LanguageMultiSelect } from "./LanguageMultiSelect";
@@ -83,6 +83,24 @@ export function CompleteAccountForm() {
 	});
 
 	const completeMutation = useMutation(orpc.creators.completeFirstAccess.mutationOptions());
+	const selectedLanguages = useWatch({
+		control: demographicsForm.control,
+		name: "languages",
+	});
+	const selectedGender = useWatch({
+		control: demographicsForm.control,
+		name: "gender",
+	});
+	const canContinue = (selectedLanguages?.length ?? 0) > 0 && Boolean(selectedGender);
+	const password = useWatch({
+		control: passwordForm.control,
+		name: "password",
+	});
+	const confirmPassword = useWatch({
+		control: passwordForm.control,
+		name: "confirmPassword",
+	});
+	const canSubmit = Boolean(password?.trim()) && Boolean(confirmPassword?.trim());
 
 	const genderLabels = useMemo(
 		() =>
@@ -121,17 +139,33 @@ export function CompleteAccountForm() {
 
 	return (
 		<div>
-			<h1 className="font-bold text-xl md:text-2xl">{t("title")}</h1>
-			<p className="mt-2 mb-6 text-foreground/60">{t("message")}</p>
+			<div className="mb-8 text-center">
+				<h1 className="text-h3 text-t-primary">
+					{step === 1 ? t("steps.profile.title") : t("steps.password.title")}
+				</h1>
+				<p className="mt-2 text-body text-t-secondary">
+					{step === 1 ? t("steps.profile.message") : t("steps.password.message")}
+				</p>
+			</div>
 
-			<div className="mb-6 gap-3 flex items-center">
-				<Progress value={(step / 2) * 100} className="h-2" />
-				<span className="text-xs shrink-0 text-foreground/60">{t("step", { step, total: 2 })}</span>
+			<div className="mb-8">
+				<div className="mb-2 flex items-center justify-between">
+					<span className="text-small font-medium text-t-secondary">
+						{t("step", { step, total: 2 })}
+					</span>
+					<span className="text-small font-medium text-t-blue">{step * 50}%</span>
+				</div>
+				<div className="bg-b-surface3 h-2 overflow-hidden rounded-full">
+					<div
+						className="bg-primary1 h-full rounded-full transition-[width] duration-300"
+						style={{ width: `${step * 50}%` }}
+					/>
+				</div>
 			</div>
 
 			{step === 1 ? (
 				<Form {...demographicsForm}>
-					<form className="gap-6 flex flex-col" onSubmit={onDemographicsSubmit}>
+					<form className="gap-7 flex flex-col" onSubmit={onDemographicsSubmit}>
 						<FormField
 							control={demographicsForm.control}
 							name="languages"
@@ -154,26 +188,34 @@ export function CompleteAccountForm() {
 							name="gender"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("gender.label")}</FormLabel>
+									<FormLabel className="text-button font-medium text-t-primary">
+										{t("gender.label")}
+									</FormLabel>
 									<FormControl>
-										<div className="gap-2 flex flex-col">
+										<div className="gap-2.5 max-sm:grid-cols-1 grid grid-cols-3">
 											{CREATOR_GENDERS.map((gender) => (
 												<label
 													key={gender}
-													className={`h-12 px-4 text-sm flex cursor-pointer items-center rounded-full border transition-colors ${
+													className={`gap-2 h-12 px-4 text-button font-medium flex cursor-pointer items-center justify-center rounded-full border-[1.5px] transition-all ${
 														field.value === gender
-															? "border-primary bg-primary/5"
-															: "border-input hover:bg-muted/40"
+															? "border-primary1 bg-primary1/10 text-t-blue"
+															: "border-stroke2 bg-b-surface2 text-t-secondary hover:border-stroke-highlight hover:text-t-primary"
 													}`}
 												>
 													<input
 														type="radio"
-														className="mr-3"
+														className="sr-only"
 														name="gender"
 														value={gender}
 														checked={field.value === gender}
 														onChange={() => field.onChange(gender)}
 													/>
+													{gender === "MAN" ? (
+														<Mars className="size-4 shrink-0 stroke-2" aria-hidden />
+													) : null}
+													{gender === "WOMAN" ? (
+														<Venus className="size-4 shrink-0 stroke-2" aria-hidden />
+													) : null}
 													{genderLabels[gender]}
 												</label>
 											))}
@@ -184,25 +226,33 @@ export function CompleteAccountForm() {
 							)}
 						/>
 
-						<Button type="submit">{t("continue")}</Button>
+						<Button
+							className={`w-full ${canContinue ? "" : "cursor-not-allowed! opacity-40"}`}
+							isSecondary
+							type="submit"
+							disabled={!canContinue}
+						>
+							{t("continue")}
+						</Button>
 					</form>
 				</Form>
 			) : (
 				<Form {...passwordForm}>
-					<form className="gap-6 flex flex-col" onSubmit={onPasswordSubmit}>
-						<p className="text-sm text-foreground/60">{t("password.description")}</p>
-
+					<form className="gap-7 flex flex-col" onSubmit={onPasswordSubmit}>
 						<FormField
 							control={passwordForm.control}
 							name="password"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("password.label")}</FormLabel>
+									<FormLabel className="text-button font-medium text-t-primary">
+										{t("password.label")}
+									</FormLabel>
 									<FormControl>
 										<PasswordInput
 											value={field.value}
 											onChange={field.onChange}
 											autoComplete="new-password"
+											inputClassName="form-control h-12! rounded-3xl! bg-b-surface2! px-6! text-input! text-t-primary! shadow-none!"
 											showPasswordCriteria
 										/>
 									</FormControl>
@@ -216,12 +266,15 @@ export function CompleteAccountForm() {
 							name="confirmPassword"
 							render={({ field }) => (
 								<FormItem>
-									<FormLabel>{t("password.confirm")}</FormLabel>
+									<FormLabel className="text-button font-medium text-t-primary">
+										{t("password.confirm")}
+									</FormLabel>
 									<FormControl>
 										<PasswordInput
 											value={field.value}
 											onChange={field.onChange}
 											autoComplete="new-password"
+											inputClassName="form-control h-12! rounded-3xl! bg-b-surface2! px-6! text-input! text-t-primary! shadow-none!"
 										/>
 									</FormControl>
 									<FormMessage />
@@ -229,18 +282,23 @@ export function CompleteAccountForm() {
 							)}
 						/>
 
-						<div className="gap-3 flex">
+						<div className="gap-3 max-sm:flex-col-reverse flex">
 							<Button
-								type="button"
-								variant="outline"
 								className="flex-1"
+								isStroke
+								type="button"
 								onClick={() => setStep(1)}
 								disabled={completeMutation.isPending}
 							>
 								{t("back")}
 							</Button>
-							<Button type="submit" className="flex-1" loading={completeMutation.isPending}>
-								{t("submit")}
+							<Button
+								className={`flex-1 ${canSubmit ? "" : "cursor-not-allowed! opacity-40"}`}
+								isSecondary
+								type="submit"
+								disabled={!canSubmit || completeMutation.isPending}
+							>
+								{completeMutation.isPending ? "…" : t("submit")}
 							</Button>
 						</div>
 					</form>

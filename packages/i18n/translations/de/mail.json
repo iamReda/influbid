@@ -3,6 +3,19 @@
 		"openLinkInBrowser": "Wenn du den Link in einem anderen Browser als deinem Standardbrowser öffnen möchtest, kopiere diesen und füge ihn in die Adresszeile deines Browsers ein:",
 		"useLink": "oder nutze den folgenden Link:"
 	},
+	"creatorWelcome": {
+		"accessDashboard": "Mein Dashboard öffnen",
+		"categoryRank": "{categoryName}-Rang: #{categoryRank}",
+		"congratulations": "Herzlichen Glückwunsch 🎉 Du bist jetzt offiziell Teil der CreatorLand-Community.",
+		"dashboardPrompt": "Klicke auf den Button unten, um dein Dashboard zu öffnen und dein Profil zu verwalten.",
+		"globalRank": "Globaler Rang: #{globalRank}",
+		"greeting": "Hallo {publicName},",
+		"profileReward": "🎁 Du hast ein teilbares Profil erhalten — 1 Jahr lang KOSTENLOS.",
+		"rankingsDisclaimer": "Diese Platzierungen zeigen deine Position zum Zeitpunkt der Zahlung und können sich ändern, wenn ein anderer Creator ein höheres Gebot abgibt.",
+		"rankingsIntro": "Deine aktuellen Platzierungen:",
+		"subject": "Willkommen bei CreatorLand 🎉",
+		"welcome": "Willkommen bei CreatorLand."
+	},
 	"emailVerification": {
 		"body": "Hallo!\nbitte klicke auf den unten stehenden Link, um diese neue E-Mail-Adresse zu bestätigen.",
 		"confirmEmail": "E-Mail verifizieren",

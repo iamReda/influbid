@@ -45,7 +45,7 @@ const Category = ({ item }: CategoryProps) => {
 					/>
 				</div>
 				<div className="min-w-0 text-left">
-					<div className="text-body-bold text-t-primary truncate">{item.name}</div>
+					<div className="text-body-lg-bold text-t-primary truncate">{item.name}</div>
 				</div>
 			</div>
 
@@ -67,6 +67,7 @@ const Category = ({ item }: CategoryProps) => {
 									src={influencer.avatarUrl}
 									width={36}
 									height={36}
+									unoptimized
 									alt=""
 								/>
 							</div>

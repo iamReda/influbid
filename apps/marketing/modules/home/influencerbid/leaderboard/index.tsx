@@ -3,6 +3,7 @@
 import Button from "@repo/ui/components/influencerbid/button";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
+import { Fragment } from "react";
 
 import {
 	fetchLeaderboardAction,
@@ -10,7 +11,7 @@ import {
 	type LeaderboardItemDto,
 } from "../actions";
 import CategoryFilters from "../category-filters";
-import InfluencerCard from "./influencer-card";
+import InfluencerCard, { LeaderboardTopTenDivider } from "./influencer-card";
 import { PAGE_SIZE } from "./influencers";
 
 type LeaderboardProps = {
@@ -85,7 +86,10 @@ const Leaderboard = ({
 					<div className="gap-2 max-md:gap-3 flex flex-col">
 						{visibleInfluencers.length > 0 ? (
 							visibleInfluencers.map((influencer) => (
-								<InfluencerCard item={influencer} rank={influencer.rank} key={influencer.id} />
+								<Fragment key={influencer.id}>
+									{influencer.rank === 11 && <LeaderboardTopTenDivider />}
+									<InfluencerCard item={influencer} rank={influencer.rank} />
+								</Fragment>
 							))
 						) : (
 							<p className="bg-b-surface2 p-8 text-body text-t-secondary rounded-4xl text-center">

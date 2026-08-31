@@ -22,7 +22,7 @@
 	--color-text-primary-body: rgba(27, 27, 27, 0.7);
 
 	--color-stroke1: #e2e2e2;
-	--color-stroke2: #e2e2e2;
+	--color-stroke2: #c8c8c8;
 	--color-stroke-subtle: rgba(168, 168, 168, 0.1);
 	--color-stroke-focus: #2d68ff;
 	--color-stroke-highlight: rgba(168, 168, 168, 0.5);
@@ -71,7 +71,7 @@
 	--color-text-primary-body: rgba(241, 241, 241, 0.7);
 
 	--color-stroke1: #282828;
-	--color-stroke2: #363636;
+	--color-stroke2: #454545;
 	--color-stroke-subtle: rgba(54, 54, 54, 0.4);
 	--color-stroke-focus: #2d68ff;
 	--color-stroke-highlight: rgba(76, 76, 76, 0.5);
@@ -217,20 +217,73 @@
 		@apply max-lg:text-[2.5rem]! max-lg:leading-11! max-md:text-[2rem]! max-md:leading-9!;
 	}
 	.liquid-glass-field {
-		@apply border-white/90 shadow-hover border-[1.5px] bg-[#fdfdfd]/70 outline-0 backdrop-blur-[2rem] transition-all dark:border-[#fdfdfd]/40 dark:bg-[#282828]/50;
+		@apply border-stroke2 shadow-hover bg-b-surface2/90 dark:bg-b-surface2/80 border-[1.5px] outline-0 backdrop-blur-[2rem] transition-all;
 	}
 	.liquid-glass-field:focus,
 	.liquid-glass-field[data-open] {
-		@apply border-[#A8A8A8]/50!;
+		@apply border-stroke-focus! shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-stroke-focus)_14%,transparent)];
 	}
 	.liquid-glass-field[data-hover] {
-		@apply shadow-hover;
+		@apply shadow-hover border-[#a8a8a8] dark:border-[#525252];
+	}
+	.form-control {
+		@apply border-stroke2 bg-b-surface2 dark:bg-b-surface2/90 border-[1.5px] outline-0 transition-[border-color,box-shadow] hover:border-[#a8a8a8] dark:hover:border-[#525252];
+	}
+	.form-control:focus,
+	.form-control:focus-within {
+		@apply border-stroke-focus! shadow-[0_0_0_3px_color-mix(in_srgb,var(--color-stroke-focus)_14%,transparent)];
 	}
 	.liquid-glass-button {
 		@apply border-white/80 bg-white/75 text-t-primary shadow-hover backdrop-blur-xl hover:bg-white/90 dark:border-white/25 dark:bg-white/12 dark:text-white dark:hover:bg-white/20 relative isolate overflow-hidden rounded-full border-[1.5px] outline-0 backdrop-saturate-150 transition-all active:scale-95;
 	}
 	.header-liquid-glass {
 		@apply border-white/50 backdrop-blur-2xl dark:border-white/10 border-b bg-[#fdfdfd]/65 shadow-[0_8px_30px_rgba(0,0,0,0.06)] backdrop-saturate-150 dark:bg-[#1a1a1a]/55 dark:shadow-[0_8px_30px_rgba(0,0,0,0.28)];
+	}
+	.header-action-btn {
+		@apply bg-b-surface2! text-t-primary! fill-t-primary! hover:bg-b-surface3! hover:shadow-hover border-transparent!;
+	}
+	.rank-higher-gemini {
+		@apply relative inline-flex overflow-hidden rounded-full p-[2px];
+		isolation: isolate;
+	}
+	.rank-higher-gemini__border {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		z-index: 0;
+		height: 220%;
+		width: 220%;
+		background: conic-gradient(
+			from 0deg,
+			#4285f4 0deg,
+			#9b72cb 72deg,
+			#d96570 144deg,
+			#fbbc04 216deg,
+			#34a853 288deg,
+			#4285f4 360deg
+		);
+		animation: rank-higher-gemini-spin 3.5s linear infinite;
+		transform: translate(-50%, -50%);
+		will-change: transform;
+	}
+	.rank-higher-gemini__btn {
+		@apply relative z-1 transition-transform duration-300 hover:scale-[1.02] active:scale-[0.98] hover:bg-b-surface2!;
+	}
+	@keyframes rank-higher-gemini-spin {
+		from {
+			transform: translate(-50%, -50%) rotate(0deg);
+		}
+		to {
+			transform: translate(-50%, -50%) rotate(360deg);
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.rank-higher-gemini__border {
+			animation: none;
+		}
+		.rank-higher-gemini {
+			background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570, #fbbc04);
+		}
 	}
 	.influencer-avatar {
 		border-radius: 1.35rem;

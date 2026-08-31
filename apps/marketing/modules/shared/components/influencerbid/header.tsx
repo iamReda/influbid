@@ -2,8 +2,10 @@
 
 import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
+import HeaderMobileNav from "@repo/ui/components/influencerbid/header-mobile-nav";
 import Image from "@repo/ui/components/influencerbid/image";
-import { LayoutDashboard, Rocket } from "lucide-react";
+import RankHigherButton from "@repo/ui/components/influencerbid/rank-higher-button";
+import { CircleGauge, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -14,7 +16,7 @@ import Plan from "./header-plan";
 const saasBase = (config.saasUrl ?? "http://localhost:3000").replace(/\/$/, "");
 
 const navigation = [
-	{ title: "Leaderboard", url: "/" },
+	{ title: "🏆 Leaderboard", url: "/" },
 	{ title: "Categories", url: "/categories" },
 	{ title: "About", url: "/about" },
 	{ title: "Rules", url: "/rules" },
@@ -96,34 +98,35 @@ const Header = ({ isFixed, isVisiblePlan, isMinimal }: HeaderProps) => {
 						{isLoggedIn ? (
 							<>
 								{user.role === "admin" ? (
-									<Button
-										isSecondary
-										isCircle
-										as="link"
-										href={`${saasBase}/admin/dashboard`}
-										aria-label="Dashboard"
-									>
-										<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
-									</Button>
-								) : (
 									<>
 										<Button
-											isSecondary
+											isCircle
 											as="link"
-											href={`${saasBase}/rank-higher`}
-											aria-label="Rank higher"
+											href={`${saasBase}/admin/dashboard`}
+											aria-label="Dashboard"
+											className="header-action-btn"
 										>
-											<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
-											<span>Rank higher</span>
+											<LayoutDashboard
+												className="size-5 stroke-current stroke-[1.75px]"
+												aria-hidden
+											/>
 										</Button>
+										<HeaderMobileNav items={navigation} />
+									</>
+								) : (
+									<>
+										<RankHigherButton href={`${saasBase}/rank-higher`} />
 										<Button
-											isSecondary
 											isCircle
 											as="link"
 											href={`${saasBase}/dashboard`}
 											aria-label="Dashboard"
+											className="header-action-btn"
 										>
-											<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+											<CircleGauge
+												className="size-5 stroke-current stroke-[1.75px]"
+												aria-hidden
+											/>
 										</Button>
 										<Menu
 											name={user.name ?? ""}
@@ -132,14 +135,18 @@ const Header = ({ isFixed, isVisiblePlan, isMinimal }: HeaderProps) => {
 											username={(user as { username?: string | null }).username}
 											onLogout={handleLogout}
 										/>
+										<HeaderMobileNav items={navigation} />
 									</>
 								)}
 							</>
 						) : (
 							!isPending && (
-								<Button isPrimary as="link" href={`${saasBase}/login`}>
-									Sign in
-								</Button>
+								<>
+									<Button isPrimary as="link" href={`${saasBase}/login`}>
+										Sign in
+									</Button>
+									<HeaderMobileNav items={navigation} />
+								</>
 							)
 						)}
 					</div>

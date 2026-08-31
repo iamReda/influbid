@@ -506,12 +506,20 @@
 		"title": "Set up your account"
 	},
 	"completeAccount": {
-		"title": "Complete your account",
-		"message": "Tell us a bit more about yourself, then set a password for future logins.",
 		"step": "Step {step} / {total}",
 		"continue": "Continue",
 		"back": "Back",
 		"submit": "Finish and go to dashboard",
+		"steps": {
+			"profile": {
+				"title": "Complete your profile",
+				"message": "Add the languages you speak and select your gender."
+			},
+			"password": {
+				"title": "Set a password",
+				"message": "You're almost done — we'll take you straight to your dashboard. Choose a password for future logins."
+			}
+		},
 		"languages": {
 			"label": "Languages",
 			"placeholder": "Add at least one language you speak.",
@@ -524,7 +532,6 @@
 			"preferNotToSay": "Prefer not to say"
 		},
 		"password": {
-			"description": "Create a password so you can sign in with email and password next time.",
 			"label": "Password",
 			"confirm": "Confirm password"
 		},

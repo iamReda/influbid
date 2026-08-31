@@ -1,6 +1,7 @@
 "use client";
 
 import { config } from "@config";
+import ThemeButton from "@repo/ui/components/influencerbid/theme-button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,24 +12,28 @@ const isHomeRoute = (pathname: string) =>
 
 const Footer = () => {
 	const pathname = usePathname();
+	const homeRoute = isHomeRoute(pathname);
 
 	return (
-		<div className={`${isHomeRoute(pathname) ? "max-md:h-18" : ""}`}>
-			<div
-				className={`center h-22 max-md:h-12 flex items-center justify-center ${
-					isHomeRoute(pathname) ? "max-md:hidden" : ""
-				}`}
-			>
-				<div className="text-small text-t-tertiary">
-					© {new Date().getFullYear()} {config.appName}
+		<div>
+			<div className="center h-22 max-md:h-12 grid grid-cols-[auto_1fr] items-center">
+				<ThemeButton
+					className={`shrink-0 ${homeRoute ? "" : "max-md:hidden"}`}
+					isHorizontal
+					isMedium
+				/>
+				<div className="max-md:justify-end flex items-center justify-center">
+					<div className="text-small text-t-tertiary max-md:truncate">
+						© {new Date().getFullYear()} {config.appName}
+					</div>
+					<div className="w-0.25 h-1 mx-4 max-md:mx-2 bg-t-tertiary shrink-0"></div>
+					<Link
+						className="text-small text-t-secondary hover:text-t-primary shrink-0 transition-colors"
+						href={`${marketingBase}/rules`}
+					>
+						Rules
+					</Link>
 				</div>
-				<div className="w-0.25 h-1 mx-4 bg-t-tertiary max-md:mx-auto"></div>
-				<Link
-					className="text-small text-t-secondary hover:text-t-primary transition-colors"
-					href={`${marketingBase}/rules`}
-				>
-					Rules
-				</Link>
 			</div>
 		</div>
 	);

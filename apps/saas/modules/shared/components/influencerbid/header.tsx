@@ -3,9 +3,11 @@
 import { useSession } from "@auth/hooks/use-session";
 import { config } from "@config";
 import Button from "@repo/ui/components/influencerbid/button";
+import HeaderMobileNav from "@repo/ui/components/influencerbid/header-mobile-nav";
 import Image from "@repo/ui/components/influencerbid/image";
+import RankHigherButton from "@repo/ui/components/influencerbid/rank-higher-button";
 import { isPlatformAdmin } from "@shared/lib/admin-routing";
-import { LayoutDashboard, Rocket } from "lucide-react";
+import { CircleGauge, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -15,7 +17,7 @@ import Plan from "./header-plan";
 const marketingBase = (config.marketingUrl ?? "http://localhost:3001").replace(/\/$/, "");
 
 const navigation = [
-	{ title: "Leaderboard", url: `${marketingBase}/` },
+	{ title: "🏆 Leaderboard", url: `${marketingBase}/` },
 	{ title: "Categories", url: `${marketingBase}/categories` },
 	{ title: "About", url: `${marketingBase}/about` },
 	{ title: "Rules", url: `${marketingBase}/rules` },
@@ -84,32 +86,48 @@ const Header = ({ isFixed, login, isVisiblePlan, isMinimal, onLogout }: HeaderPr
 						{login ? (
 							<>
 								{isAdmin ? (
-									<Button
-										isSecondary
-										isCircle
-										as="link"
-										href="/admin/dashboard"
-										aria-label="Dashboard"
-									>
-										<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
-									</Button>
+									<>
+										<Button
+											isCircle
+											as="link"
+											href="/admin/dashboard"
+											aria-label="Dashboard"
+											className="header-action-btn"
+										>
+											<LayoutDashboard
+												className="size-5 stroke-current stroke-[1.75px]"
+												aria-hidden
+											/>
+										</Button>
+										<HeaderMobileNav items={navigation} />
+									</>
 								) : (
 									<>
-										<Button isSecondary as="link" href="/rank-higher" aria-label="Rank higher">
-											<Rocket className="mr-2 size-4 stroke-[1.75px]" aria-hidden />
-											<span>Rank higher</span>
-										</Button>
-										<Button isSecondary isCircle as="link" href="/dashboard" aria-label="Dashboard">
-											<LayoutDashboard className="size-5 stroke-[1.75px]" aria-hidden />
+										<RankHigherButton href="/rank-higher" />
+										<Button
+											isCircle
+											as="link"
+											href="/dashboard"
+											aria-label="Dashboard"
+											className="header-action-btn"
+										>
+											<CircleGauge
+												className="size-5 stroke-current stroke-[1.75px]"
+												aria-hidden
+											/>
 										</Button>
 										<Menu onLogout={onLogout} />
+										<HeaderMobileNav items={navigation} />
 									</>
 								)}
 							</>
 						) : (
-							<Button isPrimary as="link" href="/login">
-								Sign in
-							</Button>
+							<>
+								<Button isPrimary as="link" href="/login">
+									Sign in
+								</Button>
+								<HeaderMobileNav items={navigation} />
+							</>
 						)}
 					</div>
 				</>

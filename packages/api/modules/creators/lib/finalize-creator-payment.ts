@@ -47,6 +47,7 @@ function magicLinkRequestHeaders() {
 		origin: saasBase,
 		referer: `${saasBase}/`,
 		"content-type": "application/json",
+		"x-creator-welcome": "1",
 	});
 }
 
@@ -199,8 +200,10 @@ export async function finalizeCreatorPayment(input: FinalizeCreatorPaymentInput)
 	const callbackURL = "/dashboard";
 	const errorCallbackURL = "/login";
 
+	let magicLinkSent = false;
+
 	try {
-		await auth.api.signInMagicLink({
+		const result = await auth.api.signInMagicLink({
 			body: {
 				email: pending.email,
 				callbackURL,
@@ -209,9 +212,18 @@ export async function finalizeCreatorPayment(input: FinalizeCreatorPaymentInput)
 			},
 			headers: magicLinkRequestHeaders(),
 		});
+		magicLinkSent = result?.status === true;
 	} catch (error) {
 		logger.error(error, {
 			ctx: "finalizeCreatorPayment.signInMagicLink",
+			email: pending.email,
+			pendingCreatorId: pending.id,
+		});
+	}
+
+	if (!magicLinkSent) {
+		logger.error("Welcome magic link email was not sent after payment", {
+			ctx: "finalizeCreatorPayment.magicLinkSent",
 			email: pending.email,
 			pendingCreatorId: pending.id,
 		});
@@ -226,5 +238,6 @@ export async function finalizeCreatorPayment(input: FinalizeCreatorPaymentInput)
 		pendingCreatorId: pending.id,
 		username: refreshed?.user.username ?? creator.user.username,
 		email: pending.email,
+		magicLinkSent,
 	};
 }

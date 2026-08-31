@@ -78,6 +78,7 @@ const MyProfilePage = ({
 									src={avatarSrc}
 									width={176}
 									height={176}
+									unoptimized
 									alt={`${profile.name} profile photo`}
 								/>
 							) : (
