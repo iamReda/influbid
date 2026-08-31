@@ -1,8 +1,4 @@
-# supastarter for Next.js
+# Creator Land
 
-supastarter is the ultimate starter kit for production-ready, scalable SaaS applications.
+Creator Land is one public leaderboard for influencers. Your position is decided by a single number: the dollar amount attached to your listing. Nothing else is weighed - no ads, no API keys, no revenue sharing.
 
-## Helpful links
-
-- [📘 Documentation](https://supastarter.dev/docs/nextjs)
-- [🚀 Demo](https://demo.supastarter.dev)
