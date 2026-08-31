@@ -2,6 +2,8 @@ import { fetchCategoryCardsAction } from "@home/influencerbid/actions";
 import CategoriesPage from "@home/influencerbid/categories";
 import { setRequestLocale } from "next-intl/server";
 
+export const dynamic = "force-dynamic";
+
 export default async function CategoriesRoutePage({
 	params,
 }: {
