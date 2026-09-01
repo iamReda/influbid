@@ -5,12 +5,13 @@ import Button from "@repo/ui/components/influencerbid/button";
 import Icon from "@repo/ui/components/influencerbid/icon";
 import { Minus, Plus, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from "react";
 
 import { estimateSignupRankAction, type CategoryOptionDto } from "../actions";
 import { getCategoryUi } from "../lib/category-ui";
 import { saveSignupDraft } from "../lib/signup-draft";
 import { detectPlatform, SOCIAL_PLATFORMS, toHttpsSocialUrl } from "../lib/social-url";
+import { TAKE_SPOT_EVENT, type TakeSpotDetail } from "../lib/take-spot";
 import SocialPlatformIcon from "./social-platform-icon";
 
 const MIN_BID = 5;
@@ -39,6 +40,8 @@ type BidFormProps = {
 
 const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: BidFormProps) => {
 	const router = useRouter();
+	const formRef = useRef<HTMLFormElement>(null);
+	const bidInputRef = useRef<HTMLInputElement>(null);
 	const initialBid = clampBid(defaultBidDollars);
 	const [bid, setBid] = useState(initialBid);
 	const [bidInput, setBidInput] = useState(String(initialBid));
@@ -99,6 +102,36 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 			clearTimeout(timer);
 		};
 	}, [bid, category?.id, onRankChange]);
+
+	useEffect(() => {
+		let focusTimer = 0;
+
+		const applyRequestedBid = (event: Event) => {
+			const dollars = (event as CustomEvent<TakeSpotDetail>).detail?.dollars;
+
+			if (typeof dollars !== "number" || Number.isNaN(dollars)) {
+				return;
+			}
+
+			const next = clampBid(dollars);
+			setBid(next);
+			setBidInput(String(next));
+			setErrors((current) => ({ ...current, bid: undefined }));
+			formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+			window.clearTimeout(focusTimer);
+			focusTimer = window.setTimeout(() => {
+				bidInputRef.current?.focus();
+				bidInputRef.current?.select();
+			}, 400);
+		};
+
+		window.addEventListener(TAKE_SPOT_EVENT, applyRequestedBid);
+
+		return () => {
+			window.clearTimeout(focusTimer);
+			window.removeEventListener(TAKE_SPOT_EVENT, applyRequestedBid);
+		};
+	}, []);
 
 	const activePlatform = detectedPlatform ?? SOCIAL_PLATFORMS[platformCycleIndex];
 	const isPlatformLocked = !!detectedPlatform;
@@ -191,6 +224,8 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 
 	return (
 		<form
+			ref={formRef}
+			id="bid-form"
 			className={`max-w-200 max-md:max-w-none mx-auto w-full ${
 				className ?? "mb-12 mt-10 max-md:mb-0 max-md:mt-8"
 			}`}
@@ -213,6 +248,8 @@ const BidForm = ({ className, categories, defaultBidDollars, onRankChange }: Bid
 							$
 						</span>
 						<input
+							ref={bidInputRef}
+							id="bid-amount"
 							type="number"
 							className={`${bidAmountClass} w-[var(--bid-ch)] text-center`}
 							style={

@@ -83,7 +83,7 @@ const Category = ({ item }: CategoryProps) => {
 			<Button
 				className="h-10! bg-b-surface1! text-t-primary! fill-t-primary! hover:bg-b-highlight! mt-auto w-full border-transparent! hover:shadow-none!"
 				as="link"
-				href={`/?category=${item.slug}`}
+				href={`/?category=${encodeURIComponent(item.slug)}#leaderboard`}
 			>
 				View all {formatInfluencerCount(item.influencerCount)}
 			</Button>

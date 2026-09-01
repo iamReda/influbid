@@ -14,6 +14,18 @@ import CategoryFilters from "../category-filters";
 import InfluencerCard, { LeaderboardTopTenDivider } from "./influencer-card";
 import { PAGE_SIZE } from "./influencers";
 
+const scrollToLeaderboard = () => {
+	const section = document.getElementById("leaderboard");
+	if (!section) {
+		return;
+	}
+
+	const header = document.querySelector<HTMLElement>("header.sticky, .header-liquid-glass");
+	const headerHeight = header?.getBoundingClientRect().height ?? 88;
+	const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 12;
+	window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+};
+
 type LeaderboardProps = {
 	categories: CategoryOptionDto[];
 	items: LeaderboardItemDto[];
@@ -40,6 +52,21 @@ const Leaderboard = ({
 		setTotal(initialTotal);
 		setPage(1);
 	}, [initialCategorySlug, initialItems, initialTotal]);
+
+	useEffect(() => {
+		if (window.location.hash !== "#leaderboard") {
+			return;
+		}
+
+		scrollToLeaderboard();
+		const timer = window.setTimeout(() => {
+			scrollToLeaderboard();
+		}, 200);
+
+		return () => {
+			window.clearTimeout(timer);
+		};
+	}, [initialCategorySlug]);
 
 	const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 	const currentPage = Math.min(page, totalPages);
@@ -68,7 +95,11 @@ const Leaderboard = ({
 	};
 
 	return (
-		<div className="section mb-28! max-xl:mb-23! max-lg:mb-20! max-md:mb-15!">
+		<div
+			id="leaderboard"
+			className="section mb-28! max-xl:mb-23! max-lg:mb-20! max-md:mb-15!"
+			style={{ scrollMarginTop: "6.5rem" }}
+		>
 			<div className="center">
 				<CategoryFilters
 					categories={categories}

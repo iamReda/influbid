@@ -2,7 +2,6 @@
 
 import SocialPlatformIcon, {
 	PLATFORM_LABEL,
-	type Platform,
 } from "@home/influencerbid/bid-form/social-platform-icon";
 import { getCategoryUi } from "@home/influencerbid/lib/category-ui";
 import Button from "@repo/ui/components/influencerbid/button";
@@ -14,6 +13,7 @@ import { useRouter } from "next/navigation";
 import type { KeyboardEvent, MouseEvent } from "react";
 
 import type { LeaderboardItemDto } from "../actions";
+import { requestTakeSpot } from "../lib/take-spot";
 import { formatBid, formatClicks } from "./influencers";
 
 type InfluencerCardProps = {
@@ -49,6 +49,7 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 	const router = useRouter();
 	const CategoryIcon = getCategoryUi(item.categorySlug).icon;
 	const countryName = item.countryCode ? getCountryName(item.countryCode) : null;
+	const takeSpotAmount = item.bid + 1;
 
 	const openProfile = () => {
 		router.push(item.profileUrl);
@@ -57,7 +58,7 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 	const handleTakeSpot = (event: MouseEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
-		document.querySelector("form")?.scrollIntoView({ behavior: "smooth", block: "center" });
+		requestTakeSpot(takeSpotAmount);
 	};
 
 	const stopCardNavigation = (event: MouseEvent) => {
@@ -176,7 +177,7 @@ const InfluencerCard = ({ item, rank }: InfluencerCardProps) => {
 						onClick={handleTakeSpot}
 					>
 						<Armchair className="size-4 shrink-0 stroke-2" aria-hidden />
-						Take this spot for {formatBid(item.bid + 1)}
+						Take this spot for {formatBid(takeSpotAmount)}
 					</Button>
 				</div>
 			</div>
